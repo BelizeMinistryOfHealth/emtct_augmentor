@@ -11,12 +11,14 @@ import {
 } from 'grommet';
 import { CircleInformation } from 'grommet-icons';
 import React from 'react';
+import parseISO from 'date-fns/parseISO';
+import format from 'date-fns/format';
 
 const DiagnosisRow = ({ data }) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.date}</Text>
+        <Text>{format(parseISO(data.date), 'dd LLL yyyy')}</Text>
       </TableCell>
       <TableCell align={'start'}>
         <TableCell>

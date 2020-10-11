@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Card, CardBody, Text } from 'grommet';
 import { AddCircle, SubtractCircle, User } from 'grommet-icons';
+import parseISO from 'date-fns/parseISO';
+import format from 'date-fns/format';
 
 const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
   const {
@@ -67,7 +69,7 @@ const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
             {firstName} {lastName}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {dob}
+            {format(parseISO(dob), 'dd LLL yyyy')}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
             {patientId}

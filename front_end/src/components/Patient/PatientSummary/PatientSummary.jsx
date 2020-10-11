@@ -1,12 +1,13 @@
-import { Box, Card, CardBody } from 'grommet';
+import { Box, Nav } from 'grommet';
 import React from 'react';
+import SidebarButton from '../../SidebarButton/SidebarButton';
 import DiagnosisHistory from '../Diagnoses/Diagnoses';
 import ObstetricHistory from '../ObstetricHistory/ObstetricHistory';
 import PatientBasicInfo from '../PatientBasicInfo/PatientBasicInfo';
 
 const PatientSummary = (props) => {
+  const [active, setActive] = React.useState();
   const id = props.location.state.id;
-  // const { generalInformation, currentPregnancy } = patient;
   const basicInfo = {
     firstName: 'Jane',
     lastName: 'Doe',
@@ -48,6 +49,24 @@ const PatientSummary = (props) => {
       pad={'medium'}
       fill
     >
+      <Nav background={'neutral-2'}>
+        {[
+          'General Info',
+          'Current Pregnancy',
+          'Lab Results',
+          'Home Visits',
+          'Hospital/Clinic Admissions',
+        ].map((label) => {
+          return (
+            <SidebarButton
+              key={label}
+              label={label}
+              active={label === active}
+              onClick={() => setActive(label)}
+            />
+          );
+        })}
+      </Nav>
       <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
       <ObstetricHistory obstetricHistory={obstetricHistory} />
       <DiagnosisHistory
