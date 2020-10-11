@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Grommet, Main } from 'grommet';
+import { Grommet, Main, Nav } from 'grommet';
 import { grommet } from 'grommet/themes';
 import { useAuth0, withAuth0 } from '@auth0/auth0-react';
 import Navbar from './components/Navbar/Navbar';
@@ -50,6 +50,7 @@ function App() {
       <Grommet theme={grommet} full={fullTheme}>
         <BrowserRouter>
           <Navbar />
+
           <Main>
             <Switch>
               <Route path={'/patient/:id'} component={PatientSummary} />
