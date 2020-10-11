@@ -1,14 +1,6 @@
 import React from 'react';
 import { Box, Card, CardBody, Text } from 'grommet';
-import {
-  AddCircle,
-  Checkmark,
-  Stop,
-  StopFill,
-  Subtract,
-  SubtractCircle,
-  User,
-} from 'grommet-icons';
+import { AddCircle, SubtractCircle, User } from 'grommet-icons';
 
 const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
   const {

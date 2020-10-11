@@ -6,7 +6,7 @@ import Navbar from './components/Navbar/Navbar';
 import Welcome from './components/Welcome/Welcome';
 import Search from './components/Search/Search';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import PatientSummary from './components/Patient/PatientSummary/PatientSummary';
+import PatientSummary from './components/Patient/PatientSummary/PatientSummary.jsx';
 
 const Profile = (props) => {
   const {
