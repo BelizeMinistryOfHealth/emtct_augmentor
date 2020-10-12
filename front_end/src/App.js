@@ -7,6 +7,7 @@ import Welcome from './components/Welcome/Welcome';
 import Search from './components/Search/Search';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PatientSummary from './components/Patient/PatientSummary/PatientSummary.jsx';
+import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/CurrentPregnancy';
 
 const Profile = (props) => {
   const {
@@ -53,6 +54,10 @@ function App() {
 
           <Main>
             <Switch>
+              <Route
+                path={'/patient/:id/current_pregnancy'}
+                component={CurrentPregnancy}
+              />
               <Route path={'/patient/:id'} component={PatientSummary} />
               <Route path={'/'} component={Search} />
             </Switch>

@@ -14,16 +14,14 @@ import React from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
-const DiagnosisRow = ({ data }) => {
+const diagnosisRow = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
         <Text>{format(parseISO(data.date), 'dd LLL yyyy')}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <TableCell>
-          <Text align={'start'}>{data.name}</Text>
-        </TableCell>
+        <Text align={'start'}>{data.name}</Text>
       </TableCell>
     </TableRow>
   );
@@ -44,11 +42,7 @@ const DiagnosisTable = ({ children, data, caption, ...rest }) => {
             </TableCell>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {data.map((d) => (
-            <DiagnosisRow data={d} />
-          ))}
-        </TableBody>
+        <TableBody>{data.map((d) => diagnosisRow(d))}</TableBody>
       </Table>
     </Box>
   );

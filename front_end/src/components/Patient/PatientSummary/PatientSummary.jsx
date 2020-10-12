@@ -40,7 +40,7 @@ const PatientSummary = (props) => {
   ];
 
   return (
-    <Layout>
+    <Layout location={props.location} {...props}>
       <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
       <ObstetricHistory obstetricHistory={obstetricHistory} />
       <DiagnosisHistory

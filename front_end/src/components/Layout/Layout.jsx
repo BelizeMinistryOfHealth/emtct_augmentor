@@ -1,9 +1,14 @@
 import { Box, Nav } from 'grommet';
 import React from 'react';
 import SidebarButton from '../SidebarButton/SidebarButton';
+import { useHistory } from 'react-router-dom';
 
-const Layout = ({ children, ...rest }) => {
+const Layout = ({ children, location, ...rest }) => {
+  const patientId = location?.state?.id;
+  const encounterId = location?.state?.encounterId;
+  const history = useHistory();
   const [active, setActive] = React.useState();
+  console.dir({ rest });
   return (
     <Box
       align={'start'}
@@ -15,18 +20,25 @@ const Layout = ({ children, ...rest }) => {
     >
       <Nav background={'neutral-2'}>
         {[
-          'General Info',
-          'Current Pregnancy',
-          'Lab Results',
-          'Home Visits',
-          'Hospital/Clinic Admissions',
-        ].map((label) => {
+          { label: 'General Info', link: `/patient/${patientId}` },
+          {
+            label: 'Current Pregnancy',
+            link: `/patient/${patientId}/current_pregnancy`,
+          },
+          { label: 'Lab Results', link: '/' },
+          { label: 'Home Visits', link: '/' },
+          { label: 'Hospital/Clinic Admissions', link: '/' },
+        ].map((d) => {
           return (
             <SidebarButton
-              key={label}
-              label={label}
-              active={label === active}
-              onClick={() => setActive(label)}
+              key={d.label}
+              label={d.label}
+              active={d.label === active}
+              link={d.link}
+              onClick={() => {
+                setActive(d.label);
+                history.push(d.link, { id: patientId });
+              }}
             />
           );
         })}
