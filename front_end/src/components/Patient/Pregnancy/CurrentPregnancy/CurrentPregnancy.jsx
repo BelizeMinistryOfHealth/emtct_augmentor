@@ -3,6 +3,7 @@ import React from 'react';
 import Layout from '../../../Layout/Layout';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
+import PreNatalCare from '../PreNatalCare/PreNatalCare';
 
 const CurrentPregnancy = (props) => {
   const { location } = props;
@@ -43,6 +44,12 @@ const CurrentPregnancy = (props) => {
     },
   };
 
+  const prenatalCareInfo = {
+    dateOfBooking: '2020-07-01',
+    gestationAge: 7,
+    prenatalCareProvider: 'Public',
+  };
+
   return (
     <Layout location={location} props={props}>
       <Box
@@ -54,7 +61,17 @@ const CurrentPregnancy = (props) => {
         fill
       >
         <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
-        <PregnancyVitals vitals={currentPregnancy.vitals} />
+        <Box
+          direction={'row-responsive'}
+          gap={'medium'}
+          pad={'medium'}
+          justify={'start'}
+          align={'start'}
+          fill
+        >
+          <PregnancyVitals vitals={currentPregnancy.vitals} />
+          <PreNatalCare info={prenatalCareInfo} />
+        </Box>
       </Box>
     </Layout>
   );

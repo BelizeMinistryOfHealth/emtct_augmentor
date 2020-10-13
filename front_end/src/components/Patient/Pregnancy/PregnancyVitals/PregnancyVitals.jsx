@@ -80,7 +80,11 @@ const PregnancyVitals = (props) => {
   return (
     <Card>
       <CardBody gap={'medium'} pad={'medium'}>
-        <VitalsComponent vitals={props.vitals} />
+        <VitalsComponent vitals={props.vitals}>
+          <Text size={'xlarge'} weight={'bold'}>
+            Vitals
+          </Text>
+        </VitalsComponent>
       </CardBody>
     </Card>
   );
