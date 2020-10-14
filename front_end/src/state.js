@@ -1,5 +1,9 @@
 import { atom, selectorFamily } from 'recoil';
-import { fetchPatient, fetchCurrentPregnancy } from './api/patient';
+import {
+  fetchPatient,
+  fetchCurrentPregnancy,
+  fetchArvsTreatment,
+} from './api/patient';
 
 export const patientIdState = atom({
   key: 'patientId',
@@ -27,5 +31,17 @@ export const currentPregnancySelector = selectorFamily({
   key: 'getCurrentPregnancyAPI',
   get: (patientId) => async () => {
     return await fetchCurrentPregnancy(patientId);
+  },
+});
+
+export const arvTreatments = atom({
+  key: 'arvTreatments',
+  default: [],
+});
+
+export const arvTreatmentsSelector = selectorFamily({
+  key: 'arvTreatmentsAPI',
+  get: (patientId, encounterId) => async () => {
+    return await fetchArvsTreatment(patientId, encounterId);
   },
 });

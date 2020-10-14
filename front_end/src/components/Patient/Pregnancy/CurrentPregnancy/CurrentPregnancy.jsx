@@ -3,6 +3,7 @@ import React from 'react';
 import { useRecoilValueLoadable } from 'recoil';
 import { currentPregnancySelector } from '../../../../state';
 import Layout from '../../../Layout/Layout';
+import ArvTreatment from '../../ArvTreatment/ArvTreatment';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
@@ -38,10 +39,6 @@ const CurrentPregnancy = (props) => {
         align={'start'}
         fill
       >
-        <PatientBasicInfo
-          basicInfo={currentPregnancy.basicInfo}
-          nextOfKin={currentPregnancy.nextOfKin}
-        />
         <Box
           direction={'row-responsive'}
           gap={'medium'}
@@ -50,8 +47,24 @@ const CurrentPregnancy = (props) => {
           align={'start'}
           fill
         >
+          <PatientBasicInfo
+            basicInfo={currentPregnancy.basicInfo}
+            nextOfKin={currentPregnancy.nextOfKin}
+          />
           <PregnancyVitals vitals={currentPregnancy.vitals} />
           <PreNatalCare info={currentPregnancy.prenatalCareInfo} />
+        </Box>
+        <Box
+          gap={'medium'}
+          pad={'medium'}
+          justify={'center'}
+          align={'center'}
+          fill
+        >
+          <ArvTreatment
+            patientId={currentPregnancy.basicInfo.patientId}
+            encounterId={currentPregnancy.encounterId}
+          />
         </Box>
       </Box>
     </Layout>

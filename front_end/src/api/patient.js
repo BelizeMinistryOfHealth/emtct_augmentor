@@ -41,7 +41,7 @@ export const fetchPatient = async (patientId) => {
   });
 };
 
-export const fetchCurrentPregnancy = async (patientId) => {
+export const fetchCurrentPregnancy = (patientId) => {
   const basicInfo = {
     firstName: 'Jane',
     lastName: 'Doe',
@@ -88,5 +88,35 @@ export const fetchCurrentPregnancy = async (patientId) => {
 
   return new Promise((resolve) => {
     resolve(currentPregnancy);
+  });
+};
+
+export const fetchArvsTreatment = (patientId, encounterId) => {
+  const treatments = [
+    {
+      id: 1,
+      arvName: 'ARV 1',
+      dosage: '2 every 6 hours',
+      date: '2019-01-21',
+      comments: '',
+    },
+    {
+      id: 2,
+      arvName: 'ARV 1',
+      dosage: '2 every 6 hours',
+      date: '2019-06-30',
+      comments: '',
+    },
+    {
+      id: 3,
+      arvName: 'ARV 2',
+      dosage: '2 every 6 hours',
+      date: '2020-02-10',
+      comments: '',
+    },
+  ];
+
+  return new Promise((resolve) => {
+    resolve(treatments);
   });
 };
