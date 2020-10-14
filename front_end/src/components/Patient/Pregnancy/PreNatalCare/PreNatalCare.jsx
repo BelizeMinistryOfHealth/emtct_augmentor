@@ -18,6 +18,9 @@ const CareInfo = ({ children, info, ...rest }) => {
           <Text size={'medium'} weight={'bold'} textAlign={'start'}>
             Prenatal Care Provider:
           </Text>
+          <Text size={'medium'} weight={'bold'} textAlign={'start'}>
+            Total Prenatal Checks
+          </Text>
         </Box>
         <Box>
           <Text size={'medium'} textAlign={'start'}>
@@ -28,6 +31,9 @@ const CareInfo = ({ children, info, ...rest }) => {
           </Text>
           <Text size={'medium'} textAlign={'start'}>
             {info.prenatalCareProvider}
+          </Text>
+          <Text size={'medium'} textAlign={'start'}>
+            {info.totalChecks}
           </Text>
         </Box>
       </Box>

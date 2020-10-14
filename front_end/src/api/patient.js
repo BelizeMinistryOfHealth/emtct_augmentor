@@ -65,6 +65,7 @@ export const fetchCurrentPregnancy = async (patientId) => {
     dateOfBooking: '2020-07-01',
     gestationAge: 7,
     prenatalCareProvider: 'Public',
+    totalChecks: 4,
   };
 
   const currentPregnancy = {
