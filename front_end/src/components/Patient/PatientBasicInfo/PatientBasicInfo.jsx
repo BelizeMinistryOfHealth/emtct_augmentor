@@ -20,7 +20,7 @@ const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
     hiv,
   } = basicInfo;
   return (
-    <Box gap='medium' align='center' {...rest}>
+    <Box gap='medium' align='center'>
       {children}
       <Box direction={'row'} gap={'medium'}>
         <Box>
@@ -65,7 +65,7 @@ const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
         </Box>
 
         <Box>
-          <Text size={'medium'} weight='bold' textAlign={'start'}>
+          <Text size={'medium'} weight={'bold'} textAlign={'start'}>
             {firstName} {lastName}
           </Text>
           <Text size={'medium'} textAlign={'start'}>

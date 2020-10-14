@@ -5,10 +5,8 @@ import { useHistory } from 'react-router-dom';
 
 const Layout = ({ children, location, ...rest }) => {
   const patientId = location?.state?.id;
-  const encounterId = location?.state?.encounterId;
   const history = useHistory();
   const [active, setActive] = React.useState();
-  console.dir({ rest });
   return (
     <Box
       align={'start'}

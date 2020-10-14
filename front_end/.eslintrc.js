@@ -18,7 +18,7 @@ module.exports = {
     },
     rules: {
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/exhaustive-deps": ["error", {"additionalHooks": "useRecoilCallback"}],
       "react/prop-types": "off",
       "jsx-a11y/anchor-is-valid": "off",
       "react/display-name": "off",

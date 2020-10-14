@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { Auth0Provider } from '@auth0/auth0-react';
+import { RecoilRoot } from 'recoil';
 
 const auth0Domain = 'emtct-dev.us.auth0.com';
 const auth0ClientId = 'k46hfbBUDsOaPgNU9IlUd7hoWJ5Ku0EB';
@@ -15,7 +16,9 @@ ReactDOM.render(
       clientId={auth0ClientId}
       redirectUri={redirectUrl}
     >
-      <App />
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>
     </Auth0Provider>
   </React.StrictMode>,
   document.getElementById('root')
