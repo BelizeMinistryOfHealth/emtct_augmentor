@@ -68,6 +68,8 @@ export const fetchCurrentPregnancy = (patientId) => {
     totalChecks: 4,
   };
 
+  const pregnancyDiagnoses = [{ id: 8, date: '2020-07-21', name: 'nausea' }];
+
   const currentPregnancy = {
     encounterId: 2121,
     vitals: {
@@ -84,6 +86,7 @@ export const fetchCurrentPregnancy = (patientId) => {
     basicInfo,
     nextOfKin,
     prenatalCareInfo,
+    pregnancyDiagnoses,
   };
 
   return new Promise((resolve) => {

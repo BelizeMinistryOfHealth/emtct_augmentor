@@ -4,6 +4,7 @@ import { useRecoilValueLoadable } from 'recoil';
 import { currentPregnancySelector } from '../../../../state';
 import Layout from '../../../Layout/Layout';
 import ArvTreatment from '../../ArvTreatment/ArvTreatment';
+import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
@@ -59,11 +60,16 @@ const CurrentPregnancy = (props) => {
           pad={'medium'}
           justify={'center'}
           align={'center'}
+          direction={'row-responsive'}
           fill
         >
           <ArvTreatment
             patientId={currentPregnancy.basicInfo.patientId}
             encounterId={currentPregnancy.encounterId}
+          />
+          <DiagnosisHistory
+            diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
+            caption={'Illnesses during Pregnancy'}
           />
         </Box>
       </Box>
