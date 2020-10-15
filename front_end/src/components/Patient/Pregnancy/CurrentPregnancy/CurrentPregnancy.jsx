@@ -1,4 +1,4 @@
-import { Box } from 'grommet';
+import { Box, Text } from 'grommet';
 import React from 'react';
 import { useRecoilValueLoadable } from 'recoil';
 import {
@@ -73,7 +73,9 @@ const LabTests = ({ patientId, encounterId }) => {
         >
           <LabResults
             labResults={contents}
-            caption={'Lab Test Results During Pregnancy'}
+            caption={
+              <Text weight={'bold'}>Lab Test Results During Pregnancy</Text>
+            }
           />
         </Box>
       );

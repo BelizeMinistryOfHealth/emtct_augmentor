@@ -25,7 +25,9 @@ const labResultsRow = (data) => {
         <Text align={'start'}>{data.testResult}</Text>
       </TableCell>
       <TableCell>
-        <Text align={'start'}>{data.testName}</Text>
+        <Text align={'start'} weight={'bold'}>
+          {data.testName}
+        </Text>
       </TableCell>
     </TableRow>
   );

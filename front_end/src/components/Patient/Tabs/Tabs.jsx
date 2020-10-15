@@ -17,7 +17,7 @@ RichTabTitle.propTypes = {
 
 const AppTabs = ({ basicInfo, arvs, labResults }) => {
   return (
-    <Tabs>
+    <Tabs justify={'start'} flex>
       <Tab title={<RichTabTitle label={'Basic Info'} />}>{basicInfo}</Tab>
       <Tab title={<RichTabTitle label={'ARVs'} />}>{arvs}</Tab>
       <Tab title={<RichTabTitle label={'Lab Results'} />}> {labResults}</Tab>
