@@ -123,3 +123,31 @@ export const fetchArvsTreatment = (patientId, encounterId) => {
     resolve(treatments);
   });
 };
+
+export const fetchPregnancyLabResults = (patientId, encounterId) => {
+  const labTestResults = [
+    { dateSampleTaken: '2020-09-10', testResult: 'Negative', testName: 'Hb' },
+    {
+      dateSampleTaken: '2020-09-10',
+      testResult: 'Negative',
+      testName: 'Urinalysis',
+    },
+    {
+      dateSampleTaken: '2020-06-30',
+      testResult: 'Negative',
+      testName: 'Hepatitis B',
+    },
+    { dateSampleTaken: '2020-06-30', testResult: 'Negative', testName: 'HIV' },
+    { dateSampleTaken: '2020-06-30', testResult: '120', testName: 'CD4 Count' },
+    { dateSampleTaken: '2020-06-30', testResult: '0', testName: 'Viral Load' },
+    {
+      dateSampleTaken: '2020-06-30',
+      testResult: 'Negative',
+      testName: 'Syphilis',
+    },
+  ];
+
+  return new Promise((resolve) => {
+    resolve(labTestResults);
+  });
+};

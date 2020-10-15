@@ -3,6 +3,7 @@ import {
   fetchPatient,
   fetchCurrentPregnancy,
   fetchArvsTreatment,
+  fetchPregnancyLabResults,
 } from './api/patient';
 
 export const patientIdState = atom({
@@ -43,5 +44,17 @@ export const arvTreatmentsSelector = selectorFamily({
   key: 'arvTreatmentsAPI',
   get: (patientId, encounterId) => async () => {
     return await fetchArvsTreatment(patientId, encounterId);
+  },
+});
+
+export const pregnancyLabResultsAtom = atom({
+  key: 'pregnancyLabResults',
+  default: [],
+});
+
+export const pregnancyLabResultsSelector = selectorFamily({
+  key: 'pregnancyLabResultsAPI',
+  get: (patientId, encounterId) => async () => {
+    return await fetchPregnancyLabResults(patientId, encounterId);
   },
 });

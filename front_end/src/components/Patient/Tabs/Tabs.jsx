@@ -12,15 +12,15 @@ const RichTabTitle = ({ icon, label }) => (
 );
 
 RichTabTitle.propTypes = {
-  icon: PropTypes.node.isRequired,
   label: PropTypes.string.isRequired,
 };
 
-const AppTabs = ({ basicInfo, arvs }) => {
+const AppTabs = ({ basicInfo, arvs, labResults }) => {
   return (
     <Tabs>
       <Tab title={<RichTabTitle label={'Basic Info'} />}>{basicInfo}</Tab>
       <Tab title={<RichTabTitle label={'ARVs'} />}>{arvs}</Tab>
+      <Tab title={<RichTabTitle label={'Lab Results'} />}> {labResults}</Tab>
     </Tabs>
   );
 };
@@ -28,6 +28,7 @@ const AppTabs = ({ basicInfo, arvs }) => {
 AppTabs.propTypes = {
   basicInfo: PropTypes.node.isRequired,
   arvs: PropTypes.node.isRequired,
+  labResults: PropTypes.node.isRequired,
 };
 
 export default AppTabs;

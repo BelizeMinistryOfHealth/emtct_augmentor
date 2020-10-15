@@ -1,12 +1,16 @@
 import { Box } from 'grommet';
 import React from 'react';
 import { useRecoilValueLoadable } from 'recoil';
-import { currentPregnancySelector } from '../../../../state';
+import {
+  currentPregnancySelector,
+  pregnancyLabResultsSelector,
+} from '../../../../state';
 import Layout from '../../../Layout/Layout';
 import ArvTreatment from '../../ArvTreatment/ArvTreatment';
 import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import AppTabs from '../../Tabs/Tabs';
+import LabResults from '../LabResults/LabResults';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
 
@@ -52,6 +56,36 @@ const Arvs = ({ currentPregnancy }) => {
   );
 };
 
+const LabTests = ({ patientId, encounterId }) => {
+  const { state, contents } = useRecoilValueLoadable(
+    pregnancyLabResultsSelector(patientId, encounterId)
+  );
+
+  switch (state) {
+    case 'hasValue':
+      return (
+        <Box
+          gap={'medium'}
+          pad={'medium'}
+          justify={'center'}
+          align={'center'}
+          direction={'row-responsive'}
+        >
+          <LabResults
+            labResults={contents}
+            caption={'Lab Test Results During Pregnancy'}
+          />
+        </Box>
+      );
+    case 'hasError':
+      return contents.message;
+    case 'loading':
+      return 'loading';
+    default:
+      return '';
+  }
+};
+
 const CurrentPregnancy = (props) => {
   const { location } = props;
 
@@ -86,6 +120,12 @@ const CurrentPregnancy = (props) => {
         <AppTabs
           basicInfo={<BasicInfoComponent currentPregnancy={currentPregnancy} />}
           arvs={<Arvs currentPregnancy={currentPregnancy} />}
+          labResults={
+            <LabTests
+              patientId={id}
+              encounterId={currentPregnancy.encounterId}
+            />
+          }
         />
       </Box>
     </Layout>
