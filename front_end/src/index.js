@@ -5,15 +5,15 @@ import * as serviceWorker from './serviceWorker';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { RecoilRoot } from 'recoil';
 
-const auth0Domain = 'emtct-dev.us.auth0.com';
-const auth0ClientId = 'k46hfbBUDsOaPgNU9IlUd7hoWJ5Ku0EB';
 const redirectUrl = window.location.origin;
+
+const { REACT_APP_AUTH0_DOMAIN, REACT_APP_AUTH0_CLIENT_ID } = process.env;
 
 ReactDOM.render(
   <React.StrictMode>
     <Auth0Provider
-      domain={auth0Domain}
-      clientId={auth0ClientId}
+      domain={REACT_APP_AUTH0_DOMAIN}
+      clientId={REACT_APP_AUTH0_CLIENT_ID}
       redirectUri={redirectUrl}
     >
       <RecoilRoot>
