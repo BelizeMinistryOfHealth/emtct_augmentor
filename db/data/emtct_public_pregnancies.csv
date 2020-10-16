@@ -1,0 +1,2 @@
+id,patient_id,gestational_age,para,cs,abortive_outcome,diagnosis_date,planned,age_at_lmp,lmp,edd,date_of_booking,prenatal_care_provider,total_checks
+1,1111120,4,10,false,,2020-08-03,false,28,2020-07-06,2021-04-07,2020-08-03,Public,2

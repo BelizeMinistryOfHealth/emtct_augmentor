@@ -1,0 +1,4 @@
+id,patient_id,diagnosis_date,diagnosis_name
+1,1111120,2009-02-02,common cold
+2,1111120,2010-11-15,seasonal flu
+3,1111120,2011-04-12,rash
