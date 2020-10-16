@@ -1,3 +1,17 @@
 .idea
 .vscode
 node_modules
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.nupkg
+*.bak
+
+# Test binary, build with `go test -c`
+*.test
+
+# mac
+.DS_Store
