@@ -9,12 +9,22 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/uris77/auth0"
 )
 
 func NewServer() {
+	jwkUrl := os.Getenv("EMTCT_JWK_URL")
+	iss := os.Getenv("EMTCT_AUTH_ISSUER")
+	aud := os.Getenv("EMTCT_AUTH_AUDIENCE")
+
+	// Instantiate an aut0 client with a Cache with a key capacity of
+	// 60 tokens and a ttl of 24 hours.
+	auth0Client := auth0.NewAuth0(60, 518400)
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/health", Chain(HealthCheck, Method("GET"), EnableCors()))
+	r.HandleFunc("/test", Chain(TestAuth, Method("GET"), EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client)))
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
 		// Good practice to set timeouts to avoid Slowloris attacks.

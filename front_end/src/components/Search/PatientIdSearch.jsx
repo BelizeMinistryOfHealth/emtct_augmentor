@@ -1,10 +1,6 @@
 import React from 'react';
 import { Box, Button, Card, Form, FormField, TextInput } from 'grommet';
 
-const submitPatientIdSearch = (args) => {
-  console.dir({ args });
-};
-
 const PatientIdSearch = (props) => {
   const [patientId, setPatientId] = React.useState();
   const { onSubmit } = props;

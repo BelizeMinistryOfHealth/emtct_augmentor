@@ -1,7 +1,4 @@
-import { Box, Nav } from 'grommet';
 import React from 'react';
-import { useRecoilState } from 'recoil';
-import { useRecoilValue } from 'recoil';
 import { useRecoilValueLoadable } from 'recoil';
 import { patientSelector } from '../../../state';
 import ErrorBoundary from '../../ErrorBoundary';

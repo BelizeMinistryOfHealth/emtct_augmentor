@@ -101,7 +101,7 @@ const CurrentPregnancy = (props) => {
     case 'hasValue':
       currentPregnancy = contents;
       break;
-    case 'hasValue':
+    case 'hasError':
       return contents.message;
     case 'loading':
       return 'loading';

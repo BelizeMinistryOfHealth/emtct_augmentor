@@ -1,5 +1,5 @@
 import React from 'react';
-import { Anchor, Box, Header, Nav } from 'grommet';
+import { Anchor, Box, Header } from 'grommet';
 import { withAuth0 } from '@auth0/auth0-react';
 import LogoutButton from '../Logout/Logout';
 

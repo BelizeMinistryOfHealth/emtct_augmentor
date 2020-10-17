@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grommet, Main, Nav } from 'grommet';
+import { Grommet, Main } from 'grommet';
 import { grommet } from 'grommet/themes';
 import { useAuth0 } from '@auth0/auth0-react';
 import Navbar from './components/Navbar/Navbar';
@@ -9,40 +9,23 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PatientSummary from './components/Patient/PatientSummary/PatientSummary.jsx';
 import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/CurrentPregnancy';
 
-// const Profile = (props) => {
-//   const {
-//     user,
-//     isAuthenticated,
-//     getAccessTokenSilently,
-//     getIdTokenClaims,
-//   } = props.auth0;
-
-//   useEffect(() => {
-//     if (isAuthenticated) {
-//       console.log('getting token');
-//       (async () => {
-//         const token = await getAccessTokenSilently({
-//           audience: 'https://emtct-dev.us.auth0.com/userinfo',
-//           scope: 'read:hiv',
-//         });
-//         console.log({ token });
-//         const idToken = await getIdTokenClaims({
-//           audience: 'https://emtct-dev.us.auth0.com/userinfo',
-//           scope: 'read:hiv',
-//         });
-//         console.dir({ idToken });
-//       })();
-//     }
-//     console.log('not authenticated');
-//   }, [getAccessTokenSilently, isAuthenticated, getIdTokenClaims]);
-
-//   return isAuthenticated && <div>Hello {user.name}</div>;
-// };
-
-// const ProfileComponent = withAuth0(Profile);
-
 function App() {
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, getIdTokenClaims } = useAuth0();
+
+  // TODO: Remove this. It is here as a hack for getting a valid access token when we need to test the backend.
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      console.log('getting token');
+      (async () => {
+        const idToken = await getIdTokenClaims({
+          audience: 'https://emtct-dev.us.auth0.com/userinfo',
+          scope: 'read:hiv',
+        });
+        console.dir({ idToken });
+      })();
+    }
+    console.log('not authenticated');
+  }, [isAuthenticated, getIdTokenClaims]);
 
   const fullTheme = !isAuthenticated;
 
