@@ -12,7 +12,7 @@ import (
 	"github.com/uris77/auth0"
 )
 
-func NewServer() {
+func RegisterHandlers() *mux.Router {
 	jwkUrl := os.Getenv("EMTCT_JWK_URL")
 	iss := os.Getenv("EMTCT_AUTH_ISSUER")
 	aud := os.Getenv("EMTCT_AUTH_AUDIENCE")
@@ -22,9 +22,16 @@ func NewServer() {
 	auth0Client := auth0.NewAuth0(60, 518400)
 
 	r := mux.NewRouter()
+	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))
 
-	r.HandleFunc("/health", Chain(HealthCheck, Method("GET"), EnableCors()))
-	r.HandleFunc("/test", Chain(TestAuth, Method("GET"), EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client)))
+	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods("GET")
+	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods("GET")
+
+	return r
+}
+
+func NewServer() {
+	r := RegisterHandlers()
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
 		// Good practice to set timeouts to avoid Slowloris attacks.

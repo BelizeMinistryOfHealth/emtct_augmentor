@@ -1,11 +1,10 @@
 package http
 
 import (
+	"context"
 	"github.com/uris77/auth0"
 	"net/http"
 )
-
-type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 // Method ensures that url can only be requested with a specific method, else returns a 400 Bad Request
 func Method(m string) Middleware {
@@ -18,14 +17,6 @@ func Method(m string) Middleware {
 			f(w, r)
 		}
 	}
-}
-
-// Chain applies middlewares to a http.HandlerFunc
-func Chain(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
-	for _, m := range middlewares {
-		f = m(f)
-	}
-	return f
 }
 
 // EnableCors enables CORS
@@ -45,11 +36,13 @@ func VerifyToken(jwkUrl, aud, iss string, auth0Client auth0.Auth0) Middleware {
 	return func(f http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
-			_, err := auth0Client.Validate(jwkUrl, aud, iss, token)
+			jwtToken, err := auth0Client.Validate(jwkUrl, aud, iss, token)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
+			ctx := context.WithValue(r.Context(), "user", jwtToken)
+			r = r.WithContext(ctx)
 			f(w, r)
 		}
 	}
