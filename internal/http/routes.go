@@ -7,6 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+
+	"moh.gov.bz/mch/emtct/internal/models"
 )
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +22,12 @@ func TestAuth(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "TEST")
 }
 
+type PatientResponse struct {
+	Patient          models.Patient            `json:"patient"`
+	ObstetricHistory []models.ObstetricHistory `json:"obstetricHistory"`
+	Diagnoses        []models.Diagnosis        `json:"diagnoses"`
+}
+
 func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	patientId := vars["id"]
@@ -30,9 +38,25 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	resp, err := json.Marshal(patient)
+
+	diagnoses, err := a.Db.FindDiagnoses(patientId)
 	if err != nil {
-		log.WithFields(log.Fields{"patientId": patientId, "patient": patient}).WithError(err).Error("error marshalling response")
+		log.WithFields(
+			log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history for the patient")
+	}
+
+	obstetricHistory, err := a.Db.FindObstetricHistory(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history")
+	}
+	response := PatientResponse{
+		Patient:          *patient,
+		ObstetricHistory: obstetricHistory,
+		Diagnoses:        diagnoses,
+	}
+	resp, err := json.Marshal(response)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId, "response": response}).WithError(err).Error("error marshalling response")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

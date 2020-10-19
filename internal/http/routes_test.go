@@ -8,14 +8,31 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
-	"moh.gov.bz/mch/emtct/internal/models"
+	"moh.gov.bz/mch/emtct/internal/config"
+	"moh.gov.bz/mch/emtct/internal/db"
 )
 
 func TestApp_RetrievePatient(t *testing.T) {
 	patientId := "1111120"
-	r := RegisterHandlers()
+
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/{id}", app.RetrievePatient)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/%s", patientId), nil)
 	if err != nil {
@@ -34,11 +51,11 @@ func TestApp_RetrievePatient(t *testing.T) {
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
-	var patient models.Patient
+	var patient PatientResponse
 	_ = json.Unmarshal(body, &patient)
 	t.Logf("resp: %+v", patient)
-	if patient.Id != patientId {
-		t.Errorf("want: %s, got: %s", patientId, patient.Id)
+	if patient.Patient.Id != patientId {
+		t.Errorf("want: %s, got: %s", patientId, patient.Patient.Id)
 	}
 
 }
