@@ -2,15 +2,25 @@ package http
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/gorilla/mux"
 	"github.com/uris77/auth0"
+
+	"moh.gov.bz/mch/emtct/internal/config"
+	"moh.gov.bz/mch/emtct/internal/db"
+
+	_ "github.com/lib/pq"
 )
+
+type App struct {
+	Db *db.EmtctDb
+}
 
 func RegisterHandlers() *mux.Router {
 	jwkUrl := os.Getenv("EMTCT_JWK_URL")
@@ -21,11 +31,27 @@ func RegisterHandlers() *mux.Router {
 	// 60 tokens and a ttl of 24 hours.
 	auth0Client := auth0.NewAuth0(60, 518400)
 
+	//Todo: Read the database configuration from a file
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		log.WithError(err).Error("failed to open connection to database")
+		panic("failed to open connection to database")
+	}
+
+	app := App{Db: db}
+
 	r := mux.NewRouter()
 	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))
 
 	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods("GET")
 	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods("GET")
+	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).Methods("GET")
 
 	return r
 }
