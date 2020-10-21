@@ -1,44 +1,26 @@
-export const fetchPatient = async (patientId) => {
-  const basicInfo = {
-    firstName: 'Jane',
-    lastName: 'Doe',
-    dob: '2000-10-21',
-    ssn: '145134235',
-    patientId,
-    countryOfBirth: 'Belize',
-    district: 'Cayo',
-    community: 'Belmopan',
-    address: 'Corozal Street',
-    education: 'High School',
-    ethnicity: 'Ethnic Group',
-    hiv: false,
-  };
+export const fetchPatient = async (patientId, httpInstance) => {
+  const result = await httpInstance.get(`/patient/${patientId}`);
+  const data = result.data;
+
+  if (!data.patient) {
+    return null;
+  }
+  const basicInfo = data.patient;
   const nextOfKin = {
-    name: 'John Doe',
-    phoneNumber: '6632888',
+    name: basicInfo.nextOfKin,
+    phoneNumber: basicInfo.nextOfKinPhone,
   };
 
-  const obstetricHistory = [
-    { id: 1, date: '2010-02-21', event: 'Live Born' },
-    { id: 2, date: '2012-11-30', event: 'Miscarriage' },
-    { id: 3, date: '2014-10-01', event: 'Live Born' },
-  ];
+  const obstetricHistory = data.obstetricHistory;
 
-  const diagnosesPrePregnancy = [
-    { id: 1, date: '2008-10-21', name: 'common cold' },
-    { id: 2, date: '2009-04-10', name: 'rash' },
-    { id: 3, date: '2009-09-21', name: 'common cold' },
-    { id: 4, date: '2010-02-23', name: 'conjuctivitis' },
-  ];
+  const diagnosesPrePregnancy = data.diagnoses;
 
-  return new Promise((resolve) => {
-    return resolve({
-      basicInfo,
-      nextOfKin,
-      obstetricHistory,
-      diagnosesPrePregnancy,
-    });
-  });
+  return {
+    basicInfo,
+    nextOfKin,
+    obstetricHistory,
+    diagnosesPrePregnancy,
+  };
 };
 
 export const fetchCurrentPregnancy = (patientId) => {

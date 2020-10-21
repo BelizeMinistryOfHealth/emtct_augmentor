@@ -1,3 +1,4 @@
+import { useHttpApi } from './providers/HttpProvider';
 import { atom, selectorFamily } from 'recoil';
 import {
   fetchPatient,
@@ -19,7 +20,8 @@ export const patientAtom = atom({
 export const patientSelector = selectorFamily({
   key: 'getPatientAPI',
   get: (patientId) => async () => {
-    return await fetchPatient(patientId);
+    const { httpInstance } = useHttpApi();
+    return await fetchPatient(patientId, httpInstance);
   },
 });
 

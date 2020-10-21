@@ -1,3 +1,4 @@
+import { Box, Text } from 'grommet';
 import React from 'react';
 import { useRecoilValueLoadable } from 'recoil';
 import { patientSelector } from '../../../state';
@@ -17,29 +18,38 @@ const PatientSummary = (props) => {
       patient = contents;
       break;
     case 'hasError':
+      console.dir({ contents });
       return contents.message;
     case 'loading':
       return 'Loading....';
     default:
       return '';
   }
-  const {
-    basicInfo,
-    nextOfKin,
-    obstetricHistory,
-    diagnosesPrePregnancy,
-  } = patient;
+
+  if (patient) {
+    const {
+      basicInfo,
+      nextOfKin,
+      obstetricHistory,
+      diagnosesPrePregnancy,
+    } = patient;
+    return (
+      <Layout location={props.location} {...props}>
+        <ErrorBoundary>
+          <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
+          <ObstetricHistory obstetricHistory={obstetricHistory} />
+          <DiagnosisHistory
+            diagnosisHistory={diagnosesPrePregnancy}
+            caption={'Illnesses before Pregnancy'}
+          />
+        </ErrorBoundary>
+      </Layout>
+    );
+  }
   return (
-    <Layout location={props.location} {...props}>
-      <ErrorBoundary>
-        <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
-        <ObstetricHistory obstetricHistory={obstetricHistory} />
-        <DiagnosisHistory
-          diagnosisHistory={diagnosesPrePregnancy}
-          caption={'Illnesses before Pregnancy'}
-        />
-      </ErrorBoundary>
-    </Layout>
+    <Box gap={'medium'} pad={'medium'} justify={'center'} align={'center'}>
+      <Text size={'xlarge'}>No Patient Found!</Text>
+    </Box>
   );
 };
 

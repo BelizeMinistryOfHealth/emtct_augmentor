@@ -8,43 +8,48 @@ import Search from './components/Search/Search';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PatientSummary from './components/Patient/PatientSummary/PatientSummary.jsx';
 import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/CurrentPregnancy';
+import HttpApiProvider from './providers/HttpProvider';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
+  const [idToken, setIdToken] = React.useState();
+  const { REACT_APP_API_URL } = process.env;
 
-  // TODO: Remove this. It is here as a hack for getting a valid access token when we need to test the backend.
   React.useEffect(() => {
     if (isAuthenticated) {
       console.log('getting token');
       (async () => {
-        const idToken = await getIdTokenClaims({
-          audience: 'https://emtct-dev.us.auth0.com/userinfo',
-          scope: 'read:hiv',
-        });
-        console.dir({ idToken });
+        try {
+          const idToken = await getIdTokenClaims();
+          setIdToken(idToken.__raw);
+        } catch (e) {
+          console.error('error fetching token: ', e);
+        }
       })();
+    } else {
+      console.log('not authenticated');
     }
-    console.log('not authenticated');
-  }, [isAuthenticated, getIdTokenClaims]);
+  }, [isAuthenticated, getIdTokenClaims, setIdToken]);
 
   const fullTheme = !isAuthenticated;
 
-  if (isAuthenticated) {
+  if (isAuthenticated && idToken) {
     return (
       <Grommet theme={grommet} full={fullTheme}>
         <BrowserRouter>
           <Navbar />
-
-          <Main>
-            <Switch>
-              <Route
-                path={'/patient/:id/current_pregnancy'}
-                component={CurrentPregnancy}
-              />
-              <Route path={'/patient/:id'} component={PatientSummary} />
-              <Route path={'/'} component={Search} />
-            </Switch>
-          </Main>
+          <HttpApiProvider idToken={idToken} baseUrl={REACT_APP_API_URL}>
+            <Main>
+              <Switch>
+                <Route
+                  path={'/patient/:id/current_pregnancy'}
+                  component={CurrentPregnancy}
+                />
+                <Route path={'/patient/:id'} component={PatientSummary} />
+                <Route path={'/'} component={Search} />
+              </Switch>
+            </Main>
+          </HttpApiProvider>
         </BrowserRouter>
       </Grommet>
     );
