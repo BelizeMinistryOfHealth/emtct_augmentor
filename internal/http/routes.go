@@ -23,12 +23,17 @@ func TestAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 type PatientResponse struct {
-	Patient          models.Patient            `json:"patient"`
+	Patient          *models.Patient           `json:"patient"`
 	ObstetricHistory []models.ObstetricHistory `json:"obstetricHistory"`
 	Diagnoses        []models.Diagnosis        `json:"diagnoses"`
 }
 
 func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == "OPTIONS" {
+		return
+	}
+
 	vars := mux.Vars(r)
 	patientId := vars["id"]
 	patient, err := a.Db.FindPatientById(patientId)
@@ -49,8 +54,20 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WithFields(log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history")
 	}
+
+	if patient == nil {
+		w.Header().Add("Content-Type", "application/json")
+		emptyResponse := PatientResponse{
+			Patient:          nil,
+			ObstetricHistory: nil,
+			Diagnoses:        nil,
+		}
+		resp, _ := json.Marshal(emptyResponse)
+		fmt.Fprint(w, string(resp))
+		return
+	}
 	response := PatientResponse{
-		Patient:          *patient,
+		Patient:          patient,
 		ObstetricHistory: obstetricHistory,
 		Diagnoses:        diagnoses,
 	}
