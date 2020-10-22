@@ -94,11 +94,11 @@ func TestApp_FindCurrentPregnancy(t *testing.T) {
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
-	var pregnancy models.PregnancyVitals
+	var pregnancy PregnancyResponse
 	_ = json.Unmarshal(body, &pregnancy)
 	t.Logf("resp: %+v", pregnancy)
-	if pregnancy.PatientId != 1111120 {
-		t.Errorf("want: %d, got: %d", 1111120, pregnancy.PatientId)
+	if pregnancy.Vitals.PatientId != 1111120 {
+		t.Errorf("want: %d, got: %d", 1111120, pregnancy.Vitals.PatientId)
 	}
 }
 

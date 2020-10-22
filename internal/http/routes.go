@@ -81,6 +81,11 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(resp))
 }
 
+type PregnancyResponse struct {
+	Vitals    *models.PregnancyVitals `json:"vitals"`
+	Diagnoses []models.Diagnosis      `json:"diagnoses"`
+}
+
 func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -95,9 +100,30 @@ func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	resp, err := json.Marshal(pregnancy)
+
+	diagnoses, err := a.Db.FindPregnancyDiagnoses(patientId)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId, "pregnancy": pregnancy}).
+			WithError(err).
+			Error("error fetching diagnoses for a pregnancy")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		w.Header().Add("Content-Type", "application/json")
+		r, _ := json.Marshal(nil)
+		fmt.Fprintf(w, string(r))
+	}
+
+	response := PregnancyResponse{
+		Vitals:    pregnancy,
+		Diagnoses: diagnoses,
+	}
+
+	resp, err := json.Marshal(response)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId, "pregnancy": pregnancy, "diagnoses": diagnoses}).
 			WithError(err).
 			Error("error marshalling pregnancy")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

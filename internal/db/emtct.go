@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"moh.gov.bz/mch/emtct/internal/config"
 	"moh.gov.bz/mch/emtct/internal/models"
@@ -84,7 +85,7 @@ func (d *EmtctDb) FindDiagnoses(patientId string) ([]models.Diagnosis, error) {
 	var diagnoses []models.Diagnosis
 	rows, err := d.DB.Query(stmt, patientId)
 	if err != nil {
-		return nil, fmt.Errorf("error execcuting query for extracting diagnoses: %+v", err)
+		return nil, fmt.Errorf("error executing query for extracting diagnoses: %+v", err)
 	}
 
 	defer rows.Close()
@@ -146,4 +147,29 @@ age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks FROM
 
 	p := models.FindCurrentPregnancy(pregnancies)
 	return p, nil
+}
+
+func (d *EmtctDb) FindPregnancyDiagnoses(patientId string) ([]models.Diagnosis, error) {
+	pregnancy, err := d.FindCurrentPregnancy(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching the current pregnancy when retrieving the diagnoses: %+v", err)
+	}
+	if pregnancy == nil {
+		return []models.Diagnosis{}, nil
+	}
+	edd := pregnancy.Edd
+
+	diagnoses, err := d.FindDiagnoses(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching diagnoses for the current pregnancy: %+v", err)
+	}
+
+	var pregnancyDiagnoses []models.Diagnosis
+	for _, v := range diagnoses {
+		if v.Date.Before(edd) && v.Date.After(edd.Add(-time.Hour*24*30*9)) {
+			pregnancyDiagnoses = append(pregnancyDiagnoses, v)
+		}
+	}
+
+	return pregnancyDiagnoses, nil
 }
