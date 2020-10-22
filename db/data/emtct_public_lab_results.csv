@@ -1,0 +1,8 @@
+id,patient_id,test_result,test_name,date_sample_taken,result_date
+1,1111120,Negative,Hb,2020-09-10,2020-09-14
+2,1111120,Negative,Urinalysis,2020-09-10,2020-09-14
+3,1111120,Negative,Hepatitis B,2020-06-30,2020-07-01
+4,1111120,Negative,HIV,2020-06-30,2020-07-03
+5,1111120,120,CD4 Count,2020-06-30,2020-07-03
+6,1111120,0,Viral Load,2020-06-30,2020-07-03
+7,1111120,Negative,Syphilis,2020-06-30,2020-07-03
