@@ -60,3 +60,26 @@ func FindCurrentPregnancy(ps []PregnancyVitals) *PregnancyVitals {
 	}
 	return nil
 }
+
+type LabResult struct {
+	Id              int       `json:"id"`
+	PatientId       int       `json:"patientId"`
+	TestResult      string    `json:"testResult"`
+	TestName        string    `json:"testName"`
+	DateSampleTaken time.Time `json:"dateSampleTaken"`
+	ResultDate      time.Time `json:"resultDate"`
+}
+
+// FindLabResultsBetweenDates finds lab results between a range of two dates.
+// It is specifically for finding lab results during a pregnancy period.
+// The first date should be the `LMP` and the last date should be now.
+func FindLabResultsBetweenDates(labResults []LabResult, lmp time.Time) []LabResult {
+	var results []LabResult
+	for _, l := range labResults {
+		if l.DateSampleTaken.After(lmp) && l.DateSampleTaken.Before(lmp.Add(time.Hour*24*30*9)) {
+			results = append(results, l)
+		}
+	}
+
+	return results
+}

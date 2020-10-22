@@ -132,3 +132,31 @@ func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprint(w, string(resp))
 }
+
+func (a *App) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	patientId := vars["id"]
+	labResults, err := a.Db.FindPregnancyLabResults(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId}).
+			WithError(err).
+			Error("error while retrieving lab results")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	results, err := json.Marshal(labResults)
+	if err != nil {
+		log.WithFields(log.Fields{"labResults": labResults, "patientId": patientId}).
+			WithError(err).
+			Error("error marshalling lab results for a pregnancy")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprintf(w, string(results))
+}

@@ -119,9 +119,9 @@ func TestApp_FindCurrentPregnancy_WhenPatientDoesNotExist(t *testing.T) {
 	app := App{Db: db}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/patient/{id}", app.FindCurrentPregnancy)
+	r.HandleFunc("/patient/{id}/currentPregnancy", app.FindCurrentPregnancy)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/%s", patientId), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/%s/currentPregnancy", patientId), nil)
 	if err != nil {
 		t.Fatalf("error creating request: %+v", err)
 	}
@@ -142,5 +142,51 @@ func TestApp_FindCurrentPregnancy_WhenPatientDoesNotExist(t *testing.T) {
 	t.Logf("resp: %+v", pregnancy)
 	if pregnancy != nil {
 		t.Errorf("want: nil, got: %v", pregnancy)
+	}
+}
+
+func TestApp_FindPregnancyLabResults(t *testing.T) {
+	patientId := "1111120"
+
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", app.FindPregnancyLabResults)
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/%s/currentPregnancy/labResults", patientId), nil)
+	if err != nil {
+		t.Fatalf("error creating request: %+v", err)
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status code error, want 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var labResults []models.LabResult
+	err = json.Unmarshal(body, &labResults)
+	if err != nil {
+		t.Fatalf("failed to unmarshal lab results: %+v", err)
+	}
+
+	if len(labResults) == 0 {
+		t.Error("expected more than one lab result but got 0")
 	}
 }

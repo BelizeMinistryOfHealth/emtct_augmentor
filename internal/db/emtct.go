@@ -173,3 +173,41 @@ func (d *EmtctDb) FindPregnancyDiagnoses(patientId string) ([]models.Diagnosis, 
 
 	return pregnancyDiagnoses, nil
 }
+
+func (d *EmtctDb) FindPregnancyLabResults(patientId string) ([]models.LabResult, error) {
+	pregnancy, err := d.FindCurrentPregnancy(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching the current pregnancy")
+	}
+	if pregnancy == nil {
+		return []models.LabResult{}, nil
+	}
+	lmp := pregnancy.Lmp
+
+	stmt := `SELECT id, patient_id, test_result, test_name, date_sample_taken, result_date FROM lab_results WHERE patient_id=$1 AND result_date IS NOT NULL`
+	var labResults []models.LabResult
+	id, _ := strconv.Atoi(patientId)
+	rows, err := d.DB.Query(stmt, id)
+	if err != nil {
+		return nil, fmt.Errorf("error querying database for lab results: %+v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var labResult models.LabResult
+		err := rows.Scan(
+			&labResult.Id,
+			&labResult.PatientId,
+			&labResult.TestResult,
+			&labResult.TestName,
+			&labResult.DateSampleTaken,
+			&labResult.ResultDate,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning columns for the lab results: %+v", err)
+		}
+		labResults = append(labResults, labResult)
+	}
+
+	return models.FindLabResultsBetweenDates(labResults, lmp), nil
+}

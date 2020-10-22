@@ -82,3 +82,25 @@ func TestEmtctDb_FindPregnancyDiagnoses(t *testing.T) {
 
 	t.Logf("diagnoses: %+v", diagnoses)
 }
+
+func TestEmtctDb_FindPregnancyLabResults(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("failed to open db connection %+v", err)
+	}
+	patientId := "1111120"
+
+	labResults, err := db.FindPregnancyLabResults(patientId)
+	if err != nil {
+		t.Fatalf("error retrieving lab results from the database: %+v", err)
+	}
+	if len(labResults) == 0 {
+		t.Errorf("expected to have at least one lab result")
+	}
+}
