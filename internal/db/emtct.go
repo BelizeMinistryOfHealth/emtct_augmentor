@@ -108,7 +108,7 @@ func (d *EmtctDb) FindDiagnoses(patientId string) ([]models.Diagnosis, error) {
 // FindCurrentPregnancy returns the current pregnancy for the specified patient.
 // The pregnancy is deemed current if the EDD is in the future.
 func (d *EmtctDb) FindCurrentPregnancy(patientId string) (*models.PregnancyVitals, error) {
-	stmt := `SELECT id, patient_id, gestational_age, para, cs, abortive_outcome, diagnosis_date, planned,
+	stmt := `SELECT id, patient_id, gestational_age, para, cs, COALESCE(abortive_outcome, '') AS a_outcome, diagnosis_date, planned,
 age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks FROM pregnancies WHERE patient_id=$1`
 	var pregnancies []models.PregnancyVitals
 	id, err := strconv.Atoi(patientId)

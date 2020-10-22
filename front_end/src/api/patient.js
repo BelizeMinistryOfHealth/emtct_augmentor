@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const fetchPatient = async (patientId, httpInstance) => {
   const result = await httpInstance.get(`/patient/${patientId}`);
   const data = result.data;
@@ -23,57 +25,46 @@ export const fetchPatient = async (patientId, httpInstance) => {
   };
 };
 
-export const fetchCurrentPregnancy = (patientId) => {
-  const basicInfo = {
-    firstName: 'Jane',
-    lastName: 'Doe',
-    dob: '2000-10-21',
-    ssn: '145134235',
-    patientId,
-    countryOfBirth: 'Belize',
-    district: 'Cayo',
-    community: 'Belmopan',
-    address: 'Corozal Street',
-    education: 'High School',
-    ethnicity: 'Ethnic Group',
-    hiv: false,
-  };
-
+export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
+  const patientsData = await httpInstance.get(`/patient/${patientId}`);
+  if (!patientsData.data) {
+    return null;
+  }
+  const patient = patientsData.data;
+  const basicInfo = patient.patient;
   const nextOfKin = {
-    name: 'John Doe',
-    phoneNumber: '6632888',
+    name: basicInfo.nextOfKin,
+    phoneNumber: basicInfo.nextOfKinPhone,
   };
+
+  const pregnancyData = await httpInstance.get(
+    `/patient/${patientId}/currentPregnancy`
+  );
+  if (!pregnancyData.data) {
+    return null;
+  }
+
+  const vitals = pregnancyData.data.vitals;
+  if (_.isEmpty(vitals.abortiveOutcome.trim())) {
+    vitals.abortiveOutcome = 'N/A';
+  }
+
   const prenatalCareInfo = {
-    dateOfBooking: '2020-07-01',
-    gestationAge: 7,
-    prenatalCareProvider: 'Public',
-    totalChecks: 4,
+    dateOfBooking: vitals.dateOfBooking,
+    gestationAge: vitals.gestationalAge,
+    prenatalCareProvider: vitals.prenatalCareProvider,
+    totalChecks: vitals.totalChecks,
   };
 
-  const pregnancyDiagnoses = [{ id: 8, date: '2020-07-21', name: 'nausea' }];
+  const pregnancyDiagnoses = pregnancyData.data.diagnoses ?? [];
 
-  const currentPregnancy = {
-    encounterId: 2121,
-    vitals: {
-      gestationalAge: 4,
-      para: 10,
-      cs: false,
-      abortiveOutcome: 'None',
-      diagnosisDate: '2020-06-15',
-      planned: false,
-      ageAtLmp: 19,
-      LMP: '2020-04-21',
-      EDD: '2021-01-21',
-    },
+  return {
+    vitals,
     basicInfo,
     nextOfKin,
     prenatalCareInfo,
     pregnancyDiagnoses,
   };
-
-  return new Promise((resolve) => {
-    resolve(currentPregnancy);
-  });
 };
 
 export const fetchArvsTreatment = (patientId, encounterId) => {

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -37,20 +36,20 @@ type Diagnosis struct {
 }
 
 type PregnancyVitals struct {
-	Id                   int            `json:"id"`
-	PatientId            int            `json:"patientId"`
-	GestationalAge       int            `json:"gestationalAge"`
-	Para                 int            `json:"para"`
-	Cs                   bool           `json:"cs"`
-	AbortiveOutcome      sql.NullString `json:"abortiveOutcome"`
-	DiagnosisDate        time.Time      `json:"diagnosisDate"`
-	Planned              bool           `json:"planned"`
-	AgeAtLmp             int            `json:"ageAtLmp"`
-	Lmp                  time.Time      `json:"lmp"`
-	Edd                  time.Time      `json:"edd"`
-	DateOfBooking        time.Time      `json:"dateOfBooking"`
-	PrenatalCareProvider string         `json:"prenatalCareProvider"`
-	TotalChecks          int            `json:"totalChecks"`
+	Id                   int       `json:"id"`
+	PatientId            int       `json:"patientId"`
+	GestationalAge       int       `json:"gestationalAge"`
+	Para                 int       `json:"para"`
+	Cs                   bool      `json:"cs"`
+	AbortiveOutcome      string    `json:"abortiveOutcome"`
+	DiagnosisDate        time.Time `json:"diagnosisDate"`
+	Planned              bool      `json:"planned"`
+	AgeAtLmp             int       `json:"ageAtLmp"`
+	Lmp                  time.Time `json:"lmp"`
+	Edd                  time.Time `json:"edd"`
+	DateOfBooking        time.Time `json:"dateOfBooking"`
+	PrenatalCareProvider string    `json:"prenatalCareProvider"`
+	TotalChecks          int       `json:"totalChecks"`
 }
 
 func FindCurrentPregnancy(ps []PregnancyVitals) *PregnancyVitals {

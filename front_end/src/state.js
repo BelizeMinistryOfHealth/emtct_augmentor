@@ -33,7 +33,8 @@ export const currentPregnancyAtom = atom({
 export const currentPregnancySelector = selectorFamily({
   key: 'getCurrentPregnancyAPI',
   get: (patientId) => async () => {
-    return await fetchCurrentPregnancy(patientId);
+    const { httpInstance } = useHttpApi();
+    return await fetchCurrentPregnancy(patientId, httpInstance);
   },
 });
 

@@ -65,10 +65,10 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
             {vitals.ageAtLmp}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {format(parseISO(vitals.LMP), 'dd LLL yyyy')}
+            {format(parseISO(vitals.lmp), 'dd LLL yyyy')}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {format(parseISO(vitals.EDD), 'dd LLL yyyy')}
+            {format(parseISO(vitals.edd), 'dd LLL yyyy')}
           </Text>
         </Box>
       </Box>
