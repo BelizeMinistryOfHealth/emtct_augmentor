@@ -52,6 +52,7 @@ func RegisterHandlers() *mux.Router {
 	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods("GET")
 	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods("GET")
 	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).Methods("GET", "OPTIONS")
 
 	return r
 }

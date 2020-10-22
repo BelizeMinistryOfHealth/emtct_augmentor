@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"moh.gov.bz/mch/emtct/internal/config"
 	"moh.gov.bz/mch/emtct/internal/models"
@@ -101,4 +102,48 @@ func (d *EmtctDb) FindDiagnoses(patientId string) ([]models.Diagnosis, error) {
 		diagnoses = append(diagnoses, diagnosis)
 	}
 	return diagnoses, nil
+}
+
+// FindCurrentPregnancy returns the current pregnancy for the specified patient.
+// The pregnancy is deemed current if the EDD is in the future.
+func (d *EmtctDb) FindCurrentPregnancy(patientId string) (*models.PregnancyVitals, error) {
+	stmt := `SELECT id, patient_id, gestational_age, para, cs, abortive_outcome, diagnosis_date, planned,
+age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks FROM pregnancies WHERE patient_id=$1`
+	var pregnancies []models.PregnancyVitals
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error: patient id is not a number: %+v", err)
+	}
+	rows, err := d.DB.Query(stmt, id)
+	if err != nil {
+		return nil, fmt.Errorf("error executing query for extracting the current pregnancy: %+v", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var p models.PregnancyVitals
+		err := rows.Scan(
+			&p.Id,
+			&p.PatientId,
+			&p.GestationalAge,
+			&p.Para,
+			&p.Cs,
+			&p.AbortiveOutcome,
+			&p.DiagnosisDate,
+			&p.Planned,
+			&p.AgeAtLmp,
+			&p.Lmp,
+			&p.Edd,
+			&p.DateOfBooking,
+			&p.PrenatalCareProvider,
+			&p.TotalChecks)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan pregnancy for patient(%s): %+v", patientId, err)
+		}
+		pregnancies = append(pregnancies, p)
+	}
+
+	p := models.FindCurrentPregnancy(pregnancies)
+	return p, nil
 }

@@ -36,6 +36,8 @@ func EnableCors() Middleware {
 func VerifyToken(jwkUrl, aud, iss string, auth0Client auth0.Auth0) Middleware {
 	return func(f http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			// OPTIONS request might not include the Authorization header.
+			// We don't need to verify a token for OPTIONS.
 			if r.Method == "OPTIONS" {
 				f(w, r)
 				return

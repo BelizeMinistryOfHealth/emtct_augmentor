@@ -80,3 +80,29 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprint(w, string(resp))
 }
+
+func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	vars := mux.Vars(r)
+	patientId := vars["id"]
+	pregnancy, err := a.Db.FindCurrentPregnancy(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId}).
+			WithError(err).
+			Error("error retrieving current pregnancy from database")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	resp, err := json.Marshal(pregnancy)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId, "pregnancy": pregnancy}).
+			WithError(err).
+			Error("error marshalling pregnancy")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprint(w, string(resp))
+}
