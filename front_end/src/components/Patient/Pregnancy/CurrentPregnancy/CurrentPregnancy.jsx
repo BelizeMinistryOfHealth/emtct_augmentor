@@ -58,7 +58,7 @@ const Arvs = ({ currentPregnancy }) => {
 
 const LabTests = ({ patientId, encounterId }) => {
   const { state, contents } = useRecoilValueLoadable(
-    pregnancyLabResultsSelector(patientId, encounterId)
+    pregnancyLabResultsSelector(patientId)
   );
 
   switch (state) {

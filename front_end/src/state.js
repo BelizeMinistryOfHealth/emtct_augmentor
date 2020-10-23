@@ -57,7 +57,8 @@ export const pregnancyLabResultsAtom = atom({
 
 export const pregnancyLabResultsSelector = selectorFamily({
   key: 'pregnancyLabResultsAPI',
-  get: (patientId, encounterId) => async () => {
-    return await fetchPregnancyLabResults(patientId, encounterId);
+  get: (patientId) => async () => {
+    const { httpInstance } = useHttpApi();
+    return await fetchPregnancyLabResults(patientId, httpInstance);
   },
 });
