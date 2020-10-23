@@ -1,0 +1,3 @@
+id,patient_id,reason,comments,created_at,updated_at,created_by,updated_by,date_of_visit
+1,1111120,Random,Patient's vitals were normal.,2020-09-29,,nurse@health.gov.bz,,2020-09-29
+2,1111120,Periodic,All vitals were normal. Patient was given information on breast feeding.,2020-10-16,,nurse@heslth.gov.bz,,2020-10-16
