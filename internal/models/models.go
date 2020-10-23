@@ -84,7 +84,7 @@ func FindLabResultsBetweenDates(labResults []LabResult, lmp time.Time) []LabResu
 }
 
 type HomeVisit struct {
-	Id          int        `json:"id"`
+	Id          string     `json:"id"`
 	PatientId   int        `json:"patientId"`
 	Reason      string     `json:"reason"`
 	Comments    string     `json:"comments"`

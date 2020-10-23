@@ -56,6 +56,31 @@ func (d *EmtctDb) FindPatientById(id string) (*models.Patient, error) {
 
 }
 
+func (d *EmtctDb) CreatePatient(p models.Patient) error {
+	stmt := `INSERT INTO patients (id, first_name, middle_name, last_name, dob, ssn, country_of_birth, district_address, community_address, education, ethnicity, hiv, next_of_kin, next_of_kin_phone) 
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+	_, err := d.DB.Exec(stmt,
+		p.Id,
+		p.FirstName,
+		p.MiddleName,
+		p.LastName,
+		p.Dob,
+		p.Ssn,
+		p.CountryOfBirth,
+		p.DistrictAddress,
+		p.CommunityAddress,
+		p.Education,
+		p.Ethnicity,
+		p.Hiv,
+		p.NextOfKin,
+		p.NextOfKinPhone,
+	)
+	if err != nil {
+		return fmt.Errorf("error inserting patient: %+v", err)
+	}
+	return nil
+}
+
 func (d *EmtctDb) FindObstetricHistory(patientId string) ([]models.ObstetricHistory, error) {
 	stmt := `SELECT id, patient_id, event_date, event_name FROM obstetric_history WHERE patient_id=$1`
 	var obstetricHistory []models.ObstetricHistory
@@ -78,6 +103,19 @@ func (d *EmtctDb) FindObstetricHistory(patientId string) ([]models.ObstetricHist
 		obstetricHistory = append(obstetricHistory, history)
 	}
 	return obstetricHistory, nil
+}
+
+func (d *EmtctDb) CreateObstetricHistory(h models.ObstetricHistory) error {
+	stmt := `INSERT INTO obstetric_history (id, patient_id, event_date, event_name) VALUES($1, $2, $3, $4)`
+	_, err := d.DB.Exec(stmt,
+		h.Id,
+		h.PatientId,
+		h.Date,
+		h.ObstetricEvent)
+	if err != nil {
+		return fmt.Errorf("error inserting obstetric history: %+v", err)
+	}
+	return nil
 }
 
 func (d *EmtctDb) FindDiagnoses(patientId string) ([]models.Diagnosis, error) {
@@ -103,6 +141,19 @@ func (d *EmtctDb) FindDiagnoses(patientId string) ([]models.Diagnosis, error) {
 		diagnoses = append(diagnoses, diagnosis)
 	}
 	return diagnoses, nil
+}
+
+func (d *EmtctDb) CreateDiagnosis(di models.Diagnosis) error {
+	stmt := `INSERT INTO diagnoses (id, patient_id, diagnosis_date, diagnosis_name) VALUES($1, $2, $3, $4)`
+	_, err := d.DB.Exec(stmt,
+		di.Id,
+		di.PatientId,
+		di.Date,
+		di.Name)
+	if err != nil {
+		return fmt.Errorf("error inserting diagnosis: %+v", err)
+	}
+	return nil
 }
 
 // FindCurrentPregnancy returns the current pregnancy for the specified patient.
@@ -147,6 +198,32 @@ age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks FROM
 
 	p := models.FindCurrentPregnancy(pregnancies)
 	return p, nil
+}
+
+func (d *EmtctDb) CreatePregnancy(p models.PregnancyVitals) error {
+	stmt := `INSERT INTO pregnancies 
+(id, patient_id, gestational_age, para, cs, abortive_outcome, diagnosis_date, planned, age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+
+	_, err := d.DB.Exec(stmt,
+		p.Id,
+		p.PatientId,
+		p.GestationalAge,
+		p.Para,
+		p.Cs,
+		p.AbortiveOutcome,
+		p.DiagnosisDate,
+		p.Planned,
+		p.AgeAtLmp,
+		p.Lmp,
+		p.Edd,
+		p.DateOfBooking,
+		p.PrenatalCareProvider,
+		p.TotalChecks)
+	if err != nil {
+		return fmt.Errorf("error inserting pregnancy: %+v", err)
+	}
+	return nil
 }
 
 func (d *EmtctDb) FindPregnancyDiagnoses(patientId string) ([]models.Diagnosis, error) {
@@ -212,6 +289,22 @@ func (d *EmtctDb) FindPregnancyLabResults(patientId string) ([]models.LabResult,
 	return models.FindLabResultsBetweenDates(labResults, lmp), nil
 }
 
+func (d *EmtctDb) CreateLabResult(l models.LabResult) error {
+	stmt := `INSERT INTO lab_results (id, patient_id, test_result, test_name, date_sample_taken, result_date)
+VALUES($1, $2, $3, $4, $5, $6)`
+	_, err := d.DB.Exec(stmt,
+		l.Id,
+		l.PatientId,
+		l.TestResult,
+		l.TestName,
+		l.DateSampleTaken,
+		l.ResultDate)
+	if err != nil {
+		return fmt.Errorf("error inserting lab result: %+v", err)
+	}
+	return nil
+}
+
 func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisit, error) {
 	id, err := strconv.Atoi(patientId)
 	if err != nil {
@@ -272,4 +365,13 @@ func (d *EmtctDb) FindHomeVisitById(id string) (*models.HomeVisit, error) {
 	default:
 		return nil, fmt.Errorf("error scanning home visit row: %+v", err)
 	}
+}
+
+func (d *EmtctDb) CreateHomeVisit(v models.HomeVisit) error {
+	stmt := `INSERT INTO home_visit (id, patient_id, reason, comments, date_of_visit, created_at, created_by) VALUES($1, $2, $3, $4, $5, $6, $7)`
+	_, err := d.DB.Exec(stmt, v.Id, v.PatientId, v.Reason, v.Comments, v.DateOfVisit, v.CreatedAt, v.CreatedBy)
+	if err != nil {
+		return fmt.Errorf("error creating a home visit: %+v", err)
+	}
+	return nil
 }
