@@ -128,3 +128,26 @@ func TestEmtctDb_FindHomeVisitsByPatientId(t *testing.T) {
 	}
 	t.Logf("Home visits: %+v", homeVisits)
 }
+
+func TestEmtctDb_FindHomeVisitById(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("failed to open db connection %+v", err)
+	}
+	homeVisitId := "1"
+
+	homeVisit, err := db.FindHomeVisitById(homeVisitId)
+	if err != nil {
+		t.Fatalf("error querying database: %+v", err)
+	}
+	if homeVisit == nil {
+		t.Error("expected a home visit but got nil")
+	}
+
+}

@@ -236,3 +236,43 @@ func TestApp_FindHomeVisitsByPatient(t *testing.T) {
 		t.Error("expected more than one home visit, but got 0")
 	}
 }
+
+func TestApp_FindHomeVisitById(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", app.FindHomeVisitById)
+
+	homeVisitId := "1"
+	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/homeVisit/%s", homeVisitId), nil)
+	if err != nil {
+		t.Fatalf("error creating request: %+v", err)
+	}
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status code error, want 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var homeVisit models.HomeVisit
+	err = json.Unmarshal(body, &homeVisit)
+	if err != nil {
+		t.Fatalf("failed to unmarshal home visit: %v", err)
+	}
+
+}

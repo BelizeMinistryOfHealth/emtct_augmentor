@@ -189,3 +189,32 @@ func (a *App) FindHomeVisitsByPatient(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, string(results))
 }
+
+func (a *App) FindHomeVisitById(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	id := vars["homeVisitId"]
+	homeVisit, err := a.Db.FindHomeVisitById(id)
+	if err != nil {
+		log.WithFields(log.Fields{"homeVisitId": id}).
+			WithError(err).
+			Error("error retrieving home visit from the database")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	result, err := json.Marshal(homeVisit)
+	if err != nil {
+		log.WithFields(log.Fields{"homeVisit": homeVisit, "homeVisitId": id}).
+			WithError(err).
+			Error("failed to marshal home visit")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprintf(w, string(result))
+}

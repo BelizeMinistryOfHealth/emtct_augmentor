@@ -55,6 +55,7 @@ func RegisterHandlers() *mux.Router {
 	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindPregnancyLabResults)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.FindHomeVisitById)).Methods("GET", "OPTIONS")
 
 	return r
 }

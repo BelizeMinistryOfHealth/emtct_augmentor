@@ -247,3 +247,34 @@ func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisi
 	}
 	return homeVisits, nil
 }
+
+func (d *EmtctDb) FindHomeVisitById(id string) (*models.HomeVisit, error) {
+	visitId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("the id is not a valid number: %+v", err)
+	}
+
+	stmt := `SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by FROM home_visit WHERE id=$1`
+	var homeVisit models.HomeVisit
+	row := d.DB.QueryRow(stmt, visitId)
+	err = row.Scan(
+		&homeVisit.Id,
+		&homeVisit.PatientId,
+		&homeVisit.Reason,
+		&homeVisit.Comments,
+		&homeVisit.DateOfVisit,
+		&homeVisit.CreatedAt,
+		&homeVisit.UpdatedBy,
+		&homeVisit.CreatedBy,
+		&homeVisit.UpdatedBy,
+	)
+
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &homeVisit, nil
+	default:
+		return nil, fmt.Errorf("error scanning home visit row: %+v", err)
+	}
+}
