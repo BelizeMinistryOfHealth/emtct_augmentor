@@ -211,3 +211,39 @@ func (d *EmtctDb) FindPregnancyLabResults(patientId string) ([]models.LabResult,
 
 	return models.FindLabResultsBetweenDates(labResults, lmp), nil
 }
+
+func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisit, error) {
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		return []models.HomeVisit{}, fmt.Errorf("patientId is not a number")
+	}
+
+	stmt := `SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by FROM home_visit WHERE patient_id=$1`
+	rows, err := d.DB.Query(stmt, id)
+	if err != nil {
+		return nil, fmt.Errorf("error executing query for retrieving home visits: %+v", err)
+	}
+	defer rows.Close()
+
+	var homeVisits []models.HomeVisit
+	for rows.Next() {
+		var homeVisit models.HomeVisit
+		err := rows.Scan(
+			&homeVisit.Id,
+			&homeVisit.PatientId,
+			&homeVisit.Reason,
+			&homeVisit.Comments,
+			&homeVisit.DateOfVisit,
+			&homeVisit.CreatedAt,
+			&homeVisit.UpdatedAt,
+			&homeVisit.CreatedBy,
+			&homeVisit.UpdatedBy,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning a home visit row: %+v", err)
+		}
+
+		homeVisits = append(homeVisits, homeVisit)
+	}
+	return homeVisits, nil
+}

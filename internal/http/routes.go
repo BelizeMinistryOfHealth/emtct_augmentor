@@ -160,3 +160,32 @@ func (a *App) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, string(results))
 }
+
+func (a *App) FindHomeVisitsByPatient(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	patientId := vars["id"]
+	homeVisits, err := a.Db.FindHomeVisitsByPatientId(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId}).
+			WithError(err).
+			Error("database error while retrieving home visits")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	results, err := json.Marshal(homeVisits)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId, "homeVisits": homeVisits}).
+			WithError(err).
+			Error("error marshalling the home visits results")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprintf(w, string(results))
+}

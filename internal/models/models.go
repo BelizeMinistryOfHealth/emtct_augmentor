@@ -72,7 +72,6 @@ type LabResult struct {
 
 // FindLabResultsBetweenDates finds lab results between a range of two dates.
 // It is specifically for finding lab results during a pregnancy period.
-// The first date should be the `LMP` and the last date should be now.
 func FindLabResultsBetweenDates(labResults []LabResult, lmp time.Time) []LabResult {
 	var results []LabResult
 	for _, l := range labResults {
@@ -82,4 +81,16 @@ func FindLabResultsBetweenDates(labResults []LabResult, lmp time.Time) []LabResu
 	}
 
 	return results
+}
+
+type HomeVisit struct {
+	Id          int        `json:"id"`
+	PatientId   int        `json:"patientId"`
+	Reason      string     `json:"reason"`
+	Comments    string     `json:"comments"`
+	DateOfVisit time.Time  `json:"dateOfVisit"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   *time.Time `json:"updatedAt"`
+	CreatedBy   string     `json:"createdBy"`
+	UpdatedBy   *string    `json:"updatedBy"`
 }

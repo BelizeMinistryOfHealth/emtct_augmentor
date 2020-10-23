@@ -190,3 +190,49 @@ func TestApp_FindPregnancyLabResults(t *testing.T) {
 		t.Error("expected more than one lab result but got 0")
 	}
 }
+
+func TestApp_FindHomeVisitsByPatient(t *testing.T) {
+	patientId := "1111120"
+
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/{id}/homeVisits", app.FindPregnancyLabResults)
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/patient/%s/homeVisits", patientId), nil)
+	if err != nil {
+		t.Fatalf("error creating request: %+v", err)
+	}
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status code error, want 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var homeVisits []models.HomeVisit
+	err = json.Unmarshal(body, &homeVisits)
+	if err != nil {
+		t.Fatalf("failed to unmarshal home visits: %+v", err)
+	}
+
+	if len(homeVisits) == 0 {
+		t.Error("expected more than one home visit, but got 0")
+	}
+}

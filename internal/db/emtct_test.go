@@ -104,3 +104,27 @@ func TestEmtctDb_FindPregnancyLabResults(t *testing.T) {
 		t.Errorf("expected to have at least one lab result")
 	}
 }
+
+func TestEmtctDb_FindHomeVisitsByPatientId(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("failed to open db connection %+v", err)
+	}
+	patientId := "1111120"
+
+	homeVisits, err := db.FindHomeVisitsByPatientId(patientId)
+	if err != nil {
+		t.Fatalf("error querying database for home visits: %+v", err)
+	}
+
+	if len(homeVisits) == 0 {
+		t.Errorf("expected at least one home visit, but got 0")
+	}
+	t.Logf("Home visits: %+v", homeVisits)
+}
