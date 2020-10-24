@@ -375,3 +375,20 @@ func (d *EmtctDb) CreateHomeVisit(v models.HomeVisit) error {
 	}
 	return nil
 }
+
+func (d *EmtctDb) EditHomeVisit(v models.HomeVisit) (*models.HomeVisit, error) {
+	stmt := `UPDATE home_visit SET reason=$1, comments=$2, date_of_visit=$3, updated_by=$4, updated_at=$5 WHERE id=$6`
+	updateddAt := time.Now()
+	_, err := d.DB.Exec(stmt,
+		v.Reason,
+		v.Comments,
+		v.DateOfVisit,
+		v.UpdatedBy,
+		updateddAt,
+		v.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error updating homve visit in database: %+v", err)
+	}
+	v.UpdatedAt = &updateddAt
+	return &v, nil
+}

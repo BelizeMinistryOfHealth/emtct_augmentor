@@ -32,6 +32,10 @@ func EnableCors() Middleware {
 	}
 }
 
+type JwtToken struct {
+	Email string
+}
+
 // VerifyToken is a middleware that verifies an auth0 token.
 func VerifyToken(jwkUrl, aud, iss string, auth0Client auth0.Auth0) Middleware {
 	return func(f http.HandlerFunc) http.HandlerFunc {

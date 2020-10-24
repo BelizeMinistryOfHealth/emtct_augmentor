@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -313,7 +315,7 @@ func TestApp_FindHomeVisitById(t *testing.T) {
 	app := App{Db: db}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/patient/homeVisit/{homeVisitId}", app.FindHomeVisitById)
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", app.HomeVisitApi)
 
 	patientId, _ := strconv.Atoi(fixtures.PatientIds[0])
 	h := models.HomeVisit{
@@ -354,5 +356,81 @@ func TestApp_FindHomeVisitById(t *testing.T) {
 	if len(homeVisit.Id) == 0 {
 		t.Errorf("expected a homeVisit")
 	}
+}
 
+func TestApp_EditHomeVisit(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	// Configure the router
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", app.HomeVisitApi)
+	patientId, _ := strconv.Atoi(fixtures.PatientIds[0])
+
+	// Create Home Visit For Testing
+	h := models.HomeVisit{
+		Id:          uuid.New().String(),
+		PatientId:   patientId,
+		Reason:      "Test",
+		Comments:    "Test",
+		DateOfVisit: time.Now(),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   nil,
+		CreatedBy:   "nurse@health.gov.bz",
+		UpdatedBy:   nil,
+	}
+	homeVisitId := h.Id
+	app.Db.CreateHomeVisit(h)
+	homeVisitRequest := HomeVisitRequest{
+		Reason:      "Edited Reason",
+		Comments:    "Edited Comments",
+		DateOfVisit: h.DateOfVisit,
+	}
+	body, err := json.Marshal(homeVisitRequest)
+	if err != nil {
+		t.Fatalf("error marshalling request: %+v", err)
+	}
+
+	// Create the PUT Request
+	req, err := http.NewRequest("PUT", fmt.Sprintf("/patient/homeVisit/%s", homeVisitId), bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("error creating request: %+v", err)
+	}
+	w := httptest.NewRecorder()
+
+	// Configure the jwt token for testing
+	jwtToken := JwtToken{
+		Email: "nurse@health.gov.bz",
+	}
+	ctx := context.WithValue(req.Context(), "user", jwtToken)
+	req = req.WithContext(ctx)
+	r.ServeHTTP(w, req)
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status code error, want 200, got %d", resp.StatusCode)
+	}
+
+	// Unmarshal the response into the HomeVisit model
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var homeVisit models.HomeVisit
+	err = json.Unmarshal(respBytes, &homeVisit)
+	if err != nil {
+		t.Fatalf("failed to unmarshal home visit: %v", err)
+	}
+
+	if homeVisit.Reason != "Edited Reason" {
+		t.Errorf("wanted: %s, got: %s", "Expected Reason", homeVisit.Reason)
+	}
 }
