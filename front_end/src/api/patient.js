@@ -67,6 +67,15 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   };
 };
 
+export const fetchHomeVisits = async (patientId, httpInstanc) => {
+  const result = await httpInstanc.get(`/patient/${patientId}/homeVisits`);
+  if (!result.data) {
+    return [];
+  }
+
+  return result.data;
+};
+
 export const fetchArvsTreatment = (patientId, encounterId) => {
   const treatments = [
     {

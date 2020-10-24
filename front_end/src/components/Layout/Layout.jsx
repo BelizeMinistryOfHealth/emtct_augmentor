@@ -24,7 +24,7 @@ const Layout = ({ children, location, ...rest }) => {
             link: `/patient/${patientId}/current_pregnancy`,
           },
           { label: 'Lab Results', link: '/' },
-          { label: 'Home Visits', link: '/' },
+          { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
           { label: 'Hospital/Clinic Admissions', link: '/' },
         ].map((d) => {
           return (

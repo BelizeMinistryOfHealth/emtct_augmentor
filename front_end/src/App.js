@@ -9,6 +9,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PatientSummary from './components/Patient/PatientSummary/PatientSummary.jsx';
 import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/CurrentPregnancy';
 import HttpApiProvider from './providers/HttpProvider';
+import HomeVisitList from './components/Patient/HomeVisit';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -44,6 +45,10 @@ function App() {
                 <Route
                   path={'/patient/:id/current_pregnancy'}
                   component={CurrentPregnancy}
+                />
+                <Route
+                  path={'/patient/:id/home_visits'}
+                  component={HomeVisitList}
                 />
                 <Route path={'/patient/:id'} component={PatientSummary} />
                 <Route path={'/'} component={Search} />

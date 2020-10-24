@@ -5,6 +5,7 @@ import {
   fetchCurrentPregnancy,
   fetchArvsTreatment,
   fetchPregnancyLabResults,
+  fetchHomeVisits,
 } from './api/patient';
 
 export const patientIdState = atom({
@@ -60,5 +61,18 @@ export const pregnancyLabResultsSelector = selectorFamily({
   get: (patientId) => async () => {
     const { httpInstance } = useHttpApi();
     return await fetchPregnancyLabResults(patientId, httpInstance);
+  },
+});
+
+export const homeVisitsAtom = atom({
+  key: 'homeVisits',
+  default: [],
+});
+
+export const homeVisitsSelector = selectorFamily({
+  key: 'homeVisitsAPI',
+  get: (patientId) => async () => {
+    const { httpInstance } = useHttpApi();
+    return await fetchHomeVisits(patientId, httpInstance);
   },
 });
