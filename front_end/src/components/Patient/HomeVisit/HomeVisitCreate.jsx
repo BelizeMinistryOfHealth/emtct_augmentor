@@ -61,12 +61,24 @@ const HomeVisitCreateForm = () => {
   }
 
   return (
-    <Box fill={'vertical'} overflow={'auto'} width={'medium'} pad={'medium'}>
-      <Box flex={false} direction={'row'} justify={'between'}>
-        <Button
-          icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/home_visits`)}
-        />
+    <Box
+      fill={'vertical'}
+      overflow={'auto'}
+      width={'medium'}
+      pad={'medium'}
+      width={'xlarge'}
+      justify={'center'}
+    >
+      <Button
+        icon={<FormPreviousLink size={'large'} />}
+        onClick={() => history.push(`/patient/${patientId}/home_visits`)}
+      />
+      <Box
+        flex={false}
+        direction={'row-responsive'}
+        justify={'center'}
+        fill={'horizontal'}
+      >
         <Heading level={2} margin={'none'}>
           Create Home Visit
         </Heading>
