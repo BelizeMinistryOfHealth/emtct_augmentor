@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
@@ -293,4 +294,83 @@ func (a *App) EditHomeVisit(id, user string, r HomeVisitRequest) (*models.HomeVi
 		UpdatedBy:   &user,
 	})
 	return homeVisit, err
+}
+
+type NewHomeVisitRequest struct {
+	PatientId   int       `json:"patientId"`
+	Reason      string    `json:"reason"`
+	Comments    string    `json:"comments"`
+	DateOfVisit time.Time `json:"dateOfVisit"`
+}
+
+func (a *App) PostHomeVisit(w http.ResponseWriter, r *http.Request) {
+
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodPost:
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		var req NewHomeVisitRequest
+		err := parseBody(r.Body, &req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user": user,
+			}).WithError(err).Error("failed to parse body for creating a home visit")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		homeVisit, err := a.CreateHomeVisit(user, req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"request": req,
+			}).WithError(err).Error("error creating home visit")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		//Marshal and return the newly created home visit
+		result, err := json.Marshal(homeVisit)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"homeVisit": homeVisit,
+			}).WithError(err).Error("failed to marshal the newly created home visit")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, string(result))
+
+	default:
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+}
+
+func (a *App) CreateHomeVisit(user string, r NewHomeVisitRequest) (*models.HomeVisit, error) {
+	id := uuid.New().String()
+
+	if len(user) == 0 {
+		return nil, fmt.Errorf("user did not provide an email")
+	}
+
+	homeVisit := models.HomeVisit{
+		Id:          id,
+		PatientId:   r.PatientId,
+		Reason:      r.Reason,
+		Comments:    r.Comments,
+		DateOfVisit: r.DateOfVisit,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   nil,
+		CreatedBy:   user,
+		UpdatedBy:   nil,
+	}
+
+	err := a.Db.CreateHomeVisit(homeVisit)
+	if err != nil {
+		return nil, fmt.Errorf("error creating home visit: %+v", err)
+	}
+
+	return &homeVisit, nil
 }
