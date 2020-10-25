@@ -12,7 +12,7 @@ import {
   TableRow,
   Text,
 } from 'grommet';
-import { Close } from 'grommet-icons';
+import { Add, Close } from 'grommet-icons';
 import React from 'react';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
@@ -22,6 +22,7 @@ import { Edit } from 'grommet-icons';
 import EditForm from './HomeVisitEdit';
 import { fetchHomeVisits } from '../../../api/patient';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import { useHistory, useParams } from 'react-router-dom';
 
 const homeVisitRow = (data, onClickEdit) => {
   return (
@@ -55,7 +56,7 @@ const HomeVisitsTable = ({
   onClickEdit,
   ...rest
 }) => {
-  if (homeVisits.length == 0) {
+  if (homeVisits.length === 0) {
     return (
       <Box gap={'medium'} align={'center'}>
         <Text>Patient has not had any Home Visits.</Text>
@@ -95,15 +96,18 @@ const HomeVisitsTable = ({
 };
 
 const HomeVisitList = (props) => {
-  const patientId = props.location.state.id;
+  const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
   const [editingHomeVisit, setEditingHomeVisit] = React.useState(undefined);
-  const onClickEdit = (homeVisit) => setEditingHomeVisit(homeVisit);
   const [data, setData] = React.useState({
     homeVisits: [],
     loading: false,
     error: undefined,
   });
+
+  const history = useHistory();
+
+  const onClickEdit = (homeVisit) => setEditingHomeVisit(homeVisit);
 
   React.useEffect(() => {
     const fetchVisits = async () => {
@@ -120,7 +124,7 @@ const HomeVisitList = (props) => {
       }
     };
     fetchVisits();
-  }, []);
+  }, [httpInstance, patientId]);
 
   return (
     <Layout location={props.location} {...props}>
@@ -163,7 +167,13 @@ const HomeVisitList = (props) => {
               background={'neutral-0'}
             >
               <Box align={'center'} pad={'medium'}>
-                <Button label={'Create Home Visit'} />
+                <Button
+                  icon={<Add />}
+                  label={'Create Home Visit'}
+                  onClick={() =>
+                    history.push(`/patient/${patientId}/home_visits/new`)
+                  }
+                />
               </Box>
             </Box>
             <HomeVisitsTable

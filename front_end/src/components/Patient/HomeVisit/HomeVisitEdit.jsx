@@ -1,7 +1,5 @@
 import { Box, Button, DateInput, FormField, TextArea, Text } from 'grommet';
 import React from 'react';
-import _ from 'lodash';
-import { useEditHomeVisit } from '../../../api/patient';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
 const EditForm = ({ visit }) => {

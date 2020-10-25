@@ -24,6 +24,10 @@ class HttpApi {
   async put(path, body) {
     return this.axiosInstance.put(path, JSON.stringify(body));
   }
+
+  async post(path, body) {
+    return this.axiosInstance.post(path, JSON.stringify(body));
+  }
 }
 
 export const useHttpApi = (accessToken, baseUrl) => {

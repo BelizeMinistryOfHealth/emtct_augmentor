@@ -101,7 +101,7 @@ export const useEditHomeVisit = async (homeVisit) => {
       }
     };
     edit();
-  }, [httpInstance]);
+  }, [httpInstance, homeVisit]);
   return [data, loading, error];
 };
 

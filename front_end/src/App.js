@@ -10,6 +10,7 @@ import PatientSummary from './components/Patient/PatientSummary/PatientSummary.j
 import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/CurrentPregnancy';
 import HttpApiProvider from './providers/HttpProvider';
 import HomeVisitList from './components/Patient/HomeVisit';
+import HomeVisitCreateForm from './components/Patient/HomeVisit/HomeVisitCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -47,7 +48,11 @@ function App() {
                   component={CurrentPregnancy}
                 />
                 <Route
-                  path={'/patient/:id/home_visits'}
+                  path={'/patient/:patientId/home_visits/new'}
+                  component={HomeVisitCreateForm}
+                />
+                <Route
+                  path={'/patient/:patientId/home_visits'}
                   component={HomeVisitList}
                 />
                 <Route path={'/patient/:id'} component={PatientSummary} />

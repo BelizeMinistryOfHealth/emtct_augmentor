@@ -6,7 +6,6 @@ import {
   fetchArvsTreatment,
   fetchPregnancyLabResults,
   fetchHomeVisits,
-  editHomeVisit,
 } from './api/patient';
 
 export const patientIdState = atom({
@@ -82,10 +81,3 @@ export const homeVisitsSelector = selectorFamily({
     return await fetchHomeVisits(patientId, httpInstance);
   },
 });
-
-// export const homeVisitSelector = selectoFamily({
-//   key: 'homeVisitAPI',
-//   set: (v) => {
-//     homeVisitAtom
-//   }
-// })
