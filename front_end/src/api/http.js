@@ -20,6 +20,10 @@ class HttpApi {
   async get(path) {
     return this.axiosInstance.get(path);
   }
+
+  async put(path, body) {
+    return this.axiosInstance.put(path, JSON.stringify(body));
+  }
 }
 
 export const useHttpApi = (accessToken, baseUrl) => {

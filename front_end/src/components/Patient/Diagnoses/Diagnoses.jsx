@@ -50,6 +50,7 @@ const DiagnosisTable = ({ children, data, caption, ...rest }) => {
 
 const DiagnosisHistory = (props) => {
   const { diagnosisHistory, caption } = props;
+
   return (
     <Card>
       <CardBody gap={'medium'} pad={'medium'}>

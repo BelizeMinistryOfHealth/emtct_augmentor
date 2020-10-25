@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import React from 'react';
+import { useHttpApi } from './http';
 
 export const fetchPatient = async (patientId, httpInstance) => {
   const result = await httpInstance.get(`/patient/${patientId}`);
@@ -67,13 +69,40 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   };
 };
 
-export const fetchHomeVisits = async (patientId, httpInstanc) => {
-  const result = await httpInstanc.get(`/patient/${patientId}/homeVisits`);
+export const fetchHomeVisits = async (patientId, httpInstance) => {
+  const result = await httpInstance.get(`/patient/${patientId}/homeVisits`);
   if (!result.data) {
     return [];
   }
 
   return result.data;
+};
+
+export const useEditHomeVisit = async (homeVisit) => {
+  const { httpInstance } = useHttpApi();
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(undefined);
+  const [data, setData] = React.useState(homeVisit);
+
+  React.useEffect(() => {
+    const edit = async () => {
+      setLoading(true);
+      try {
+        const result = await httpInstance.put(
+          `/patient/homeVisit/${homeVisit.id}`,
+          homeVisit
+        );
+        setData(result.data);
+        setLoading(false);
+      } catch (e) {
+        console.error(e);
+        setError('Edit request failed');
+        setLoading(false);
+      }
+    };
+    edit();
+  }, [httpInstance]);
+  return [data, loading, error];
 };
 
 export const fetchArvsTreatment = (patientId, encounterId) => {
