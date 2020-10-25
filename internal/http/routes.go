@@ -220,7 +220,8 @@ func (a *App) HomeVisitApi(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		fmt.Fprintf(w, string(result))
 	case http.MethodPut:
-		user := r.Context().Value("user").(JwtToken)
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
 		var req HomeVisitRequest
 		err := parseBody(r.Body, &req)
 		if err != nil {
@@ -231,7 +232,7 @@ func (a *App) HomeVisitApi(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		homeVisit, err := a.EditHomeVisit(id, user.Email, req)
+		homeVisit, err := a.EditHomeVisit(id, user, req)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,

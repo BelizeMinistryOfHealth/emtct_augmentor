@@ -52,7 +52,8 @@ func VerifyToken(jwkUrl, aud, iss string, auth0Client auth0.Auth0) Middleware {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "user", jwtToken)
+			email, _ := jwtToken.Get("email")
+			ctx := context.WithValue(r.Context(), "user", JwtToken{Email: email.(string)})
 			r = r.WithContext(ctx)
 			f(w, r)
 		}
