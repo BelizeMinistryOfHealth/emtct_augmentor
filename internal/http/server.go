@@ -57,6 +57,7 @@ func RegisterHandlers() *mux.Router {
 	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods("GET", "PUT", "OPTIONS")
+	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods("POST", "OPTIONS")
 
 	return r
 }

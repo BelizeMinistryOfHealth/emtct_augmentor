@@ -374,3 +374,88 @@ func (a *App) CreateHomeVisit(user string, r NewHomeVisitRequest) (*models.HomeV
 
 	return &homeVisit, nil
 }
+
+// HIV SCREENINGS
+type NewHivScreeningRequest struct {
+	PatientId              int        `json:"patientId"`
+	TestName               string     `json:"testName"`
+	ScreeningDate          time.Time  `json:"screeningDate"`
+	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitempty"`
+	SampleCode             string     `json:"sampleCode"`
+	DateSampleShipped      time.Time  `json:"dateSampleShipped"`
+	Destination            string     `json:"destination"`
+	DateResultReceived     *time.Time `json:"dateResultReceived,omitempty"`
+	Result                 string     `json:"result"`
+	DateResultShared       *time.Time `json:"dateResultShared,omitempty"`
+}
+
+func (a *App) CreateHivScreening(user string, r NewHivScreeningRequest) (*models.HivScreening, error) {
+	id := uuid.New().String()
+
+	s := models.HivScreening{
+		Id:                     id,
+		PatientId:              r.PatientId,
+		TestName:               r.TestName,
+		ScreeningDate:          r.ScreeningDate,
+		DateSampleReceivedAtHq: r.DateSampleReceivedAtHq,
+		SampleCode:             r.SampleCode,
+		DateSampleShipped:      r.DateSampleShipped,
+		Destination:            r.Destination,
+		DateResultReceived:     r.DateResultReceived,
+		Result:                 r.Result,
+		DateResultShared:       r.DateResultShared,
+		CreatedAt:              time.Now(),
+		UpdatedAt:              nil,
+		CreatedBy:              user,
+		UpdatedBy:              nil,
+	}
+
+	err := a.Db.CreateHivScreening(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s, nil
+}
+
+func (a *App) CreateHivScreeningHandler(w http.ResponseWriter, r *http.Request) {
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodPost:
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		var req NewHivScreeningRequest
+		err := parseBody(r.Body, &req)
+		if err != nil {
+			log.WithError(err).Error("error parsing request body for creating an hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		screening, err := a.CreateHivScreening(user, req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"hivScreeningRequest": req,
+				"handler":             "CreateHivScreeningHandler",
+				"user":                user,
+			}).WithError(err).Error("failed to create an hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		result, err := json.Marshal(screening)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"screening": screening,
+				"handler":   "CreateHivScreeningHandler",
+				"user":      user,
+			}).WithError(err).Error("error marshalling result for newly created hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, string(result))
+
+	default:
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	}
+}

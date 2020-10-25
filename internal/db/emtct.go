@@ -392,3 +392,68 @@ func (d *EmtctDb) EditHomeVisit(v models.HomeVisit) (*models.HomeVisit, error) {
 	v.UpdatedAt = &updateddAt
 	return &v, nil
 }
+
+func (d *EmtctDb) CreateHivScreening(v models.HivScreening) error {
+	stmt := `INSERT INTO hiv_Screening (id, patient_id, test_name, screening_date, date_sample_received_at_hq, sample_code,
+date_sample_shipped, destination, date_result_received, result, date_result_shared, created_at, created_by)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
+	_, err := d.DB.Exec(stmt,
+		v.Id,
+		v.PatientId,
+		v.TestName,
+		v.ScreeningDate,
+		v.DateSampleReceivedAtHq,
+		v.SampleCode,
+		v.DateSampleShipped,
+		v.Destination,
+		v.DateResultReceived,
+		v.Result,
+		v.DateResultShared,
+		v.CreatedAt,
+		v.CreatedBy)
+	if err != nil {
+		return fmt.Errorf("error inserting new hiv screening into database: %+v", err)
+	}
+
+	return nil
+}
+
+func (d *EmtctDb) FindHivScreeningsByPatient(patientId int) ([]models.HivScreening, error) {
+	stmt := `SELECT id, patient_id, test_name, screening_date, date_sample_received_at_hq, sample_code,
+date_sample_shipped, destination, date_result_received, result, date_result_shared, created_at, created_by, updated_at,
+updated_by FROM hiv_screening WHERE patient_id=$1`
+
+	var screenings []models.HivScreening
+
+	rows, err := d.DB.Query(stmt, patientId)
+	if err != nil {
+		return screenings, fmt.Errorf("error querying hiv screenings: %+v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s models.HivScreening
+		err := rows.Scan(
+			&s.Id,
+			&s.PatientId,
+			&s.TestName,
+			&s.ScreeningDate,
+			&s.DateSampleReceivedAtHq,
+			&s.SampleCode,
+			&s.DateSampleShipped,
+			&s.Destination,
+			&s.DateResultReceived,
+			&s.Result,
+			&s.DateResultShared,
+			&s.CreatedAt,
+			&s.CreatedBy,
+			&s.UpdatedAt,
+			&s.UpdatedAt)
+		if err != nil {
+			return screenings, fmt.Errorf("error scanning hiv screening row: %+v", err)
+		}
+		screenings = append(screenings, s)
+	}
+
+	return screenings, nil
+}

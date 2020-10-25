@@ -434,3 +434,69 @@ func TestApp_EditHomeVisit(t *testing.T) {
 		t.Errorf("wanted: %s, got: %s", "Expected Reason", homeVisit.Reason)
 	}
 }
+
+func TestApp_CreateHivScreening(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := db.NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("error creating database connection: %+v", err)
+	}
+
+	app := App{Db: db}
+
+	// Configure the router
+	r := mux.NewRouter()
+	r.HandleFunc("/patient/hivHomeScreening", app.CreateHivScreeningHandler)
+
+	// Create Request
+	request := NewHivScreeningRequest{
+		PatientId:              1111120,
+		TestName:               "PCR 1",
+		ScreeningDate:          time.Date(2020, time.September, 21, 10, 20, 00, 00, time.UTC),
+		DateSampleReceivedAtHq: nil,
+		SampleCode:             "CODE_PCR_1234",
+		DateSampleShipped:      time.Date(2020, time.September, 30, 0, 0, 0, 0, time.UTC),
+		Destination:            "Honduras",
+		DateResultReceived:     nil,
+		Result:                 "",
+		DateResultShared:       nil,
+	}
+	body, err := json.Marshal(request)
+	if err != nil {
+		t.Fatalf("error marshalling request: %+v", err)
+	}
+	// Create POST request
+	req, err := http.NewRequest("POST", fmt.Sprintf("/patient/hivHomeScreening"), bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("error creating new http request: %+v", err)
+	}
+	w := httptest.NewRecorder()
+
+	// Configure the jwt token for testing
+	jwtToken := JwtToken{
+		Email: "nurse@health.gov.bz",
+	}
+	ctx := context.WithValue(req.Context(), "user", jwtToken)
+	req = req.WithContext(ctx)
+	r.ServeHTTP(w, req)
+	resp := w.Result()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status code error, want 200, got %d", resp.StatusCode)
+	}
+
+	// Unmarshal the response into the HomeVisit model
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var screening models.HivScreening
+	err = json.Unmarshal(respBytes, &screening)
+	if err != nil {
+		t.Errorf("error unmarshalling result of new screening: %+v", err)
+	}
+	t.Logf("hiv screening: %+v", screening)
+}
