@@ -1,12 +1,13 @@
 import { Box, Nav } from 'grommet';
 import React from 'react';
 import SidebarButton from '../SidebarButton/SidebarButton';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 const Layout = ({ children, location, ...rest }) => {
-  const patientId = location?.state?.id;
+  // const patientId = location?.state?.id;
   const history = useHistory();
   const [active, setActive] = React.useState();
+  const { patientId } = useParams();
   return (
     <Box
       align={'start'}
@@ -26,6 +27,10 @@ const Layout = ({ children, location, ...rest }) => {
           { label: 'Lab Results', link: '/' },
           { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
           { label: 'Hospital/Clinic Admissions', link: '/' },
+          {
+            label: 'HIV Screenings',
+            link: `/patient/${patientId}/hiv_screenings`,
+          },
         ].map((d) => {
           return (
             <SidebarButton

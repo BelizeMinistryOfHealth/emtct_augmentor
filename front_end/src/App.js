@@ -11,6 +11,8 @@ import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/Cu
 import HttpApiProvider from './providers/HttpProvider';
 import HomeVisitList from './components/Patient/HomeVisit';
 import HomeVisitCreateForm from './components/Patient/HomeVisit/HomeVisitCreate';
+import HivScreening from './components/Patient/HivScreening';
+import HivScreeningCreateForm from './components/Patient/HivScreening/HivScreeningCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -52,8 +54,16 @@ function App() {
                   component={HomeVisitCreateForm}
                 />
                 <Route
+                  path={'/patient/:patientId/hiv_screenings/new'}
+                  component={HivScreeningCreateForm}
+                />
+                <Route
                   path={'/patient/:patientId/home_visits'}
                   component={HomeVisitList}
+                />
+                <Route
+                  path={'/patient/:patientId/hiv_screenings'}
+                  component={HivScreening}
                 />
                 <Route path={'/patient/:id'} component={PatientSummary} />
                 <Route path={'/'} component={Search} />

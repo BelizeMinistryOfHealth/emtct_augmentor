@@ -64,7 +64,6 @@ const HomeVisitCreateForm = () => {
     <Box
       fill={'vertical'}
       overflow={'auto'}
-      width={'medium'}
       pad={'medium'}
       width={'xlarge'}
       justify={'center'}

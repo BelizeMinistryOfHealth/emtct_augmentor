@@ -34,7 +34,7 @@ const homeVisitRow = (data, onClickEdit) => {
         <Text>{data.comments}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.dateOfVisit), 'dd LLL yyy')}</Text>
+        <Text>{format(parseISO(data.dateOfVisit), 'dd LLL yyyy')}</Text>
       </TableCell>
       <TableCell align={'start'}>
         <Text>{data.createdBy}</Text>
