@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -458,4 +459,41 @@ func (a *App) CreateHivScreeningHandler(w http.ResponseWriter, r *http.Request) 
 	default:
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
+}
+
+func (a *App) HivScreeningsByPatientIdHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	patientId := vars["patientId"]
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		log.WithError(err).Error("patient id must be a number")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	screenings, err := a.Db.FindHivScreeningsByPatient(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": patientId,
+			"handler":   "HivScreeningsByPatientIdHandler",
+		}).WithError(err).Error("error retrieving hiv screenings for patient")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	results, err := json.Marshal(screenings)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId":  patientId,
+			"screenings": screenings,
+			"handler":    "HivScreeningsByPatientIdHandler",
+		}).WithError(err).Error("error marshalling screenings")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprintf(w, string(results))
 }

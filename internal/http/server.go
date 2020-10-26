@@ -49,15 +49,16 @@ func RegisterHandlers() *mux.Router {
 	r := mux.NewRouter()
 	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))
 
-	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods("GET")
-	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods("GET")
-	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).Methods("GET", "OPTIONS")
-	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).Methods("GET", "OPTIONS")
-	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).Methods("GET", "OPTIONS")
-	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).Methods("POST", "OPTIONS")
-	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).Methods("GET", "OPTIONS")
-	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods("GET", "PUT", "OPTIONS")
-	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods("POST", "OPTIONS")
+	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods(http.MethodGet)
+	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods(http.MethodGet)
+	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).Methods(http.MethodOptions, http.MethodPost)
+	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{patientId}/hivScreenings", authHandlers.Then(app.HivScreeningsByPatientIdHandler)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods(http.MethodOptions, http.MethodPost)
 
 	return r
 }
