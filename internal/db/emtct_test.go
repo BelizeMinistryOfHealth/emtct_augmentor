@@ -495,3 +495,56 @@ func TestEmtctDb_FindHomeVisitById(t *testing.T) {
 		t.Error("expected a home visit but got nil")
 	}
 }
+
+func TestEmtctDb_EditHivScreening(t *testing.T) {
+	cnf := config.DbConf{
+		DbUsername: "postgres",
+		DbPassword: "password",
+		DbDatabase: "emtct",
+		DbHost:     "localhost",
+	}
+	db, err := NewConnection(&cnf)
+	if err != nil {
+		t.Fatalf("failed to open db connection %+v", err)
+	}
+	screeningId := uuid.New().String()
+	patientId, _ := strconv.Atoi(patientIds[0])
+	s := models.HivScreening{
+		Id:                     screeningId,
+		PatientId:              patientId,
+		TestName:               "PCR 1",
+		ScreeningDate:          time.Now(),
+		DateSampleReceivedAtHq: nil,
+		SampleCode:             "ABD",
+		DateSampleShipped:      time.Now(),
+		Destination:            "Honduras",
+		DateResultReceived:     nil,
+		Result:                 "",
+		DateResultShared:       nil,
+		CreatedAt:              time.Now(),
+		UpdatedAt:              nil,
+		CreatedBy:              "nurse@health.gov.bz",
+		UpdatedBy:              nil,
+	}
+	_ = db.CreateHivScreening(s)
+
+	updatedBy := "nurse2@health.gov.bz"
+	dateResultReceived := time.Now()
+	s.Result = "120"
+	s.UpdatedBy = &updatedBy
+	s.DateResultReceived = &dateResultReceived
+
+	u, err := db.EditHivScreening(s)
+	if err != nil {
+		t.Fatalf("error while editing hiv screening: %+v", err)
+	}
+	if u.Result != "120" {
+		t.Errorf("got %s, want %s", u.Result, "120")
+	}
+	if *u.UpdatedBy != updatedBy {
+		t.Errorf("got %s, want %s", *u.UpdatedBy, updatedBy)
+	}
+	if *u.DateResultReceived != dateResultReceived {
+		t.Errorf("got %v, want %v", u.DateResultReceived, dateResultReceived)
+	}
+}

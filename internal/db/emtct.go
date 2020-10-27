@@ -457,3 +457,59 @@ updated_by FROM hiv_screening WHERE patient_id=$1`
 
 	return screenings, nil
 }
+
+func (d *EmtctDb) EditHivScreening(v models.HivScreening) (*models.HivScreening, error) {
+	stmt := `UPDATE hiv_screening SET test_name=$1, result=$2, sample_code=$3, destination=$4,
+screening_date=$5, date_sample_received_at_hq=$6, date_sample_shipped=$7, date_result_received=$8,
+date_result_shared=$9, updated_at=$10, updated_by=$11 WHERE id=$12`
+	updatedAt := time.Now()
+	_, err := d.DB.Exec(stmt,
+		v.TestName,
+		v.Result,
+		v.SampleCode,
+		v.Destination,
+		v.ScreeningDate,
+		v.DateSampleReceivedAtHq,
+		v.DateSampleShipped,
+		v.DateResultReceived,
+		v.DateResultShared,
+		updatedAt,
+		v.UpdatedBy,
+		v.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error updating hiv screening in database: %+v", err)
+	}
+	v.UpdatedAt = &updatedAt
+	return &v, nil
+}
+
+func (d *EmtctDb) FindHivScreeningById(id string) (*models.HivScreening, error) {
+	stmt := `SELECT id, patient_id, test_name, result, sample_code, destination, screening_date,
+date_sample_received_at_hq, date_sample_shipped, date_result_received, date_result_shared, updated_at, updated_by
+WHERE id=$1`
+	var screening models.HivScreening
+	row := d.DB.QueryRow(stmt, id)
+	err := row.Scan(
+		&screening.Id,
+		&screening.PatientId,
+		&screening.TestName,
+		&screening.Result,
+		&screening.SampleCode,
+		&screening.Destination,
+		&screening.ScreeningDate,
+		&screening.DateSampleReceivedAtHq,
+		&screening.DateSampleShipped,
+		&screening.DateResultReceived,
+		&screening.DateResultShared,
+		&screening.UpdatedAt,
+		&screening.UpdatedBy)
+
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &screening, nil
+	default:
+		return nil, fmt.Errorf("error retrieving hiv screening from database: %+v", err)
+	}
+}

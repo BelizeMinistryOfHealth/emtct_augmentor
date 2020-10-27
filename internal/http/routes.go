@@ -497,3 +497,77 @@ func (a *App) HivScreeningsByPatientIdHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, string(results))
 }
+
+func (a *App) HivScreeningApi(w http.ResponseWriter, r *http.Request) {
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodPut:
+		vars := mux.Vars(r)
+		screeningId := vars["screeningId"]
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		s, err := a.Db.FindHivScreeningById(screeningId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"screeningId": screeningId,
+				"user":        user,
+			}).WithError(err).Error("error when querying database for hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if s == nil {
+			log.WithFields(log.Fields{
+				"screeningId": screeningId,
+				"user":        user,
+			}).Error("tried to update an hiv screening that does not exist")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		var req models.HivScreening
+		err = parseBody(r.Body, &req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"screeningId": screeningId,
+				"user":        user,
+			}).WithError(err).Error("failure parsing the body for editing an hiv screening")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		if req.Id != screeningId {
+			log.WithFields(log.Fields{
+				"screeningId": screeningId,
+				"request":     req,
+				"user":        user,
+			}).Error("the screening id in the body does not match the resource screening id")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		req.UpdatedBy = &user
+		saved, err := a.Db.EditHivScreening(req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"screeningId": screeningId,
+				"user":        user,
+				"request":     req,
+			}).WithError(err).Error("db failure while editing an hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		result, err := json.Marshal(saved)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"screeningId":   screeningId,
+				"user":          user,
+				"editedRequest": saved,
+			}).WithError(err).Error("failure marshalling the edited hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, string(result))
+	default:
+		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		return
+	}
+}
