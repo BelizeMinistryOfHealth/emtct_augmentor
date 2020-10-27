@@ -8,6 +8,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
+  TableBody,
   Text,
 } from 'grommet';
 import { Add } from 'grommet-icons';
@@ -21,30 +22,40 @@ const screeningRow = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.testName}</Text>
+        <Text size={'small'}>{data.testName}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.result}</Text>
+        <Text size={'small'}>{data.result}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.sampleCode}</Text>
+        <Text size={'small'}>{data.sampleCode}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.destination}</Text>
+        <Text size={'small'}>{data.destination}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.screeningDate), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>
+          {format(parseISO(data.screeningDate), 'dd LLL yyyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>
+        <Text size={'small'}>
           {format(parseISO(data.dateSampleReceivedAtHq), 'dd LLL yyyy')}
         </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.dateResultReceived), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>
+          {data.dateResultReceived
+            ? format(parseISO(data.dateResultReceived), 'dd LLL yyyy')
+            : 'N/A'}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.dateResultShared), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>
+          {data.dateResultShared
+            ? format(parseISO(data.dateResultShared), 'dd LLL yyyy')
+            : 'N/A'}
+        </Text>
       </TableCell>
     </TableRow>
   );
@@ -73,16 +84,33 @@ const HivScreeningTable = ({ children, caption, screenings }) => {
       <Table caption={caption}>
         <TableHeader>
           <TableRow>
-            <TableCell align={'start'}>Test Name</TableCell>
-            <TableCell align={'start'}>Test Result</TableCell>
-            <TableCell align={'start'}>Sample Code</TableCell>
-            <TableCell align={'start'}>Destination</TableCell>
-            <TableCell align={'start'}>Screening Date</TableCell>
-            <TableCell align={'start'}>Date Sample Received at HQ</TableCell>
-            <TableCell align={'start'}>Date Result Received</TableCell>
-            <TableCell align={'start'}>Date Result Shared</TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Test Name</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Test Result</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Sample Code</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Destination</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Screening Date</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Date Sample Received at HQ</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Date Result Received</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Date Result Shared</Text>{' '}
+            </TableCell>
           </TableRow>
         </TableHeader>
+        <TableBody>{screenings.map(screeningRow)}</TableBody>
       </Table>
     </Box>
   );

@@ -65,7 +65,10 @@ function App() {
                   path={'/patient/:patientId/hiv_screenings'}
                   component={HivScreening}
                 />
-                <Route path={'/patient/:id'} component={PatientSummary} />
+                <Route
+                  path={'/patient/:patientId'}
+                  component={PatientSummary}
+                />
                 <Route path={'/'} component={Search} />
               </Switch>
             </Main>

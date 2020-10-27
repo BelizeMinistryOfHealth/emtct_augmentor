@@ -1,5 +1,6 @@
 import { Box, Text } from 'grommet';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useRecoilValueLoadable } from 'recoil';
 import { patientSelector } from '../../../state';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -9,9 +10,11 @@ import ObstetricHistory from '../ObstetricHistory/ObstetricHistory';
 import PatientBasicInfo from '../PatientBasicInfo/PatientBasicInfo';
 
 const PatientSummary = (props) => {
-  const id = props.location.state.id;
+  const { patientId } = useParams();
 
-  const { state, contents } = useRecoilValueLoadable(patientSelector(id));
+  const { state, contents } = useRecoilValueLoadable(
+    patientSelector(patientId)
+  );
   let patient = {};
   switch (state) {
     case 'hasValue':

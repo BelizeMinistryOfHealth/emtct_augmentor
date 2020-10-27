@@ -6,30 +6,65 @@ import {
   FormField,
   TextInput,
   DateInput,
+  Text,
 } from 'grommet';
 import { FormPreviousLink } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
+import { useHttpApi } from '../../../providers/HttpProvider';
 
 const HivScreeningCreateForm = () => {
-  const [testName, setTestName] = React.useState();
-  const [result, setResult] = React.useState();
-  const [screeningDate, setScreningDate] = React.useState();
-  const [dateSampleReceivedAtHq, setDateSampleReceivedAtHq] = React.useState();
-  const [sampleCode, setSampleCode] = React.useState();
-  const [destination, setDestination] = React.useState();
-  const [dateResultReceived, setDateResultReceived] = React.useState();
-  const [dateResultShared, setDateResultShared] = React.useState();
+  const [screening, setScreening] = React.useState();
+  // Form status: START -> SUBMIT -> ERROR -> SUCCESS
+  const [status, setStatus] = React.useState('START');
   const { patientId } = useParams();
   const history = useHistory();
+  const { httpInstance } = useHttpApi();
 
-  const onSubmit = () => {
-    console.log('submitting');
+  const onSubmit = (e) => {
+    setScreening({ ...e.value, patientId: parseInt(patientId) });
+    setStatus('SUBMIT');
   };
+
+  React.useEffect(() => {
+    console.log('screening has been modified');
+    console.dir({ screening });
+
+    const post = async (screening) => {
+      try {
+        await httpInstance.post(`/patient/hivScreening`, screening);
+        setStatus('SUCCESS');
+      } catch (e) {
+        console.error(e);
+        setStatus('ERROR');
+      }
+    };
+    if (status === 'SUBMIT') {
+      post(screening);
+    }
+  }, [screening, httpInstance, status]);
+
+  if (status === 'SUBMIT') {
+    return (
+      <Box
+        fill={'vertical'}
+        overflow={'auto'}
+        pad={'medium'}
+        width={'xlarge'}
+        justify={'center'}
+      >
+        <Text size={'xlarge'}>Saving...</Text>
+      </Box>
+    );
+  }
+
+  if (status === 'SUCCESS') {
+    history.push(`/patient/${patientId}/hiv_screenings`);
+  }
 
   return (
     <Box
-      file={'vertical'}
+      fill={'vertical'}
       overflow={'auto'}
       pad={'medium'}
       width={'xlarge'}
@@ -49,79 +84,46 @@ const HivScreeningCreateForm = () => {
           Create HIV Screening
         </Heading>
       </Box>
+      {status === 'ERROR' && (
+        <Box
+          fill={'horizontal'}
+          pad={'medium'}
+          gap={'medium'}
+          background={'red'}
+        >
+          <Text>Error creating hiv screening!</Text>
+        </Box>
+      )}
+
       <Box flex={'grow'} overflow={'auto'} pad={{ vertical: 'medium' }}>
         <Form onSubmit={onSubmit}>
           <FormField label={'Test Name'} name={'testName'} required>
-            <TextInput
-              value={testName}
-              placeholder={'Test Name'}
-              name={'testName'}
-              onChange={(e) => setTestName(e.target.value)}
-            />
+            <TextInput placeholder={'Test Name'} name={'testName'} />
           </FormField>
           <FormField label={'Result'} name={'result'} required>
-            <TextInput
-              value={result}
-              placeholder={'Test Result'}
-              name={'result'}
-              onChange={(e) => setResult(e.target.value)}
-            />
+            <TextInput placeholder={'Test Result'} name={'result'} />
           </FormField>
           <FormField label={'Screening Date'} name={'screeningDate'} required>
-            <DateInput
-              format={'yyyy-mm-dd'}
-              name={'screeningDate'}
-              value={screeningDate}
-            />
+            <DateInput format={'yyyy-mm-dd'} name={'screeningDate'} />
           </FormField>
           <FormField
             label={'Date Sample Received At HQ'}
             name={'dateSampleReceivedAtHq'}
             required
           >
-            <DateInput
-              format={'yyyy-mm-dd'}
-              name={'dateSampleReceivedAtHq'}
-              value={dateSampleReceivedAtHq}
-            />
+            <DateInput format={'yyyy-mm-dd'} name={'dateSampleReceivedAtHq'} />
           </FormField>
-          <FormField
-            label={'Date Result Recieved'}
-            name={'dateResultReceived'}
-            required
-          >
-            <DateInput
-              format={'yyyy-mm-dd'}
-              name={'dateResultReceived'}
-              value={dateResultReceived}
-            />
+          <FormField label={'Date Result Recieved'} name={'dateResultReceived'}>
+            <DateInput format={'yyyy-mm-dd'} name={'dateResultReceived'} />
           </FormField>
-          <FormField
-            label={'Date Result Shared'}
-            name={'dateResultShared'}
-            required
-          >
-            <DateInput
-              format={'yyyy-mm-dd'}
-              name={'dateResultShared'}
-              value={dateResultShared}
-            />
+          <FormField label={'Date Result Shared'} name={'dateResultShared'}>
+            <DateInput format={'yyyy-mm-dd'} name={'dateResultShared'} />
           </FormField>
           <FormField label={'Sample Code'} name={'sampleCode'} required>
-            <TextInput
-              value={sampleCode}
-              placeholder={'Sample Code'}
-              name={'sampleCode'}
-              onChange={(e) => setSampleCode(e.target.value)}
-            />
+            <TextInput placeholder={'Sample Code'} name={'sampleCode'} />
           </FormField>
           <FormField label={'Destination'} name={'destination'} required>
-            <TextInput
-              value={destination}
-              placeholder={'Destination'}
-              name={'destination'}
-              onChange={(e) => setDestination(e.target.value)}
-            />
+            <TextInput placeholder={'Destination'} name={'destination'} />
           </FormField>
           <Box flex={false} align={'center'}>
             <Button type={'submit'} label={'Save'} primary />
