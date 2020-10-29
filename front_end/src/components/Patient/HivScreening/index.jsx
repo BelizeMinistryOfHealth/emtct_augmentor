@@ -10,15 +10,18 @@ import {
   TableRow,
   TableBody,
   Text,
+  Layer,
+  Heading,
 } from 'grommet';
-import { Add } from 'grommet-icons';
+import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
+import EditForm from './HivScreeningEdit';
 
-const screeningRow = (data) => {
+const screeningRow = (data, onClickEdit) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
@@ -57,11 +60,14 @@ const screeningRow = (data) => {
             : 'N/A'}
         </Text>
       </TableCell>
+      <TableCell align={'start'} onClick={() => onClickEdit(data)}>
+        <Edit />
+      </TableCell>
     </TableRow>
   );
 };
 
-const HivScreeningTable = ({ children, caption, screenings }) => {
+const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
   if (screenings.length === 0) {
     return (
       <Box
@@ -108,9 +114,12 @@ const HivScreeningTable = ({ children, caption, screenings }) => {
             <TableCell align={'start'}>
               <Text size={'small'}>Date Result Shared</Text>{' '}
             </TableCell>
+            <TableCell />
           </TableRow>
         </TableHeader>
-        <TableBody>{screenings.map(screeningRow)}</TableBody>
+        <TableBody>
+          {screenings.map((i) => screeningRow(i, onClickEdit))}
+        </TableBody>
       </Table>
     </Box>
   );
@@ -124,7 +133,10 @@ const HivScreening = (props) => {
     loading: false,
     error: undefined,
   });
+  const [editingScreening, setEditingScreening] = React.useState(undefined);
   const history = useHistory();
+
+  const onClickEdit = (screening) => setEditingScreening(screening);
 
   React.useEffect(() => {
     const fetchScreenings = async () => {
@@ -159,13 +171,44 @@ const HivScreening = (props) => {
       <ErrorBoundary>
         <Card fill={'horizontal'}>
           <CardBody gap={'medium'} pad={'medium'}>
+            {editingScreening && (
+              <Layer
+                position={'right'}
+                full={'vertical'}
+                onClickOutside={() => setEditingScreening(undefined)}
+                onEsc={() => setEditingScreening(undefined)}
+                modal
+              >
+                <Box
+                  fill={'vertical'}
+                  overflow={'auto'}
+                  width={'medium'}
+                  pad={'medium'}
+                >
+                  <Box
+                    flex={false}
+                    direction={'row-responsive'}
+                    justify={'between'}
+                  >
+                    <Heading level={2} margin={'none'}>
+                      Edit
+                    </Heading>
+                    <Button
+                      icon={<Close />}
+                      onClick={() => setEditingScreening(undefined)}
+                    />
+                  </Box>
+                  <EditForm screening={editingScreening} />
+                </Box>
+              </Layer>
+            )}
             <Box
               direction={'row-reverse'}
               align={'start'}
               pad={'medium'}
               gap={'medium'}
             >
-              <Box align={'center'} pad={'medium'} fill={'horizontal'}>
+              <Box align={'end'} pad={'medium'} fill={'horizontal'}>
                 <Button
                   icon={<Add />}
                   label={'Create Hiv Screening'}
@@ -178,6 +221,7 @@ const HivScreening = (props) => {
             <HivScreeningTable
               screenings={data.screenings}
               caption={'HIV Screenings'}
+              onClickEdit={onClickEdit}
             />
           </CardBody>
         </Card>

@@ -27,9 +27,6 @@ const HivScreeningCreateForm = () => {
   };
 
   React.useEffect(() => {
-    console.log('screening has been modified');
-    console.dir({ screening });
-
     const post = async (screening) => {
       try {
         await httpInstance.post(`/patient/hivScreening`, screening);
@@ -113,7 +110,7 @@ const HivScreeningCreateForm = () => {
           >
             <DateInput format={'yyyy-mm-dd'} name={'dateSampleReceivedAtHq'} />
           </FormField>
-          <FormField label={'Date Result Recieved'} name={'dateResultReceived'}>
+          <FormField label={'Date Result Received'} name={'dateResultReceived'}>
             <DateInput format={'yyyy-mm-dd'} name={'dateResultReceived'} />
           </FormField>
           <FormField label={'Date Result Shared'} name={'dateResultShared'}>

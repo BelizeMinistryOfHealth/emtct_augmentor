@@ -448,7 +448,7 @@ updated_by FROM hiv_screening WHERE patient_id=$1`
 			&s.CreatedAt,
 			&s.CreatedBy,
 			&s.UpdatedAt,
-			&s.UpdatedAt)
+			&s.UpdatedBy)
 		if err != nil {
 			return screenings, fmt.Errorf("error scanning hiv screening row: %+v", err)
 		}
@@ -486,7 +486,7 @@ date_result_shared=$9, updated_at=$10, updated_by=$11 WHERE id=$12`
 func (d *EmtctDb) FindHivScreeningById(id string) (*models.HivScreening, error) {
 	stmt := `SELECT id, patient_id, test_name, result, sample_code, destination, screening_date,
 date_sample_received_at_hq, date_sample_shipped, date_result_received, date_result_shared, updated_at, updated_by
-WHERE id=$1`
+FROM hiv_screening WHERE id=$1`
 	var screening models.HivScreening
 	row := d.DB.QueryRow(stmt, id)
 	err := row.Scan(
