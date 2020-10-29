@@ -1,5 +1,6 @@
 import { Box, Text } from 'grommet';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useRecoilValueLoadable } from 'recoil';
 import {
   currentPregnancySelector,
@@ -90,8 +91,7 @@ const LabTests = ({ patientId, encounterId }) => {
 
 const CurrentPregnancy = (props) => {
   const { location } = props;
-
-  const id = location.state.id;
+  const { id } = useParams();
 
   const { state, contents } = useRecoilValueLoadable(
     currentPregnancySelector(id)

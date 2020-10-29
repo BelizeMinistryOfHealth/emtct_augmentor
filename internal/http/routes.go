@@ -571,3 +571,95 @@ func (a *App) HivScreeningApi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// CONTRACEPTIVES USED
+
+type NewContraceptiveUsedRequest struct {
+	PatientId int       `json:"patient_id"`
+	Comments  string    `json:"comments"`
+	DateUsed  time.Time `json:"date_used"`
+}
+
+func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Request) {
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodPost:
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		var req NewContraceptiveUsedRequest
+		err := parseBody(r.Body, &req)
+		if err != nil {
+			log.WithError(err).Error("failed to parse the body for creating a contraceptive")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		contraceptive := models.ContraceptiveUsed{
+			Id:        uuid.New().String(),
+			PatientId: req.PatientId,
+			Comments:  req.Comments,
+			DateUsed:  req.DateUsed,
+			CreatedAt: time.Now(),
+			UpdatedAt: nil,
+			CreatedBy: user,
+			UpdatedBy: nil,
+		}
+		err = a.Db.CreateContraceptiveUsed(contraceptive)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":          user,
+				"request":       req,
+				"contraceptive": contraceptive,
+			}).WithError(err).Error("failed to create new contraceptive used")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		resp, err := json.Marshal(contraceptive)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":          user,
+				"contraceptive": contraceptive,
+			}).WithError(err).Error("failed to marshal new contraceptive created")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, string(resp))
+
+	}
+}
+
+func (a *App) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	vars := mux.Vars(r)
+	patientId := vars["patientId"]
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": patientId,
+		}).Error("patientId provided is not a valid number")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	contraceptives, err := a.Db.ContraceptivesUsedByPatientId(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": patientId,
+		}).WithError(err).Error("failure retrieving a patient's contraceptives used")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	results, err := json.Marshal(contraceptives)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId":      patientId,
+			"contraceptives": contraceptives,
+		}).WithError(err).Error("failed to marshal list of contraceptives")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	fmt.Fprintf(w, string(results))
+}

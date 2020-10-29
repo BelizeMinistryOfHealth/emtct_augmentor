@@ -513,3 +513,52 @@ FROM hiv_screening WHERE id=$1`
 		return nil, fmt.Errorf("error retrieving hiv screening from database: %+v", err)
 	}
 }
+
+func (d *EmtctDb) ContraceptivesUsedByPatientId(patientId int) ([]models.ContraceptiveUsed, error) {
+	stmt := `SELECT id, patient_id, comments, date_used, created_at, created_by, updated_at, updated_by WHERE patient_id=$1`
+	var contraceptives []models.ContraceptiveUsed
+
+	rows, err := d.DB.Query(stmt, patientId)
+	if err != nil {
+		return contraceptives, fmt.Errorf("error when executing query to retrieve contraceptives by patient id: %+v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var c models.ContraceptiveUsed
+		err := rows.Scan(
+			&c.Id,
+			&c.PatientId,
+			&c.Comments,
+			&c.DateUsed,
+			&c.CreatedAt,
+			&c.CreatedBy,
+			&c.UpdatedAt,
+			&c.UpdatedBy)
+		if err != nil {
+			return contraceptives, fmt.Errorf("error scanning contraceptive result from the database: %+v", err)
+		}
+		contraceptives = append(contraceptives, c)
+	}
+
+	return contraceptives, nil
+}
+
+func (d *EmtctDb) CreateContraceptiveUsed(c models.ContraceptiveUsed) error {
+	stmt := `INSERT INTO contraceptive_used (id, patient_id, comments, date_used, created_by, created_at) 
+VALUES($1, $2, $3, $4, $5, $6)`
+	_, err := d.DB.Exec(stmt, c.Id, c.PatientId, c.Comments, c.DateUsed, c.CreatedBy, c.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("error inserting a new contraceptive into the database: %+v", err)
+	}
+	return nil
+}
+
+func (d *EmtctDb) EditContraceptiveUsed(c models.ContraceptiveUsed) error {
+	stmt := `UPDATE contraceptive_used SET comments=$1, date_used=$2, updated_by=$3, updated_at=$4 WHERE id=$5`
+	_, err := d.DB.Exec(stmt, c.Comments, c.DateUsed, c.UpdatedBy, c.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("error updating contracptive in the database: %+v", err)
+	}
+	return nil
+}

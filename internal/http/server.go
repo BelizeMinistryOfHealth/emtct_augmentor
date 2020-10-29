@@ -60,6 +60,8 @@ func RegisterHandlers() *mux.Router {
 	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
 	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods(http.MethodOptions, http.MethodPost)
 	r.HandleFunc("/patient/hivScreening/{screeningId}", authHandlers.Then(app.HivScreeningApi)).Methods(http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{patientId}/contraceptivesUsed", authHandlers.Then(app.ContraceptivesByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/contraceptivesUsed", authHandlers.Then(app.CreateContraceptiveUsedHandler)).Methods(http.MethodOptions, http.MethodPost)
 
 	return r
 }
