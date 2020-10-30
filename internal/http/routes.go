@@ -665,3 +665,72 @@ func (a *App) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, string(results))
 }
+
+func (a *App) ContraceptivesApiHandler(w http.ResponseWriter, r *http.Request) {
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodPut:
+		vars := mux.Vars(r)
+		contraceptiveId := vars["contraceptiveId"]
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		c, err := a.Db.FindContraceptiveById(contraceptiveId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"contraceptiveId": contraceptiveId,
+				"user":            user,
+			}).WithError(err).Error("error searching for contraceptive when performing an update")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		var req models.ContraceptiveUsed
+		err = parseBody(r.Body, &req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"contraceptiveId": contraceptiveId,
+				"user":            user,
+				"contraceptive":   c,
+			}).WithError(err).Error("failed to parse request body for updating a contraceptive")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if req.Id != contraceptiveId {
+			log.WithFields(log.Fields{
+				"contraceptiveId": contraceptiveId,
+				"user":            user,
+				"request":         c,
+			}).Error("the contraceptive id and the request id must be equal when updating a contraceptive")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		now := time.Now()
+		req.UpdatedBy = &user
+		req.UpdatedAt = &now
+		err = a.Db.EditContraceptiveUsed(req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":            user,
+				"contraceptiveId": contraceptiveId,
+				"request":         req,
+			}).WithError(err).Error("error trying to update a contraceptive")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		result, err := json.Marshal(req)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"contraceptiveId": contraceptiveId,
+				"user":            user,
+				"request":         req,
+			}).WithError(err).Error("failed to marshal contraceptive when editing a contraceptive")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, string(result))
+	default:
+		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+		return
+	}
+}

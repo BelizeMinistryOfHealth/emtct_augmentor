@@ -557,9 +557,33 @@ VALUES($1, $2, $3, $4, $5, $6, $7)`
 
 func (d *EmtctDb) EditContraceptiveUsed(c models.ContraceptiveUsed) error {
 	stmt := `UPDATE contraceptive_used SET contraceptive=$1, comments=$2, date_used=$3, updated_by=$4, updated_at=$5 WHERE id=$6`
-	_, err := d.DB.Exec(stmt, c.Contraceptive, c.Comments, c.DateUsed, c.UpdatedBy, c.UpdatedAt)
+	_, err := d.DB.Exec(stmt, c.Contraceptive, c.Comments, c.DateUsed, c.UpdatedBy, c.UpdatedAt, c.Id)
 	if err != nil {
-		return fmt.Errorf("error updating contracptive in the database: %+v", err)
+		return fmt.Errorf("error updating contraceptive in the database: %+v", err)
 	}
 	return nil
+}
+
+func (d *EmtctDb) FindContraceptiveById(id string) (*models.ContraceptiveUsed, error) {
+	stmt := `SELECT id, patient_id, contraceptive, comments, created_at, created_by, updated_at, updated_by FROM 
+contraceptive_used WHERE id=$1`
+	var contraceptive models.ContraceptiveUsed
+	row := d.DB.QueryRow(stmt, id)
+	err := row.Scan(
+		&contraceptive.Id,
+		&contraceptive.PatientId,
+		&contraceptive.Contraceptive,
+		&contraceptive.Comments,
+		&contraceptive.CreatedAt,
+		&contraceptive.CreatedBy,
+		&contraceptive.UpdatedAt,
+		&contraceptive.UpdatedBy)
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &contraceptive, nil
+	default:
+		return nil, fmt.Errorf("error retrieving contraceptive from database: %+v", err)
+	}
 }

@@ -10,13 +10,16 @@ import {
   TableHeader,
   TableRow,
   Text,
+  Layer,
+  Heading,
 } from 'grommet';
-import { Add, Edit } from 'grommet-icons';
+import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
+import EditForm from './ContraceptivesEdit';
 
 const contraceptiveRow = (data, onClickEdit) => {
   return (
@@ -120,6 +123,37 @@ const ContraceptivesUsed = (props) => {
       <ErrorBoundary>
         <Card fill={'horizontal'}>
           <CardBody gap={'medium'} pad={'medium'}>
+            {editingContraceptive && (
+              <Layer
+                position={'right'}
+                full={'vertical'}
+                onClickOutside={() => setEditingContraceptive(undefined)}
+                onEsc={() => setEditingContraceptive(undefined)}
+                modal
+              >
+                <Box
+                  fill={'vertical'}
+                  overflow={'auto'}
+                  width={'medium'}
+                  pad={'medium'}
+                >
+                  <Box
+                    flex={false}
+                    direction={'row-responsive'}
+                    justify={'between'}
+                  >
+                    <Heading level={2} margin={'none'}>
+                      Edit
+                    </Heading>
+                    <Button
+                      icon={<Close />}
+                      onClick={() => setEditingContraceptive(undefined)}
+                    />
+                  </Box>
+                  <EditForm contraceptive={editingContraceptive} />
+                </Box>
+              </Layer>
+            )}
             <Box
               direction={'row-reverse'}
               align={'start'}

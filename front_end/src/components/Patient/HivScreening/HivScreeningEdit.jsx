@@ -35,7 +35,6 @@ const EditForm = ({ screening }) => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    console.dir({ value: e.value });
     const data = {
       patientId: screening.patientId,
       id: screening.id,
