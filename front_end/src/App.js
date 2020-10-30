@@ -15,6 +15,8 @@ import HivScreening from './components/Patient/HivScreening';
 import HivScreeningCreateForm from './components/Patient/HivScreening/HivScreeningCreate';
 import ContraceptivesUsed from './components/Patient/Contraceptives';
 import ContraceptivesCreateForm from './components/Patient/Contraceptives/ContraceptivesCreate';
+import HospitalAdmissions from './components/Patient/HospitalAdmissions';
+import HospitalAdmissionCreateForm from './components/Patient/HospitalAdmissions/HospitalAdmissionsCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -74,6 +76,14 @@ function App() {
                 <Route
                   path={'/patient/:patientId/contraceptives'}
                   component={ContraceptivesUsed}
+                />
+                <Route
+                  path={'/patient/:patientId/admissions/new'}
+                  component={HospitalAdmissionCreateForm}
+                />
+                <Route
+                  path={'/patient/:patientId/admissions'}
+                  component={HospitalAdmissions}
                 />
                 <Route
                   path={'/patient/:patientId'}

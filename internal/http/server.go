@@ -60,9 +60,14 @@ func RegisterHandlers() *mux.Router {
 	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
 	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods(http.MethodOptions, http.MethodPost)
 	r.HandleFunc("/patient/hivScreening/{screeningId}", authHandlers.Then(app.HivScreeningApi)).Methods(http.MethodOptions, http.MethodPut)
+	// Contraceptives
 	r.HandleFunc("/patient/{patientId}/contraceptivesUsed", authHandlers.Then(app.ContraceptivesByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
 	r.HandleFunc("/patient/contraceptivesUsed", authHandlers.Then(app.CreateContraceptiveUsedHandler)).Methods(http.MethodOptions, http.MethodPost)
 	r.HandleFunc("/patient/contraceptivesUsed/{contraceptiveId}", authHandlers.Then(app.ContraceptivesApiHandler)).Methods(http.MethodOptions, http.MethodPut)
+	// Admissions
+	r.HandleFunc("/patient/{patientId}/hospitalAdmissions", authHandlers.Then(app.HospitalAdmissionsByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/hospitalAdmissions", authHandlers.Then(app.CreateHospitalAdmissionHandler)).Methods(http.MethodOptions, http.MethodPost)
+	r.HandleFunc("/patient/hospitalAdmissions/{admissionId}", authHandlers.Then(app.HospitalAdmissionsApiHandler)).Methods(http.MethodOptions, http.MethodPut)
 
 	return r
 }
