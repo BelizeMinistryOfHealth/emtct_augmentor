@@ -3,7 +3,7 @@ import React from 'react';
 
 //TODO:  Add onSubmit Handler
 const EncounterIdSearch = () => {
-  const [encounterNumber, setEncounterNumber] = React.useState();
+  const [, setEncounterNumber] = React.useState();
   return (
     <Card
       pad={'small'}

@@ -163,7 +163,7 @@ const HivScreening = (props) => {
   }
 
   if (data.error) {
-    return <>Could not fetch patient's HIV Screenings Data!</>;
+    return <>Could not fetch patient HIV Screenings Data!</>;
   }
 
   return (

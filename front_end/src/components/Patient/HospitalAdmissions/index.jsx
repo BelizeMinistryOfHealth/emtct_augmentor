@@ -115,7 +115,7 @@ const HospitalAdmissions = (props) => {
   }
 
   if (data.error) {
-    return <>Could not fetch patient's Hospital Admissions Data!</>;
+    return <>Could not fetch patient Hospital Admissions Data!</>;
   }
 
   return (

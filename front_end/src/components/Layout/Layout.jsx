@@ -3,8 +3,7 @@ import React from 'react';
 import SidebarButton from '../SidebarButton/SidebarButton';
 import { useHistory, useParams } from 'react-router-dom';
 
-const Layout = ({ children, location, ...rest }) => {
-  // const patientId = location?.state?.id;
+const Layout = ({ children }) => {
   const history = useHistory();
   const [active, setActive] = React.useState();
   const { patientId } = useParams();

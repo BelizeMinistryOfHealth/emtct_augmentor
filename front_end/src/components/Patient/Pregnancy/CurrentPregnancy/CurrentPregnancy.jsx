@@ -57,7 +57,7 @@ const Arvs = ({ currentPregnancy }) => {
   );
 };
 
-const LabTests = ({ patientId, encounterId }) => {
+const LabTests = ({ patientId }) => {
   const { state, contents } = useRecoilValueLoadable(
     pregnancyLabResultsSelector(patientId)
   );
@@ -122,12 +122,7 @@ const CurrentPregnancy = (props) => {
         <AppTabs
           basicInfo={<BasicInfoComponent currentPregnancy={currentPregnancy} />}
           arvs={<Arvs currentPregnancy={currentPregnancy} />}
-          labResults={
-            <LabTests
-              patientId={patientId}
-              encounterId={currentPregnancy.encounterId}
-            />
-          }
+          labResults={<LabTests patientId={patientId} />}
         />
       </Box>
     </Layout>

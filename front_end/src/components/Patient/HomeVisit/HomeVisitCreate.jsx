@@ -18,7 +18,7 @@ const HomeVisitCreateForm = () => {
   const [dateOfVisit, setDateOfVisit] = React.useState();
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
-  const [homeVisit, setHomeVisit] = React.useState();
+  const [, setHomeVisit] = React.useState();
   const { patientId } = useParams();
   const history = useHistory();
 

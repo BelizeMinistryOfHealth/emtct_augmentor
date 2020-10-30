@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Text, Box } from 'grommet';
 
-const SidebarButton = ({ label, link, ...rest }) => {
+const SidebarButton = ({ label, ...rest }) => {
   return (
     <Button plain {...rest}>
       {({ hover }) => (

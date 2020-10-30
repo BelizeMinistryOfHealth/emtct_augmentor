@@ -49,13 +49,7 @@ const homeVisitRow = (data, onClickEdit) => {
   );
 };
 
-const HomeVisitsTable = ({
-  children,
-  homeVisits,
-  caption,
-  onClickEdit,
-  ...rest
-}) => {
+const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
   if (homeVisits.length === 0) {
     return (
       <Box gap={'medium'} align={'center'}>

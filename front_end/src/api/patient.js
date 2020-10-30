@@ -106,6 +106,7 @@ export const useEditHomeVisit = async (homeVisit) => {
 };
 
 export const fetchArvsTreatment = (patientId, encounterId) => {
+  console.log({ patientId, encounterId });
   const treatments = [
     {
       id: 1,

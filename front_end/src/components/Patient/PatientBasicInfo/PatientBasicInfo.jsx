@@ -4,7 +4,7 @@ import { AddCircle, SubtractCircle, User } from 'grommet-icons';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 
-const Identifier = ({ children, basicInfo, nextOfKin, ...rest }) => {
+const Identifier = ({ children, basicInfo, nextOfKin }) => {
   const {
     firstName,
     lastName,
