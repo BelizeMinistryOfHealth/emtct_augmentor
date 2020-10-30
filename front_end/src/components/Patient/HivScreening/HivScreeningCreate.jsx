@@ -77,7 +77,7 @@ const HivScreeningCreateForm = () => {
         justify={'center'}
         fill={'horizontal'}
       >
-        <Heading level={2} margin={'non'}>
+        <Heading level={2} margin={'none'}>
           Create HIV Screening
         </Heading>
       </Box>

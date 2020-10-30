@@ -515,7 +515,7 @@ FROM hiv_screening WHERE id=$1`
 }
 
 func (d *EmtctDb) ContraceptivesUsedByPatientId(patientId int) ([]models.ContraceptiveUsed, error) {
-	stmt := `SELECT id, patient_id, comments, date_used, created_at, created_by, updated_at, updated_by WHERE patient_id=$1`
+	stmt := `SELECT id, patient_id, contraceptive, comments, date_used, created_at, created_by, updated_at, updated_by FROM contraceptive_used WHERE patient_id=$1`
 	var contraceptives []models.ContraceptiveUsed
 
 	rows, err := d.DB.Query(stmt, patientId)
@@ -529,6 +529,7 @@ func (d *EmtctDb) ContraceptivesUsedByPatientId(patientId int) ([]models.Contrac
 		err := rows.Scan(
 			&c.Id,
 			&c.PatientId,
+			&c.Contraceptive,
 			&c.Comments,
 			&c.DateUsed,
 			&c.CreatedAt,
@@ -545,9 +546,9 @@ func (d *EmtctDb) ContraceptivesUsedByPatientId(patientId int) ([]models.Contrac
 }
 
 func (d *EmtctDb) CreateContraceptiveUsed(c models.ContraceptiveUsed) error {
-	stmt := `INSERT INTO contraceptive_used (id, patient_id, comments, date_used, created_by, created_at) 
-VALUES($1, $2, $3, $4, $5, $6)`
-	_, err := d.DB.Exec(stmt, c.Id, c.PatientId, c.Comments, c.DateUsed, c.CreatedBy, c.CreatedAt)
+	stmt := `INSERT INTO contraceptive_used (id, patient_id, contraceptive, comments, date_used, created_by, created_at) 
+VALUES($1, $2, $3, $4, $5, $6, $7)`
+	_, err := d.DB.Exec(stmt, c.Id, c.PatientId, c.Contraceptive, c.Comments, c.DateUsed, c.CreatedBy, c.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("error inserting a new contraceptive into the database: %+v", err)
 	}
@@ -555,8 +556,8 @@ VALUES($1, $2, $3, $4, $5, $6)`
 }
 
 func (d *EmtctDb) EditContraceptiveUsed(c models.ContraceptiveUsed) error {
-	stmt := `UPDATE contraceptive_used SET comments=$1, date_used=$2, updated_by=$3, updated_at=$4 WHERE id=$5`
-	_, err := d.DB.Exec(stmt, c.Comments, c.DateUsed, c.UpdatedBy, c.UpdatedAt)
+	stmt := `UPDATE contraceptive_used SET contraceptive=$1, comments=$2, date_used=$3, updated_by=$4, updated_at=$5 WHERE id=$6`
+	_, err := d.DB.Exec(stmt, c.Contraceptive, c.Comments, c.DateUsed, c.UpdatedBy, c.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("error updating contracptive in the database: %+v", err)
 	}

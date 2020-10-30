@@ -575,9 +575,10 @@ func (a *App) HivScreeningApi(w http.ResponseWriter, r *http.Request) {
 // CONTRACEPTIVES USED
 
 type NewContraceptiveUsedRequest struct {
-	PatientId int       `json:"patient_id"`
-	Comments  string    `json:"comments"`
-	DateUsed  time.Time `json:"date_used"`
+	PatientId     int       `json:"patientId"`
+	Contraceptive string    `json:"contraceptive"`
+	Comments      string    `json:"comments"`
+	DateUsed      time.Time `json:"dateUsed"`
 }
 
 func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Request) {
@@ -595,14 +596,15 @@ func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		contraceptive := models.ContraceptiveUsed{
-			Id:        uuid.New().String(),
-			PatientId: req.PatientId,
-			Comments:  req.Comments,
-			DateUsed:  req.DateUsed,
-			CreatedAt: time.Now(),
-			UpdatedAt: nil,
-			CreatedBy: user,
-			UpdatedBy: nil,
+			Id:            uuid.New().String(),
+			PatientId:     req.PatientId,
+			Contraceptive: req.Contraceptive,
+			Comments:      req.Comments,
+			DateUsed:      req.DateUsed,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     nil,
+			CreatedBy:     user,
+			UpdatedBy:     nil,
 		}
 		err = a.Db.CreateContraceptiveUsed(contraceptive)
 		if err != nil {

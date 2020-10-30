@@ -91,10 +91,10 @@ const LabTests = ({ patientId, encounterId }) => {
 
 const CurrentPregnancy = (props) => {
   const { location } = props;
-  const { id } = useParams();
+  const { patientId } = useParams();
 
   const { state, contents } = useRecoilValueLoadable(
-    currentPregnancySelector(id)
+    currentPregnancySelector(patientId)
   );
   let currentPregnancy = {};
   switch (state) {
@@ -124,7 +124,7 @@ const CurrentPregnancy = (props) => {
           arvs={<Arvs currentPregnancy={currentPregnancy} />}
           labResults={
             <LabTests
-              patientId={id}
+              patientId={patientId}
               encounterId={currentPregnancy.encounterId}
             />
           }

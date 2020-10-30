@@ -31,6 +31,10 @@ const Layout = ({ children, location, ...rest }) => {
             label: 'HIV Screenings',
             link: `/patient/${patientId}/hiv_screenings`,
           },
+          {
+            label: 'Contraceptives',
+            link: `/patient/${patientId}/contraceptives`,
+          },
         ].map((d) => {
           return (
             <SidebarButton

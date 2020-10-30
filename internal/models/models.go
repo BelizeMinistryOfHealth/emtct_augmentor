@@ -114,12 +114,13 @@ type HivScreening struct {
 }
 
 type ContraceptiveUsed struct {
-	Id        string     `json:"id"`
-	PatientId int        `json:"patientId"`
-	Comments  string     `json:"comments"`
-	DateUsed  time.Time  `json:"dateUsed"`
-	CreatedAt time.Time  `json:"createdAt"`
-	UpdatedAt *time.Time `json:"updatedAt"`
-	CreatedBy string     `json:"createdBy"`
-	UpdatedBy *string    `json:"updatedBy"`
+	Id            string     `json:"id"`
+	PatientId     int        `json:"patientId"`
+	Contraceptive string     `json:"contraceptive"`
+	Comments      string     `json:"comments"`
+	DateUsed      time.Time  `json:"dateUsed"`
+	CreatedAt     time.Time  `json:"createdAt"`
+	UpdatedAt     *time.Time `json:"updatedAt"`
+	CreatedBy     string     `json:"createdBy"`
+	UpdatedBy     *string    `json:"updatedBy"`
 }
