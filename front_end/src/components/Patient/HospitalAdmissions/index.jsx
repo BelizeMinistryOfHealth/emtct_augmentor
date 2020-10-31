@@ -86,6 +86,7 @@ const HospitalAdmissions = (props) => {
     loading: false,
     error: undefined,
   });
+  const [refreshAdmissions, setRefreshAdmissions] = React.useState(false);
   const history = useHistory();
 
   const onClickEdit = (admission) => setEditingAdmission(admission);
@@ -99,6 +100,7 @@ const HospitalAdmissions = (props) => {
         );
         const admissions = result.data ?? [];
         setData({ admissions, loading: false, error: undefined });
+        setRefreshAdmissions(false);
       } catch (e) {
         setData({
           admissions: [],
@@ -108,7 +110,12 @@ const HospitalAdmissions = (props) => {
       }
     };
     fetchAdmissions();
-  }, [httpInstance, patientId]);
+  }, [httpInstance, patientId, refreshAdmissions]);
+
+  const closeEditForm = () => {
+    setEditingAdmission(undefined);
+    setRefreshAdmissions(true);
+  };
 
   if (data.loading) {
     return <>Loading...</>;
@@ -150,7 +157,10 @@ const HospitalAdmissions = (props) => {
                       onClick={() => setEditingAdmission(undefined)}
                     />
                   </Box>
-                  <EditForm admission={editingAdmission} />
+                  <EditForm
+                    admission={editingAdmission}
+                    closeForm={closeEditForm}
+                  />
                 </Box>
               </Layer>
             )}

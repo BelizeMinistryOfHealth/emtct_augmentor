@@ -10,7 +10,7 @@ import {
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
-const EditForm = ({ admission }) => {
+const EditForm = ({ admission, closeForm }) => {
   const [facility, setFacility] = React.useState(admission.facility);
   const [dateAdmitted, setDateAdmitted] = React.useState(
     admission.dateAdmitted
@@ -46,7 +46,10 @@ const EditForm = ({ admission }) => {
     if (status === 'SUBMIT' && admissionData) {
       submit(admissionData);
     }
-  }, [httpInstance, status, admissionData]);
+    if (status === 'SUCCESS') {
+      closeForm();
+    }
+  }, [httpInstance, status, admissionData, closeForm]);
 
   return (
     <Box>

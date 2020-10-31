@@ -98,6 +98,7 @@ const HomeVisitList = (props) => {
     loading: false,
     error: undefined,
   });
+  const [refreshHomeVisits, setRefreshHomeVisits] = React.useState(false);
 
   const history = useHistory();
 
@@ -109,6 +110,7 @@ const HomeVisitList = (props) => {
         setData({ homeVisits: [], loading: true, error: undefined });
         const homeVisits = await fetchHomeVisits(patientId, httpInstance);
         setData({ homeVisits, loading: false, error: undefined });
+        setRefreshHomeVisits(false);
       } catch (e) {
         setData({
           homeVisits: [],
@@ -118,7 +120,12 @@ const HomeVisitList = (props) => {
       }
     };
     fetchVisits();
-  }, [httpInstance, patientId]);
+  }, [httpInstance, patientId, refreshHomeVisits]);
+
+  const closeEditForm = () => {
+    setEditingHomeVisit(undefined);
+    setRefreshHomeVisits(true);
+  };
 
   return (
     <Layout location={props.location} {...props}>
@@ -149,7 +156,10 @@ const HomeVisitList = (props) => {
                       onClick={() => setEditingHomeVisit(undefined)}
                     />
                   </Box>
-                  <EditForm visit={editingHomeVisit} />
+                  <EditForm
+                    visit={editingHomeVisit}
+                    closeForm={closeEditForm}
+                  />
                 </Box>
               </Layer>
             )}

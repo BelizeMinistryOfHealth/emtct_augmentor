@@ -2,7 +2,7 @@ import { Box, Button, DateInput, FormField, TextArea, Text } from 'grommet';
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
-const EditForm = ({ visit }) => {
+const EditForm = ({ visit, closeForm }) => {
   const [reason, setReason] = React.useState(visit.reason);
   const [comments, setComments] = React.useState(visit.comments);
   const [dateOfVisit, setDateOfVisit] = React.useState(visit.dateOfVisit);
@@ -28,6 +28,7 @@ const EditForm = ({ visit }) => {
         await httpInstance.put(`/patient/homeVisit/${homeVisit.id}`, homeVisit);
         setSubmitting(false);
         setEditStatus('Successfully edited');
+        closeForm();
       } catch (e) {
         console.error(e);
         setError('Edit request failed!');
@@ -38,7 +39,7 @@ const EditForm = ({ visit }) => {
     if (homeVisit && submitting) {
       edit();
     }
-  }, [httpInstance, submitting, homeVisit]);
+  }, [httpInstance, submitting, homeVisit, closeForm, editStatus]);
 
   const onSubmit = (e) => {
     e.preventDefault();
