@@ -16,7 +16,7 @@ type EmtctDb struct {
 
 // NewConnection creates a new database connection
 func NewConnection(cnf *config.DbConf) (*EmtctDb, error) {
-	connstr := fmt.Sprintf("user=%s dbname=%s password=%s host=%s sslmode=disable", cnf.DbUsername, cnf.DbDatabase, cnf.DbPassword, cnf.DbHost)
+	connstr := fmt.Sprintf("user=%s dbname=%s password=%s host=%s sslmode=disable", cnf.Username, cnf.Database, cnf.Password, cnf.Host)
 	db, err := sql.Open("postgres", connstr)
 	if err != nil {
 		return nil, err

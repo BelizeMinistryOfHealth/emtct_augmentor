@@ -22,6 +22,13 @@ const (
 	layoutISO = "2006-01-02"
 )
 
+var cnf = config.DbConf{
+	Username: "postgres",
+	Password: "password",
+	Database: "emtct",
+	Host:     "localhost",
+}
+
 func ClearTable(table string, db EmtctDb) error {
 	stmt := fmt.Sprintf("DELETE FROM %s", table)
 	_, err := db.Exec(stmt)
@@ -257,12 +264,6 @@ func SampleHomeVisits(db EmtctDb) error {
 }
 
 func TestMain(m *testing.M) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		log.Errorf("could not connect to database; %+v", err)
@@ -308,12 +309,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestEmtctDb_FindPatientById(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -327,12 +322,6 @@ func TestEmtctDb_FindPatientById(t *testing.T) {
 }
 
 func TestEmtctDb_FindObstetricHistory(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -346,12 +335,6 @@ func TestEmtctDb_FindObstetricHistory(t *testing.T) {
 }
 
 func TestEmtctDb_FindDiagnoses(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -365,12 +348,6 @@ func TestEmtctDb_FindDiagnoses(t *testing.T) {
 }
 
 func TestEmtctDb_FindPregnancyDiagnoses(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -385,12 +362,6 @@ func TestEmtctDb_FindPregnancyDiagnoses(t *testing.T) {
 }
 
 func TestEmtctDb_FindPregnancyLabResults(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -407,12 +378,6 @@ func TestEmtctDb_FindPregnancyLabResults(t *testing.T) {
 }
 
 func TestEmtctDb_FindHomeVisitsByPatientId(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -431,12 +396,6 @@ func TestEmtctDb_FindHomeVisitsByPatientId(t *testing.T) {
 }
 
 func TestEmtctDb_CreateHomeVisit(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -462,12 +421,6 @@ func TestEmtctDb_CreateHomeVisit(t *testing.T) {
 }
 
 func TestEmtctDb_FindHomeVisitById(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)
@@ -497,12 +450,6 @@ func TestEmtctDb_FindHomeVisitById(t *testing.T) {
 }
 
 func TestEmtctDb_EditHivScreening(t *testing.T) {
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
 	db, err := NewConnection(&cnf)
 	if err != nil {
 		t.Fatalf("failed to open db connection %+v", err)

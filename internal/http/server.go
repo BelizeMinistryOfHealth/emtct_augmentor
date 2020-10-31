@@ -22,23 +22,16 @@ type App struct {
 	Db *db.EmtctDb
 }
 
-func RegisterHandlers() *mux.Router {
-	jwkUrl := os.Getenv("EMTCT_JWK_URL")
-	iss := os.Getenv("EMTCT_AUTH_ISSUER")
-	aud := os.Getenv("EMTCT_AUTH_AUDIENCE")
+func RegisterHandlers(cnf config.AppConf) *mux.Router {
+	jwkUrl := cnf.Auth.JwkUrl
+	iss := cnf.Auth.Issuer
+	aud := cnf.Auth.Audience
 
 	// Instantiate an aut0 client with a Cache with a key capacity of
 	// 60 tokens and a ttl of 24 hours.
 	auth0Client := auth0.NewAuth0(60, 518400)
 
-	//Todo: Read the database configuration from a file
-	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
-	}
-	db, err := db.NewConnection(&cnf)
+	db, err := db.NewConnection(&cnf.EmtctDb)
 	if err != nil {
 		log.WithError(err).Error("failed to open connection to database")
 		panic("failed to open connection to database")
@@ -72,8 +65,8 @@ func RegisterHandlers() *mux.Router {
 	return r
 }
 
-func NewServer() {
-	r := RegisterHandlers()
+func NewServer(cnf config.AppConf) {
+	r := RegisterHandlers(cnf)
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
 		// Good practice to set timeouts to avoid Slowloris attacks.

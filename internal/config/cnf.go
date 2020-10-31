@@ -4,18 +4,31 @@ import "github.com/spf13/viper"
 import log "github.com/sirupsen/logrus"
 
 type DbConf struct {
-	DbUsername string
-	DbPassword string
-	DbDatabase string
-	DbHost     string
+	Username string
+	Password string
+	Database string
+	Host     string
+}
+
+type AuthConf struct {
+	JwkUrl   string
+	Issuer   string
+	Audience string
+}
+
+type AppConf struct {
+	EmtctDb DbConf
+	Auth    AuthConf
+	AcsisDb DbConf
 }
 
 // ReadConf reads a yaml file and unmarshalls its content.
 // The yaml file must have root siblings for the following environments:
 // prod, test, dev
-func ReadConf(fileName, stage string) (*DbConf, error) {
-	viper.AddConfigPath("./")
+func ReadConf(fileName string) (*AppConf, error) {
+	viper.AddConfigPath(".")
 	viper.SetConfigFile(fileName)
+	viper.SetConfigType("yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
@@ -23,12 +36,29 @@ func ReadConf(fileName, stage string) (*DbConf, error) {
 
 	log.Infof("using configuration file: %s", fileName)
 
-	v := viper.Sub(stage)
-	var c *DbConf
-	err := v.Unmarshal(&c)
+	var c DbConf
+	err := viper.Sub("emtct_db").Unmarshal(&c)
 	if err != nil {
 		return nil, err
 	}
 
-	return c, nil
+	var a AuthConf
+	err = viper.Sub("auth").Unmarshal(&a)
+	if err != nil {
+		return nil, err
+	}
+
+	var acsisConf DbConf
+	err = viper.Sub("acsis_db").Unmarshal(&acsisConf)
+	if err != nil {
+		return nil, err
+	}
+
+	appConf := AppConf{
+		EmtctDb: c,
+		Auth:    a,
+		AcsisDb: acsisConf,
+	}
+
+	return &appConf, nil
 }

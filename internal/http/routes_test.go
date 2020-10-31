@@ -26,10 +26,10 @@ import (
 
 func TestMain(m *testing.M) {
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	d, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -81,10 +81,10 @@ func TestApp_RetrievePatient(t *testing.T) {
 	patientId := "1111120"
 
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -124,10 +124,10 @@ func TestApp_FindCurrentPregnancy(t *testing.T) {
 	patientId := "1111120"
 
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -167,10 +167,10 @@ func TestApp_FindCurrentPregnancy_WhenPatientDoesNotExist(t *testing.T) {
 	patientId := "1111121"
 
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -210,10 +210,10 @@ func TestApp_FindPregnancyLabResults(t *testing.T) {
 	patientId := "1111120"
 
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -256,10 +256,10 @@ func TestApp_FindHomeVisitsByPatient(t *testing.T) {
 	patientId := "1111120"
 
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -302,10 +302,10 @@ func TestApp_FindHomeVisitsByPatient(t *testing.T) {
 
 func TestApp_FindHomeVisitById(t *testing.T) {
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -360,10 +360,10 @@ func TestApp_FindHomeVisitById(t *testing.T) {
 
 func TestApp_EditHomeVisit(t *testing.T) {
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
@@ -437,10 +437,10 @@ func TestApp_EditHomeVisit(t *testing.T) {
 
 func TestApp_CreateHivScreening(t *testing.T) {
 	cnf := config.DbConf{
-		DbUsername: "postgres",
-		DbPassword: "password",
-		DbDatabase: "emtct",
-		DbHost:     "localhost",
+		Username: "postgres",
+		Password: "password",
+		Database: "emtct",
+		Host:     "localhost",
 	}
 	db, err := db.NewConnection(&cnf)
 	if err != nil {
