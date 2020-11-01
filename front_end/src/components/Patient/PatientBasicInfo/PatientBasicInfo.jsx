@@ -9,8 +9,6 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
     firstName,
     lastName,
     dob,
-    community,
-    district,
     patientId,
     ssn,
     countryOfBirth,
@@ -18,6 +16,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
     education,
     ethnicity,
     hiv,
+    hivDiagnosisDate,
   } = basicInfo;
   return (
     <Box gap='medium' align='center'>
@@ -42,7 +41,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             SSN:
           </Text>
           <Text size={'medium'} textAlign={'start'} weight={'bold'}>
-            Country of Birth:
+            Place of Birth:
           </Text>
           <Text size={'medium'} textAlign={'start'} weight={'bold'}>
             Address:
@@ -55,6 +54,9 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
           </Text>
           <Text size={'medium'} textAlign={'start'} weight={'bold'}>
             HIV
+          </Text>
+          <Text size={'medium'} textAlign={'start'} weight={'bold'}>
+            HIV Diagnosis Date
           </Text>
           <Text size={'medium'} textAlign={'start'} weight={'bold'}>
             Next of Kin:
@@ -82,7 +84,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             {countryOfBirth}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {address}, {community}, {district}
+            {address}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
             {education}
@@ -96,6 +98,9 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             ) : (
               <SubtractCircle color={'green'} />
             )}
+          </Text>
+          <Text size={'medium'} textAlign={'start'}>
+            {format(parseISO(hivDiagnosisDate), 'dd LLL yyyy')}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
             {nextOfKin.name}

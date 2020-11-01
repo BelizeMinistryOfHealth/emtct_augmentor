@@ -19,7 +19,8 @@ import (
 )
 
 type App struct {
-	Db *db.EmtctDb
+	Db      *db.EmtctDb
+	AcsisDb *db.AcsisDb
 }
 
 func RegisterHandlers(cnf config.AppConf) *mux.Router {
@@ -31,13 +32,18 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	// 60 tokens and a ttl of 24 hours.
 	auth0Client := auth0.NewAuth0(60, 518400)
 
-	db, err := db.NewConnection(&cnf.EmtctDb)
+	emtctDb, err := db.NewConnection(&cnf.EmtctDb)
 	if err != nil {
 		log.WithError(err).Error("failed to open connection to database")
 		panic("failed to open connection to database")
 	}
+	acsisDb, err := db.NewAcsisConnection(&cnf.AcsisDb)
+	if err != nil {
+		log.WithError(err).Error("failed to open connection to acsis database")
+		panic("failed to open connection to acsis database")
+	}
 
-	app := App{Db: db}
+	app := App{Db: emtctDb, AcsisDb: acsisDb}
 
 	r := mux.NewRouter()
 	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))

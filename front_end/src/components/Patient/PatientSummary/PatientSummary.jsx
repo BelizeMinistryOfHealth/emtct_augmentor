@@ -29,7 +29,7 @@ const PatientSummary = (props) => {
       return '';
   }
 
-  if (patient) {
+  if (patient && patient.basicInfo) {
     const {
       basicInfo,
       nextOfKin,
@@ -39,12 +39,18 @@ const PatientSummary = (props) => {
     return (
       <Layout location={props.location} {...props}>
         <ErrorBoundary>
-          <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
-          <ObstetricHistory obstetricHistory={obstetricHistory} />
-          <DiagnosisHistory
-            diagnosisHistory={diagnosesPrePregnancy}
-            caption={'Illnesses before Pregnancy'}
-          />
+          <Box direction={'column'} gap={'medium'} fill={'horizontal'}>
+            <Box direction={'row-responsive'} gap={'medium'} justify={'evenly'}>
+              <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
+              <ObstetricHistory obstetricHistory={obstetricHistory} />
+            </Box>
+            <Box gap={'medium'}>
+              <DiagnosisHistory
+                diagnosisHistory={diagnosesPrePregnancy}
+                caption={'Illnesses before Pregnancy'}
+              />
+            </Box>
+          </Box>
         </ErrorBoundary>
       </Layout>
     );

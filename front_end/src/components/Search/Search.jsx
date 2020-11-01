@@ -2,7 +2,6 @@ import React from 'react';
 import { withAuth0 } from '@auth0/auth0-react';
 import { Box } from 'grommet';
 import PatientIdSearch from './PatientIdSearch';
-import EncounterIdSearch from './EncounterIdSearch';
 import { useHistory } from 'react-router-dom';
 
 const SearchForm = () => {
@@ -21,7 +20,6 @@ const SearchForm = () => {
       gap={'medium'}
     >
       <PatientIdSearch onSubmit={patientIdSearchHandler} />
-      <EncounterIdSearch />
     </Box>
   );
 };

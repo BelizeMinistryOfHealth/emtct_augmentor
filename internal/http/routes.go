@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +37,15 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	patientId := vars["id"]
-	patient, err := a.Db.FindPatientById(patientId)
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": patientId,
+		}).WithError(err).Error("patient id is not a valid numeric value")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	patient, err := a.AcsisDb.FindByPatientId(id)
 	if err != nil {
 		log.WithFields(
 			log.Fields{"request": r}).WithError(err).Error("could not find patient with specified id")
@@ -44,13 +53,13 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	diagnoses, err := a.Db.FindDiagnoses(patientId)
+	diagnoses, err := a.AcsisDb.FindDiagnosesBeforePregnancy(id)
 	if err != nil {
 		log.WithFields(
 			log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history for the patient")
 	}
 
-	obstetricHistory, err := a.Db.FindObstetricHistory(patientId)
+	obstetricHistory, err := a.AcsisDb.FindObstetricHistory(id)
 	if err != nil {
 		log.WithFields(log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history")
 	}
