@@ -18,10 +18,6 @@ import (
 
 var patientIds = []string{"1111120", "1111121"}
 
-const (
-	layoutISO = "2006-01-02"
-)
-
 var cnf = config.DbConf{
 	Username: "postgres",
 	Password: "password",
