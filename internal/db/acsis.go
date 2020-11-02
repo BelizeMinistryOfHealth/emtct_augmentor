@@ -125,6 +125,41 @@ func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosi
 	return diagnoses, nil
 }
 
+func (d *AcsisDb) FindDiagnosesDuringPregnancy(patientId int) ([]models.Diagnosis, error) {
+	stmt := `SELECT
+			aaed.encounter_diagnosis_id,
+       		e.patient_id,
+       		aai10d.name,
+       		aaed.diagnosis_time
+		FROM acsis_adt_encounters AS e
+		INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
+		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
+		INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
+		WHERE e.patient_id=$1
+		AND aaed.diagnosis_time < ahp.estimated_delivery_date
+		AND aaed.diagnosis_time > ahp.last_menstrual_period_date
+		ORDER BY aaed.diagnosis_time DESC`
+	var diagnoses []models.Diagnosis
+	rows, err := d.Query(stmt, patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error querying diagnoses before pregnancy from acsis: %+v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var diagnosis models.Diagnosis
+		err := rows.Scan(
+			&diagnosis.Id,
+			&diagnosis.PatientId,
+			&diagnosis.Name,
+			&diagnosis.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning diagnosis for patient(%d) %+v", patientId, err)
+		}
+		diagnoses = append(diagnoses, diagnosis)
+	}
+	return diagnoses, nil
+}
+
 func (d *AcsisDb) FindObstetricHistory(patientId int) ([]models.ObstetricHistory, error) {
 	stmt := `SELECT
 				b.birth_id,
