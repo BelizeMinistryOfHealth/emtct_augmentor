@@ -52,7 +52,7 @@ const DiagnosisHistory = (props) => {
   const { diagnosisHistory, caption } = props;
 
   return (
-    <Card>
+    <Card fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
         <DiagnosisTable data={diagnosisHistory} caption={caption}>
           <CircleInformation size={'large'} />

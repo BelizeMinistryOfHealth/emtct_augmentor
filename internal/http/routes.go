@@ -101,7 +101,13 @@ func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 	}
 	vars := mux.Vars(r)
 	patientId := vars["id"]
-	pregnancy, err := a.Db.FindCurrentPregnancy(patientId)
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId}).WithError(err).Error("patient id is not a number")
+		http.Error(w, "the patient id provided is invalid", http.StatusBadRequest)
+		return
+	}
+	pregnancy, err := a.AcsisDb.FindCurrentPregnancy(id)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId}).
 			WithError(err).
@@ -110,7 +116,7 @@ func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	diagnoses, err := a.Db.FindPregnancyDiagnoses(patientId)
+	diagnoses, err := a.AcsisDb.FindDiagnosesDuringPregnancy(id)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId, "pregnancy": pregnancy}).
 			WithError(err).

@@ -18,18 +18,46 @@ import PreNatalCare from '../PreNatalCare/PreNatalCare';
 const BasicInfoComponent = ({ currentPregnancy }) => {
   return (
     <Box
-      direction={'row-responsive'}
-      gap={'medium'}
+      direction={'column'}
       pad={'medium'}
-      justify={'start'}
-      align={'start'}
-      fill
+      gap={'large'}
+      justify={'center'}
+      fill={'horizontal'}
     >
-      <PatientBasicInfo
-        basicInfo={currentPregnancy.basicInfo}
-        nextOfKin={currentPregnancy.nextOfKin}
+      <Box
+        direction={'row-responsive'}
+        gap={'medium'}
+        pad={'medium'}
+        justify={'start'}
+        align={'start'}
+        fill
+      >
+        <PatientBasicInfo
+          basicInfo={currentPregnancy.basicInfo}
+          nextOfKin={currentPregnancy.nextOfKin}
+        />
+        <PregnancyVitals vitals={currentPregnancy.vitals} />
+      </Box>
+      <Box>
+        <PreNatalCare info={currentPregnancy.prenatalCareInfo} />
+      </Box>
+    </Box>
+  );
+};
+
+const PregnancyDiagnoses = ({ currentPregnancy }) => {
+  return (
+    <Box
+      justify={'center'}
+      align={'center'}
+      fill={'horizontal'}
+      gap={'large'}
+      pad={'medium'}
+    >
+      <DiagnosisHistory
+        diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
+        caption={'Illnesses during Pregnancy'}
       />
-      <PregnancyVitals vitals={currentPregnancy.vitals} />
     </Box>
   );
 };
@@ -44,14 +72,9 @@ const Arvs = ({ currentPregnancy }) => {
       direction={'row-responsive'}
       fill
     >
-      <PreNatalCare info={currentPregnancy.prenatalCareInfo} />
       <ArvTreatment
         patientId={currentPregnancy.basicInfo.patientId}
         encounterId={currentPregnancy.encounterId}
-      />
-      <DiagnosisHistory
-        diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
-        caption={'Illnesses during Pregnancy'}
       />
     </Box>
   );
@@ -123,6 +146,7 @@ const CurrentPregnancy = (props) => {
           basicInfo={<BasicInfoComponent currentPregnancy={currentPregnancy} />}
           arvs={<Arvs currentPregnancy={currentPregnancy} />}
           labResults={<LabTests patientId={patientId} />}
+          diagnoses={<PregnancyDiagnoses currentPregnancy={currentPregnancy} />}
         />
       </Box>
     </Layout>

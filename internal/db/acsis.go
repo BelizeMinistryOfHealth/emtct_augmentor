@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	age "github.com/bearbin/go-age"
 	"moh.gov.bz/mch/emtct/internal/config"
 	"moh.gov.bz/mch/emtct/internal/models"
 )
@@ -100,9 +101,10 @@ func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosi
 		FROM acsis_adt_encounters AS e
 		INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
 		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
-		INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
 		WHERE e.patient_id=$1
-		AND aaed.diagnosis_time < ahp.last_menstrual_period_date
+		AND aaed.diagnosis_time < (SELECT ahp.last_menstrual_period_date
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.patient_id = e.patient_id ORDER BY
+		      ahp.last_menstrual_period_date DESC LIMIT 1)  
 		ORDER BY aaed.diagnosis_time DESC`
 	var diagnoses []models.Diagnosis
 	rows, err := d.Query(stmt, patientId)
@@ -188,4 +190,178 @@ func (d *AcsisDb) FindObstetricHistory(patientId int) ([]models.ObstetricHistory
 		obstetricHistory = append(obstetricHistory, history)
 	}
 	return obstetricHistory, nil
+}
+
+func (d *AcsisDb) findLatestAntenatalEncounter(patientId int) (*models.AntenatalEncounter, error) {
+	stmt := `SELECT e.encounter_id,
+           e.patient_id,
+           amed.mch_encounter_details_id, 
+           amed.estimated_delivery_date,
+           e.begin_time,
+       		COALESCE(amed.gestational_age_by_calculation, amed.gestational_age_by_ultrasound) AS gestational_age,
+           amed.number_of_antenatal_visits
+        FROM acsis_hc_patients p
+        INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id
+        INNER JOIN acsis_adt_mch_encounter_details amed ON e.encounter_details_id=amed.mch_encounter_details_id
+        WHERE p.patient_id=$1
+        ORDER BY e.begin_time DESC
+        LIMIT 1;`
+
+	var anc models.AntenatalEncounter
+	row := d.QueryRow(stmt, patientId)
+	err := row.Scan(&anc.Id,
+		&anc.PatientId,
+		&anc.MchEncounterDetailsId,
+		&anc.EstimatedDeliveryDate,
+		&anc.BeginDate,
+		&anc.GestationalAge,
+		&anc.NumberAntenatalVisits)
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &anc, nil
+	default:
+		return nil, fmt.Errorf("error querying for mch details from acsis: %+v", err)
+	}
+}
+
+func (d *AcsisDb) findObstetricDetails(patientId int) (*models.PregnancyVitals, error) {
+	stmt := `SELECT
+       hp.pregnancy_id,
+       ahopd.number_liveborn_pregnancies,
+       ahopd.number_caesarean_sections,
+       ahopd.previous_pregnancy_planned,
+       hp.last_menstrual_period_date,
+       hp.estimated_delivery_date
+FROM acsis_hc_patients p
+INNER JOIN acsis_hc_pregnancies hp ON p.patient_id = hp.patient_id
+INNER JOIN acsis_hc_obstetric_patient_details ahopd on p.obstetric_patient_details_id = ahopd.obstetric_patient_details_id
+WHERE p.patient_id=$1
+ORDER BY hp.last_menstrual_period_date DESC
+LIMIT 1;`
+
+	var vitals models.PregnancyVitals
+	row := d.QueryRow(stmt, patientId)
+	err := row.Scan(&vitals.Id,
+		&vitals.Para,
+		&vitals.Cs,
+		&vitals.Planned,
+		&vitals.Lmp,
+		&vitals.Edd)
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &vitals, nil
+	default:
+		return nil, fmt.Errorf("error querying obstetric details from acsis: %+v", err)
+	}
+
+}
+
+func (d *AcsisDb) FindCurrentPregnancy(patientId int) (*models.PregnancyVitals, error) {
+	// Find the anc encounter. This is the most recent anc encounter in patient's docket.
+	anc, err := d.findLatestAntenatalEncounter(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("could not find current pregnancy details because no antenatal encounter was found: %+v", err)
+	}
+
+	stmt := `SELECT
+       CASE
+           WHEN ft.facility_type_id = 14 THEN 'Private'
+           ELSE 'Public'
+       END AS care_provider,
+       e.begin_time as date_of_booking,
+       CASE
+           WHEN bs.name IS NULL THEN ''
+           ELSE bs.name
+           END AS birth_status,
+       ahipd.apgar_fifth_minute,
+       ahipd.apgar_first_minute,
+       p.birth_date
+FROM acsis_hc_patients p
+INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id AND e.encounter_id=$2
+INNER JOIN acsis_hc_facilities f ON e.facility_id = f.facility_id
+INNER JOIN acsis_hc_facility_types ft ON f.facility_type_id = ft.facility_type_id
+LEFT JOIN acsis_adt_labour_encounter_details aaled ON e.encounter_id = aaled.mch_encounter_id
+LEFT JOIN acsis_hc_birth_statuses bs ON aaled.birth_status_id=bs.birth_status_id
+LEFT JOIN acsis_hc_infant_patient_details ahipd ON p.patient_id = ahipd.mothers_patient_id
+WHERE p.patient_id=$1
+ORDER BY e.begin_time DESC
+LIMIT 1;
+`
+	var vitals models.PregnancyVitals
+	var dob *time.Time
+	row := d.QueryRow(stmt, patientId, anc.Id)
+	err = row.Scan(
+		&vitals.PrenatalCareProvider,
+		&vitals.DateOfBooking,
+		&vitals.BirthStatus,
+		&vitals.ApgarFifthMinute,
+		&vitals.ApgarFirstMinute,
+		&dob,
+	)
+
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		v, err := d.findObstetricDetails(patientId)
+		if err != nil {
+			return nil, fmt.Errorf("error while retrieving pregnancy details from acsis: %+v", err)
+		}
+		ageAtLmp := age.AgeAt(*dob, v.Lmp)
+		vitals.AgeAtLmp = ageAtLmp
+		vitals.Para = v.Para
+		vitals.Id = v.Id
+		vitals.Cs = v.Cs
+		vitals.Planned = v.Planned
+		vitals.Lmp = v.Lmp
+		vitals.Edd = v.Edd
+		vitals.PregnancyOutcome, err = d.abortiveOutcome(vitals)
+		if err != nil {
+			return nil, fmt.Errorf("error while calculating abortive outcome when retrieving pregnancy details from acsis: %+v", err)
+		}
+
+		return &vitals, nil
+	default:
+		return nil, fmt.Errorf("error while retrieving pregnancy details from acsis: %+v", err)
+	}
+
+}
+
+func (d *AcsisDb) abortiveOutcome(v models.PregnancyVitals) (string, error) {
+	if v.ApgarFifthMinute > 0 && v.ApgarFirstMinute > 0 {
+		return "Live Birth", nil
+	}
+
+	if v.GestationalAge >= 22 && v.GestationalAge <= 27 {
+		return "Still Birth 22", nil
+	}
+
+	if v.GestationalAge > 27 {
+		return "Still Birth 28", nil
+	}
+
+	// Otherwise it is an abortion.. and we need to do a query for this:
+	stmt := `SELECT aai10d.name
+            FROM acsis_adt_encounters AS e
+            INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
+            INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
+            INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
+            WHERE e.patient_id = $1 
+            AND e.begin_time > '2020-01-01' AND e.begin_time < '2020-11-03'
+            AND aaed.diagnosis_time < ahp.last_menstrual_period_date
+            AND (aai10d.code ILIKE 'O06%' OR aai10d.code ILIKE 'O03%' OR aai10d.code ILIKE 'O05%'
+            OR aai10d.code ILIKE 'O04%')
+            ORDER BY aaed.diagnosis_time DESC
+            LIMIT 1;`
+	var diagnosis string
+	row := d.QueryRow(stmt, v.PatientId)
+	err := row.Scan(&diagnosis)
+	if err != nil {
+		return "", fmt.Errorf("error querying acsis for abortion diagnosis when determining abortive outcome: %+v", err)
+	}
+	return "Abortion", nil
 }

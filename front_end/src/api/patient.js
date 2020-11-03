@@ -47,7 +47,7 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   }
 
   const vitals = pregnancyData.data.vitals;
-  if (_.isEmpty(vitals.abortiveOutcome.trim())) {
+  if (!vitals.abortiveOutcome || _.isEmpty(vitals.abortiveOutcome.trim())) {
     vitals.abortiveOutcome = 'N/A';
   }
 

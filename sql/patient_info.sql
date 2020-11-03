@@ -85,23 +85,30 @@ WHERE patient_id = 591232;
 -- Obstetric Details - CS -- from acsis_hc_obstetric_patient_details: number_caesarean_sections
 
 -- Illnesses before Pregnancy
-SELECT e.encounter_id, aai10d.name, aaed.diagnosis_time, e.begin_time
-FROM acsis_adt_encounters AS e
-INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
-INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
-INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
-WHERE e.patient_id=589780005
-AND aaed.diagnosis_time < ahp.last_menstrual_period_date
-ORDER BY aaed.diagnosis_time DESC;
+SELECT aaed.encounter_diagnosis_id,
+       		e.patient_id,
+			aai10d.name,
+			aaed.diagnosis_time
+		FROM acsis_adt_encounters AS e
+		INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
+		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
+		WHERE e.patient_id=591232
+		  AND aaed.diagnosis_time < (SELECT ahp.last_menstrual_period_date
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.patient_id = e.patient_id ORDER BY
+		      ahp.last_menstrual_period_date DESC LIMIT 1)
+		ORDER BY aaed.diagnosis_time DESC;
 
 -- Illnesses During Pregnancy. Requires pregnancy_id
-SELECT e.encounter_id, aai10d.name, aaed.diagnosis_time, ahp.last_menstrual_period_date, ahp.estimated_delivery_date
+SELECT e.encounter_id, aai10d.name, aaed.diagnosis_time
 FROM acsis_adt_encounters AS e
 INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
 INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
-INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
 WHERE e.patient_id=589780005
-AND aaed.diagnosis_time < ahp.estimated_delivery_date
-AND aaed.diagnosis_time > ahp.last_menstrual_period_date
+AND aaed.diagnosis_time < (SELECT ahp.last_menstrual_period_date
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.patient_id = e.patient_id ORDER BY
+		      ahp.estimated_delivery_date DESC LIMIT 1)
+AND aaed.diagnosis_time > (SELECT ahp.last_menstrual_period_date
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.patient_id = e.patient_id ORDER BY
+		      ahp.last_menstrual_period_date DESC LIMIT 1)
 ORDER BY aaed.diagnosis_time DESC;
 

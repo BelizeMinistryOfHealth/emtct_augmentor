@@ -137,7 +137,7 @@ func SamplePregnancies(db EmtctDb) error {
 		GestationalAge:       4,
 		Para:                 10,
 		Cs:                   false,
-		AbortiveOutcome:      "",
+		PregnancyOutcome:     "",
 		DiagnosisDate:        time.Date(2020, time.August, 3, 0, 0, 0, 0, time.UTC),
 		Planned:              false,
 		AgeAtLmp:             28,
