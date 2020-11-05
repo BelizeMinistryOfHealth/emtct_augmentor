@@ -23,7 +23,7 @@ const Layout = ({ children }) => {
             label: 'Current Pregnancy',
             link: `/patient/${patientId}/current_pregnancy`,
           },
-          { label: 'Lab Results', link: '/' },
+          { label: 'Lab Results', link: `/patient/${patientId}/lab_results` },
           { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
           {
             label: 'Hospital/Clinic Admissions',

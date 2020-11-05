@@ -1,17 +1,14 @@
-import { Box, Text } from 'grommet';
+import { Box, Heading, Text } from 'grommet';
+import { InProgress } from 'grommet-icons';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useRecoilValueLoadable } from 'recoil';
-import {
-  currentPregnancySelector,
-  pregnancyLabResultsSelector,
-} from '../../../../state';
+import { fetchCurrentPregnancy } from '../../../../api/patient';
+import { useHttpApi } from '../../../../providers/HttpProvider';
 import Layout from '../../../Layout/Layout';
 import ArvTreatment from '../../ArvTreatment/ArvTreatment';
 import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import AppTabs from '../../Tabs/Tabs';
-import LabResults from '../LabResults/LabResults';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
 
@@ -80,56 +77,68 @@ const Arvs = ({ currentPregnancy }) => {
   );
 };
 
-const LabTests = ({ patientId }) => {
-  const { state, contents } = useRecoilValueLoadable(
-    pregnancyLabResultsSelector(patientId)
-  );
-
-  switch (state) {
-    case 'hasValue':
-      return (
-        <Box
-          gap={'medium'}
-          pad={'medium'}
-          justify={'center'}
-          align={'center'}
-          direction={'row-responsive'}
-        >
-          <LabResults
-            labResults={contents}
-            caption={
-              <Text weight={'bold'}>Lab Test Results During Pregnancy</Text>
-            }
-          />
-        </Box>
-      );
-    case 'hasError':
-      return contents.message;
-    case 'loading':
-      return 'loading';
-    default:
-      return '';
-  }
-};
-
 const CurrentPregnancy = (props) => {
   const { location } = props;
   const { patientId } = useParams();
+  const { httpInstance } = useHttpApi();
+  const [pregnancyData, setPregnancyData] = React.useState({
+    currentPregnancy: {},
+    loading: true,
+    error: undefined,
+  });
 
-  const { state, contents } = useRecoilValueLoadable(
-    currentPregnancySelector(patientId)
-  );
-  let currentPregnancy = {};
-  switch (state) {
-    case 'hasValue':
-      currentPregnancy = contents;
-      break;
-    case 'hasError':
-      return contents.message;
-    case 'loading':
-      return 'loading';
-    default:
-      return '';
+  React.useEffect(() => {
+    const getCurrentPregnancy = async () => {
+      try {
+        const result = await fetchCurrentPregnancy(patientId, httpInstance);
+        setPregnancyData({
+          currentPregnancy: result,
+          loading: false,
+          error: undefined,
+        });
+      } catch (e) {
+        console.error(e);
+        setPregnancyData({ currentPregnancy: {}, loading: false, error: e });
+      }
+    };
+    if (pregnancyData.loading) {
+      getCurrentPregnancy();
+    }
+  }, [httpInstance, pregnancyData, patientId, setPregnancyData]);
+
+  if (pregnancyData.loading) {
+    return (
+      <Box
+        direction={'colomn'}
+        gap={'large'}
+        pad={'large'}
+        justify={'center'}
+        align={'center'}
+        fill
+      >
+        <Heading>
+          <Text>Loading </Text>
+          <InProgress />
+        </Heading>
+      </Box>
+    );
+  }
+
+  if (pregnancyData.error) {
+    return (
+      <Box
+        direction={'colomn'}
+        gap={'large'}
+        pad={'large'}
+        justify={'center'}
+        align={'center'}
+        fill
+      >
+        <Heading>
+          <Text>Ooops. An error occurred while loading the data. </Text>
+        </Heading>
+      </Box>
+    );
   }
 
   return (
@@ -143,10 +152,17 @@ const CurrentPregnancy = (props) => {
         fill
       >
         <AppTabs
-          basicInfo={<BasicInfoComponent currentPregnancy={currentPregnancy} />}
-          arvs={<Arvs currentPregnancy={currentPregnancy} />}
-          labResults={<LabTests patientId={patientId} />}
-          diagnoses={<PregnancyDiagnoses currentPregnancy={currentPregnancy} />}
+          basicInfo={
+            <BasicInfoComponent
+              currentPregnancy={pregnancyData.currentPregnancy}
+            />
+          }
+          arvs={<Arvs currentPregnancy={pregnancyData.currentPregnancy} />}
+          diagnoses={
+            <PregnancyDiagnoses
+              currentPregnancy={pregnancyData.currentPregnancy}
+            />
+          }
         />
       </Box>
     </Layout>
