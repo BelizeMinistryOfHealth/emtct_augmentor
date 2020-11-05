@@ -584,3 +584,80 @@ func findLabResultIndex(rs []models.LabResult, id int) int {
 	}
 	return -1
 }
+
+// FindArvsByPatient finds all ARVs prescribed to a patient during pregnancy.
+// It finds the current antenatal encounter, so that it can filter all prescriptions for only that encounter.
+func (d *AcsisDb) FindArvsByPatient(patientId int) ([]models.ArvPrescription, error) {
+	anc, err := d.findLatestAntenatalEncounter(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving arvs from acsis: %+v", err)
+	}
+	stmt := `
+		SELECT
+		    adep.encounter_pharmaceutical_id,
+			adep.total_doses,
+		   	aap.name as prescription,
+		   	acfu.name as frequency, 
+			aap.strength || ' ' || aapu.name as strength,
+		   	adep.prescribing_physician_special_instructions || ' ' || adep.notes AS comments,
+		   	adep.prescribed_time
+		FROM acsis_hc_patients p
+			INNER JOIN acsis_adt_encounters e ON p.patient_id = e.patient_id
+			INNER JOIN acsis_adt_encounter_pharmaceuticals adep ON adep.encounter_id=e.encounter_id
+			INNER JOIN acsis_adt_pharmaceuticals aap ON adep.pharmaceutical_id=aap.pharmaceutical_id
+			INNER JOIN acsis_coe_frequency_units acfu ON acfu.frequency_unit_id =adep.frequency_unit_id
+			INNER JOIN acsis_adt_pharmaceutical_units aapu ON aapu.pharmaceutical_unit_id=aap.strength_unit_id
+		WHERE p.patient_id=$1 AND e.encounter_id=$2
+		ORDER BY adep.prescribed_time DESC;
+`
+	rows, err := d.Query(stmt, patientId, anc.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving arvs from acsis: %+v", err)
+	}
+	defer rows.Close()
+	var arvs []models.ArvPrescription
+	for rows.Next() {
+		var arv models.ArvPrescription
+		err := rows.Scan(&arv.Id,
+			&arv.TotalDoses,
+			&arv.Pharmaceutical,
+			&arv.Frequency,
+			&arv.Strength,
+			&arv.Comments,
+			&arv.PrescribedTime)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning arv prescription from acsis: %+v", err)
+		}
+		arv.PatientId = patientId
+		arvs = append(arvs, arv)
+	}
+
+	return arvs, nil
+}
+
+func (d *AcsisDb) FindPatientBasicInfo(patientId int) (*models.PatientBasicInfo, error) {
+	stmt := `
+		SELECT
+		    hp.patient_id,
+			p.first_name,
+			p.last_name,
+			p.middle_name,
+			hp.birth_date,
+			hp.ssi_number
+		FROM acsis_people p
+			INNER JOIN acsis_hc_patients hp ON p.person_id=hp.person_id
+		WHERE hp.patient_id=$1;
+`
+	row := d.QueryRow(stmt, patientId)
+	var info models.PatientBasicInfo
+	err := row.Scan(&info.Id,
+		&info.FirstName,
+		&info.LastName,
+		&info.MiddleName,
+		&info.Dob,
+		&info.Ssn)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving patient basic info from acsis: %+v", err)
+	}
+	return &info, nil
+}

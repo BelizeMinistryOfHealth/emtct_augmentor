@@ -24,6 +24,15 @@ type Patient struct {
 	NextOfKinPhone   string    `json:"nextOfKinPhone"`
 }
 
+type PatientBasicInfo struct {
+	Id         string    `json:"patientId"`
+	FirstName  string    `json:"firstName"`
+	MiddleName string    `json:"middleName"`
+	LastName   string    `json:"lastName"`
+	Dob        time.Time `json:"dob"`
+	Ssn        string    `json:"ssn"`
+}
+
 type ObstetricHistory struct {
 	Id             string    `json:"id"`
 	PatientId      string    `json:"patientId"`
@@ -151,4 +160,15 @@ type AntenatalEncounter struct {
 	BeginDate             *time.Time `json:"beginDate"`
 	GestationalAge        int        `json:"gestationalAge"`
 	NumberAntenatalVisits int        `json:"numberAntenatalVisits"`
+}
+
+type ArvPrescription struct {
+	Id             int       `json:"id"`
+	PatientId      int       `json:"patientId"`
+	TotalDoses     int       `json:"totalDoses"`
+	Pharmaceutical string    `json:"pharmaceutical"`
+	Frequency      string    `json:"frequency"`
+	Strength       string    `json:"strength"`
+	Comments       string    `json:"comments"`
+	PrescribedTime time.Time `json:"prescribedTime"`
 }
