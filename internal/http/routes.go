@@ -155,7 +155,14 @@ func (a *App) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	patientId := vars["id"]
-	labResults, err := a.Db.FindPregnancyLabResults(patientId)
+	id, err := strconv.Atoi(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": patientId}).
+			WithError(err).Error("patient id is not a numeric value")
+		http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
+		return
+	}
+	labResults, err := a.AcsisDb.FindLabTestsDuringPregnancy(id)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId}).
 			WithError(err).
