@@ -667,3 +667,93 @@ func (d *AcsisDb) FindPatientBasicInfo(patientId int) (*models.PatientBasicInfo,
 	}
 	return &info, nil
 }
+
+type birth struct {
+	PatientId   int
+	BirthStatus string
+	Date        time.Time
+}
+
+func (d *AcsisDb) findBirths(motherId int) ([]birth, error) {
+	stmt := `
+	SELECT b.patient_id, bs.name as birth_status, b.last_modified_time
+	FROM acsis_hc_births b
+		INNER JOIN acsis_hc_birth_statuses bs ON b.birth_status_id=bs.birth_status_id
+	WHERE b.mother_id=?
+	ORDER BY b.last_modified_time DESC
+`
+	rows, err := d.Query(stmt, motherId)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching births from acsis: %+v", err)
+	}
+	defer rows.Close()
+	var births []birth
+	for rows.Next() {
+		var b birth
+		err := rows.Scan(&b.PatientId, &b.BirthStatus, &b.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning births from acsis: %+v", err)
+		}
+		births = append(births, b)
+	}
+	return births, nil
+}
+
+func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error) {
+	anc, err := d.findLatestAntenatalEncounter(motherId)
+	if err != nil {
+		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving infant diagnoses: %+v", err)
+	}
+	births, err := d.findBirths(motherId)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch births while retrieving infant diagnoses from acsis: %+v", err)
+	}
+	// Return early if there are no births
+	if len(births) == 0 {
+		return nil, nil
+	}
+
+	birth := births[0]
+	// Check if the birth has been recorded. The latest birth should be newer than the and begin date.
+	if anc.BeginDate.After(birth.Date) {
+		return nil, nil
+	}
+
+	stmt := `
+		SELECT
+			aed.disease_id,
+			e.patient_id,
+			aai10d.name as diagnosis,
+			aed.notes,
+			ap.first_name || ' ' || ap.last_name as doctor,
+			aed.diagnosis_time
+		FROM acsis_adt_encounters e
+			INNER JOIN acsis_adt_encounter_diagnoses aed ON e.encounter_id=aed.encounter_id
+			INNER JOIN acsis_adt_icd10_diseases aai10d on aed.disease_id = aai10d.disease_id
+			INNER JOIN acsis_hr_staff hs ON aed.doctor_id=hs.staff_id
+			INNER JOIN acsis_people ap on hs.person_id = ap.person_id
+		WHERE e.patient_id=$1 
+		ORDER BY aed.diagnosis_time DESC;
+`
+	rows, err := d.Query(stmt, birth.PatientId)
+	if err != nil {
+		return nil, fmt.Errorf("error querying for infant diagnoses from acsis: %+v", err)
+	}
+	defer rows.Close()
+	var diagnoses []models.InfantDiagnoses
+	for rows.Next() {
+		var d models.InfantDiagnoses
+		err := rows.Scan(&d.DiagnosisId,
+			&d.PatientId,
+			&d.Diagnosis,
+			&d.Comments,
+			&d.Doctor,
+			&d.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning infant diagnosis: %+v", err)
+		}
+		diagnoses = append(diagnoses, d)
+	}
+
+	return diagnoses, nil
+}

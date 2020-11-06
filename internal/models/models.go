@@ -172,3 +172,12 @@ type ArvPrescription struct {
 	Comments       string    `json:"comments"`
 	PrescribedTime time.Time `json:"prescribedTime"`
 }
+
+type InfantDiagnoses struct {
+	DiagnosisId int       `json:"diagnosisId"`
+	PatientId   int       `json:"patientId"`
+	Diagnosis   string    `json:"diagnosis"`
+	Doctor      string    `json:"doctor"`
+	Comments    string    `json:"comments"`
+	Date        time.Time `json:"date"`
+}

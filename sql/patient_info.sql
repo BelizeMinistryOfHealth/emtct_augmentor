@@ -113,10 +113,11 @@ AND aaed.diagnosis_time > (SELECT ahp.last_menstrual_period_date
 ORDER BY aaed.diagnosis_time DESC;
 
 -- 1176134
-SELECT *
-FROM acsis_hc_births
-WHERE mother_id=591232
-ORDER BY last_modified_time DESC;
+SELECT b.birth_id, b.patient_id, b.mother_id, bs.name
+FROM acsis_hc_births b
+INNER JOIN acsis_hc_birth_statuses bs ON b.birth_status_id=bs.birth_status_id
+WHERE b.mother_id=591232
+ORDER BY b.last_modified_time DESC;
 
 SELECT
        aed.disease_id,
