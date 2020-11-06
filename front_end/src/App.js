@@ -19,6 +19,7 @@ import HospitalAdmissions from './components/Patient/HospitalAdmissions';
 import HospitalAdmissionCreateForm from './components/Patient/HospitalAdmissions/HospitalAdmissionsCreate';
 import LabResults from './components/Patient/LabResults/LabResults';
 import ArvTreatment from './components/Patient/ArvTreatment/ArvTreatment';
+import InfantDiagnoses from './components/Patient/Infants/InfantDiagnoses';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -86,6 +87,10 @@ function App() {
                 <Route
                   path={'/patient/:patientId/admissions'}
                   component={HospitalAdmissions}
+                />
+                <Route
+                  path={'/patient/:patientId/infant/diagnoses'}
+                  component={InfantDiagnoses}
                 />
                 <Route
                   path={'/patient/:patientId/lab_results'}

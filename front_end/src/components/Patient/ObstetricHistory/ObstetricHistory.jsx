@@ -51,7 +51,7 @@ const EventTable = ({ children, data, ...rest }) => {
 const ObstetricHistory = (props) => {
   const { obstetricHistory } = props;
   return (
-    <Card>
+    <Card fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
         <EventTable data={obstetricHistory}>
           <History size={'large'} />

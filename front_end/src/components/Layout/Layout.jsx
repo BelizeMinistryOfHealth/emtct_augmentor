@@ -30,6 +30,10 @@ const Layout = ({ children }) => {
             link: `/patient/${patientId}/arvs`,
           },
           {
+            label: 'Infant Diagnoses',
+            link: `/patient/${patientId}/infant/diagnoses`,
+          },
+          {
             label: 'Hospital/Clinic Admissions',
             link: `/patient/${patientId}/admissions`,
           },

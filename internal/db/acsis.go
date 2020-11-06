@@ -679,7 +679,7 @@ func (d *AcsisDb) findBirths(motherId int) ([]birth, error) {
 	SELECT b.patient_id, bs.name as birth_status, b.last_modified_time
 	FROM acsis_hc_births b
 		INNER JOIN acsis_hc_birth_statuses bs ON b.birth_status_id=bs.birth_status_id
-	WHERE b.mother_id=?
+	WHERE b.mother_id=$1
 	ORDER BY b.last_modified_time DESC
 `
 	rows, err := d.Query(stmt, motherId)

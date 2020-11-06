@@ -39,8 +39,19 @@ const PatientSummary = (props) => {
     return (
       <Layout location={props.location} {...props}>
         <ErrorBoundary>
-          <Box direction={'column'} gap={'medium'} fill={'horizontal'}>
-            <Box direction={'row-responsive'} gap={'medium'} justify={'evenly'}>
+          <Box
+            direction={'column'}
+            fill={'horizontal'}
+            gap={'large'}
+            justify={'center'}
+          >
+            <Box
+              direction={'row-responsive'}
+              gap={'medium'}
+              pad={'medium'}
+              justify={'start'}
+              align={'start'}
+            >
               <PatientBasicInfo basicInfo={basicInfo} nextOfKin={nextOfKin} />
               <ObstetricHistory obstetricHistory={obstetricHistory} />
             </Box>
