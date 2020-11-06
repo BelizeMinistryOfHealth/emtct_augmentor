@@ -70,6 +70,12 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	// ARVS
 	r.HandleFunc("/patient/{patientId}/arvs", authHandlers.Then(app.ArvsHandler)).Methods(http.MethodOptions, http.MethodGet)
 
+	// Infant Diagnoses
+	r.HandleFunc("/patient/{motherId}/infants/diagnoses", authHandlers.Then(app.InfantDiagnosesHandler)).Methods(http.MethodOptions, http.MethodGet)
+
+	// Obstetric History
+	r.HandleFunc("/patient/{patientId}/obstetricHistory", authHandlers.Then(app.ObstetricHistoryHandler)).Methods(http.MethodOptions, http.MethodGet)
+
 	return r
 }
 

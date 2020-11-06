@@ -12,6 +12,11 @@ import (
 	"moh.gov.bz/mch/emtct/internal/models"
 )
 
+type infantDiagnosesResponse struct {
+	Diagnoses []models.InfantDiagnoses `json:"diagnoses"`
+	Patient   models.PatientBasicInfo  `json:"patient"`
+}
+
 func (a *App) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
 	switch method := r.Method; method {
 	case http.MethodOptions:
@@ -44,12 +49,32 @@ func (a *App) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
 		if diagnoses == nil {
 			diagnoses = []models.InfantDiagnoses{}
 		}
-		result, err := json.Marshal(diagnoses)
+		patientInfo, err := a.AcsisDb.FindPatientBasicInfo(motherId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"motherId":  id,
-				"user":      user,
-				"diagnoses": diagnoses,
+				"motherId": motherId,
+				"user":     user,
+			}).
+				WithError(err).
+				Error("error retrieving patient basic info")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		patient := models.PatientBasicInfo{}
+		if patientInfo != nil {
+			patient = *patientInfo
+		}
+
+		response := infantDiagnosesResponse{
+			Diagnoses: diagnoses,
+			Patient:   patient,
+		}
+		result, err := json.Marshal(response)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"motherId": id,
+				"user":     user,
+				"response": response,
 			}).
 				WithError(err).
 				Error("error while marshalling the infant diagnoses")
