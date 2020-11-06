@@ -1,7 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import {
   Box,
-  Card,
   CardBody,
   CardHeader,
   Heading,
@@ -16,6 +15,7 @@ import { InProgress } from 'grommet-icons';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../../providers/HttpProvider';
+import AppCard from '../../../AppCard/AppCard';
 import Layout from '../../../Layout/Layout';
 
 const diagnosisRow = (data) => {
@@ -145,7 +145,7 @@ const InfantDiagnoses = () => {
         align={'center'}
         fill
       >
-        <Card justify={'center'} gap={'medium'} fill={'horizontal'}>
+        <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
           <CardHeader justify={'start'} pad={'medium'}>
             <Box>
               <Heading pad={'large'} gap={'medium'}>
@@ -164,7 +164,7 @@ const InfantDiagnoses = () => {
           <CardBody gap={'medium'} pad={'medium'}>
             <DiagnosesTable data={data.result.diagnoses} />
           </CardBody>
-        </Card>
+        </AppCard>
       </Box>
     </Layout>
   );

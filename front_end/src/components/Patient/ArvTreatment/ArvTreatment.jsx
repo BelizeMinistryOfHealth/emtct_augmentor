@@ -1,7 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import {
   Box,
-  Card,
   CardBody,
   CardHeader,
   Heading,
@@ -16,6 +15,7 @@ import { InProgress } from 'grommet-icons';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import AppCard from '../../AppCard/AppCard';
 import Layout from '../../Layout/Layout';
 
 const row = (data) => {
@@ -72,8 +72,9 @@ const BasicInfo = (props) => {
   return (
     <Box>
       <Heading>
-        {basicInfo.firstName}
-        {basicInfo.lastName}
+        <span>
+          {basicInfo.firstName} {basicInfo.lastName}{' '}
+        </span>
       </Heading>
     </Box>
   );
@@ -148,14 +149,14 @@ const ArvTreatment = (props) => {
         align={'center'}
         fill
       >
-        <Card>
+        <AppCard>
           <CardHeader gap={'medium'} pad={'medium'}>
             <BasicInfo basicInfo={arvData.arvs.patient} />
           </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             <ArvsTable data={arvData.arvs}></ArvsTable>
           </CardBody>
-        </Card>
+        </AppCard>
       </Box>
     </Layout>
   );

@@ -14,7 +14,7 @@ const Layout = ({ children }) => {
       direction={'row-responsive'}
       gap={'medium'}
       pad={'medium'}
-      fill
+      fill={'horizontal'}
     >
       <Nav background={'neutral-2'}>
         {[

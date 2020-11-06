@@ -1,6 +1,5 @@
 import {
   Box,
-  Card,
   CardBody,
   Table,
   TableBody,
@@ -13,6 +12,7 @@ import { History } from 'grommet-icons';
 import React from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
+import AppCard from '../../AppCard/AppCard';
 
 const eventRow = (data) => {
   return (
@@ -51,13 +51,13 @@ const EventTable = ({ children, data, ...rest }) => {
 const ObstetricHistory = (props) => {
   const { obstetricHistory } = props;
   return (
-    <Card fill={'horizontal'}>
+    <AppCard fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
         <EventTable data={obstetricHistory}>
           <History size={'large'} />
         </EventTable>
       </CardBody>
-    </Card>
+    </AppCard>
   );
 };
 

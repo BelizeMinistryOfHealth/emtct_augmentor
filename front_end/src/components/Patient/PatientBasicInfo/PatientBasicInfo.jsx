@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Card, CardBody, Text } from 'grommet';
-import { AddCircle, SubtractCircle, User } from 'grommet-icons';
+import { Box, CardBody, Text } from 'grommet';
+import { User } from 'grommet-icons';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
+import AppCard from '../../AppCard/AppCard';
 
 const Identifier = ({ children, basicInfo, nextOfKin }) => {
   const {
@@ -93,11 +94,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             {ethnicity}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {hiv ? (
-              <AddCircle color={'red'} />
-            ) : (
-              <SubtractCircle color={'green'} />
-            )}
+            {hiv ? 'Yes' : 'No'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {format(parseISO(hivDiagnosisDate), 'dd LLL yyyy')}
@@ -118,13 +115,13 @@ const PatientBasicInfo = (props) => {
   const { basicInfo, nextOfKin } = props;
 
   return (
-    <Card fill={'horizontal'}>
+    <AppCard fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
         <Identifier basicInfo={basicInfo} nextOfKin={nextOfKin}>
           <User size={'large'} />
         </Identifier>
       </CardBody>
-    </Card>
+    </AppCard>
   );
 };
 

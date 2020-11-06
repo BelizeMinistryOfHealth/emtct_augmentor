@@ -1,7 +1,8 @@
-import { Box, Card, CardBody, Text } from 'grommet';
+import { Box, CardBody, Text } from 'grommet';
 import React from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
+import AppCard from '../../../AppCard/AppCard';
 
 const CareInfo = ({ children, info, ...rest }) => {
   return (
@@ -43,7 +44,7 @@ const CareInfo = ({ children, info, ...rest }) => {
 
 const PreNatalCare = (props) => {
   return (
-    <Card>
+    <AppCard>
       <CardBody gap={'medium'} pad={'medium'}>
         <CareInfo info={props.info}>
           <Text size={'xlarge'} weight={'bold'}>
@@ -51,7 +52,7 @@ const PreNatalCare = (props) => {
           </Text>
         </CareInfo>
       </CardBody>
-    </Card>
+    </AppCard>
   );
 };
 

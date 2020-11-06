@@ -2,7 +2,6 @@ import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 import {
   Box,
-  Card,
   CardBody,
   CardHeader,
   Heading,
@@ -19,6 +18,7 @@ import { useHttpApi } from '../../../providers/HttpProvider';
 import { fetchPregnancyLabResults } from '../../../api/patient';
 import Layout from '../../Layout/Layout';
 import { InProgress } from 'grommet-icons';
+import AppCard from '../../AppCard/AppCard';
 
 const labResultsRow = (data) => {
   return (
@@ -135,14 +135,14 @@ const LabResults = (props) => {
         justify={'evenly'}
         align={'center'}
       >
-        <Card>
+        <AppCard>
           <CardHeader justify={'evenly'}>
             <Heading gap={'medium'}>Lab Tests</Heading>
           </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             <LabResultsTable data={labData.labResults} />
           </CardBody>
-        </Card>
+        </AppCard>
       </Box>
     </Layout>
   );

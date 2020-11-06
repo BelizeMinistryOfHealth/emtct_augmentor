@@ -1,6 +1,5 @@
 import {
   Box,
-  Card,
   CardBody,
   Table,
   TableCell,
@@ -13,6 +12,7 @@ import { CircleInformation } from 'grommet-icons';
 import React from 'react';
 import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
+import AppCard from '../../AppCard/AppCard';
 
 const diagnosisRow = (data) => {
   return (
@@ -52,13 +52,13 @@ const DiagnosisHistory = (props) => {
   const { diagnosisHistory, caption } = props;
 
   return (
-    <Card fill={'horizontal'}>
+    <AppCard fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
         <DiagnosisTable data={diagnosisHistory} caption={caption}>
           <CircleInformation size={'large'} />
         </DiagnosisTable>
       </CardBody>
-    </Card>
+    </AppCard>
   );
 };
 
