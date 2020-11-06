@@ -1,3 +1,4 @@
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import _ from 'lodash';
 import React from 'react';
 import { useHttpApi } from './http';
@@ -38,6 +39,10 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
     name: basicInfo.nextOfKin,
     phoneNumber: basicInfo.nextOfKinPhone,
   };
+  const obstetricHistory = _.reverse(
+    _.sortBy(patient.obstetricHistory, 'date')
+  );
+  console.dir({ obstetricHistory });
 
   const pregnancyData = await httpInstance.get(
     `/patient/${patientId}/currentPregnancy`
@@ -50,6 +55,22 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   if (!vitals.abortiveOutcome || _.isEmpty(vitals.abortiveOutcome.trim())) {
     vitals.abortiveOutcome = 'N/A';
   }
+
+  // Calculate the interval between pregnancies.
+  let interval = 0;
+  if (obstetricHistory.length > 0) {
+    const lastPregnancy = obstetricHistory[0].date;
+    interval = differenceInCalendarDays(
+      parseISO(vitals.lmp),
+      parseISO(lastPregnancy)
+    );
+    console.dir({
+      interval,
+      lmp: parseISO(vitals.lmp),
+      last: parseISO(lastPregnancy),
+    });
+  }
+  vitals.interval = interval;
 
   const prenatalCareInfo = {
     dateOfBooking: vitals.dateOfBooking,
@@ -66,6 +87,7 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
     nextOfKin,
     prenatalCareInfo,
     pregnancyDiagnoses,
+    obstetricHistory,
   };
 };
 

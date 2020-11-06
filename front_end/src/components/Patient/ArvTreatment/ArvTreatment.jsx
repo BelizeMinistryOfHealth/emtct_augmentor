@@ -3,6 +3,8 @@ import {
   Box,
   Card,
   CardBody,
+  CardHeader,
+  Heading,
   Table,
   TableBody,
   TableCell,
@@ -10,21 +12,23 @@ import {
   TableRow,
   Text,
 } from 'grommet';
+import { InProgress } from 'grommet-icons';
 import React from 'react';
-import { useRecoilValueLoadable } from 'recoil';
-import { arvTreatmentsSelector } from '../../../state';
+import { useParams } from 'react-router-dom';
+import { useHttpApi } from '../../../providers/HttpProvider';
+import Layout from '../../Layout/Layout';
 
 const row = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.arvName}</Text>
+        <Text>{data.pharmaceutical}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.dosage}</Text>
+        <Text>{data.strength}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.date), 'dd LLL yyy')}</Text>
+        <Text>{format(parseISO(data.prescribedTime), 'dd LLL yyy')}</Text>
       </TableCell>
       <TableCell align={'start'}>
         <Text>{data.comments}</Text>
@@ -34,6 +38,8 @@ const row = (data) => {
 };
 
 const ArvsTable = ({ children, data, ...rest }) => {
+  const arvs = data.arvs ?? [];
+
   return (
     <Box gap={'medium'} align={'center'} {...rest}>
       {children}
@@ -54,34 +60,105 @@ const ArvsTable = ({ children, data, ...rest }) => {
             </TableCell>
           </TableRow>
         </TableHeader>
-        <TableBody>{data.map((d) => row(d))}</TableBody>
+        <TableBody>{arvs.map((d) => row(d))}</TableBody>
       </Table>
     </Box>
   );
 };
 
-const ArvTreatment = (props) => {
-  const { patientId, encounterId } = props;
-  const { state, contents } = useRecoilValueLoadable(
-    arvTreatmentsSelector(patientId, encounterId)
-  );
+const BasicInfo = (props) => {
+  const { basicInfo } = props;
 
-  switch (state) {
-    case 'hasValue':
-      return (
+  return (
+    <Box>
+      <Heading>
+        {basicInfo.firstName}
+        {basicInfo.lastName}
+      </Heading>
+    </Box>
+  );
+};
+
+const ArvTreatment = (props) => {
+  const { patientId } = useParams();
+  const { httpInstance } = useHttpApi();
+  const [arvData, setArvData] = React.useState({
+    arvs: [],
+    loading: true,
+    error: undefined,
+  });
+
+  React.useEffect(() => {
+    const getArvs = async () => {
+      try {
+        const result = await httpInstance.get(`/patient/${patientId}/arvs`);
+        setArvData({ arvs: result.data, loading: false, error: undefined });
+      } catch (e) {
+        console.error(e);
+        setArvData({ arvs: [], loading: false, error: e });
+      }
+    };
+    if (arvData.loading) {
+      getArvs();
+    }
+  }, [httpInstance, arvData, patientId]);
+
+  if (arvData.loading) {
+    return (
+      <Box
+        direction={'column'}
+        gap={'large'}
+        pad={'large'}
+        justify={'center'}
+        align={'center'}
+        fill
+      >
+        <Heading>
+          <Text>Loading </Text>
+          <InProgress />
+        </Heading>
+      </Box>
+    );
+  }
+
+  if (arvData.error) {
+    return (
+      <Box
+        direction={'column'}
+        gap={'large'}
+        pad={'large'}
+        justify={'center'}
+        align={'center'}
+        fill
+      >
+        <Heading>
+          <Text>Oooops. An error occurred while loading the data.</Text>
+        </Heading>
+      </Box>
+    );
+  }
+
+  return (
+    <Layout props={props}>
+      <Box
+        direction={'column'}
+        gap={'medium'}
+        pad={'medium'}
+        justify={'evenly'}
+        align={'center'}
+        fill
+      >
         <Card>
+          <CardHeader gap={'medium'} pad={'medium'}>
+            <BasicInfo basicInfo={arvData.arvs.patient} />
+          </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
-            <ArvsTable data={contents}></ArvsTable>
+            <ArvsTable data={arvData.arvs}></ArvsTable>
           </CardBody>
         </Card>
-      );
-    case 'loading':
-      return 'loading';
-    case 'hasError':
-      return contents.message;
-    default:
-      return '';
-  }
+      </Box>
+    </Layout>
+  );
 };
 
 export default ArvTreatment;

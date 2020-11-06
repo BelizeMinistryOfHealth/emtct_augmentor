@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import { fetchCurrentPregnancy } from '../../../../api/patient';
 import { useHttpApi } from '../../../../providers/HttpProvider';
 import Layout from '../../../Layout/Layout';
-import ArvTreatment from '../../ArvTreatment/ArvTreatment';
 import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import AppTabs from '../../Tabs/Tabs';
@@ -59,24 +58,6 @@ const PregnancyDiagnoses = ({ currentPregnancy }) => {
   );
 };
 
-const Arvs = ({ currentPregnancy }) => {
-  return (
-    <Box
-      gap={'medium'}
-      pad={'medium'}
-      justify={'center'}
-      align={'center'}
-      direction={'row-responsive'}
-      fill
-    >
-      <ArvTreatment
-        patientId={currentPregnancy.basicInfo.patientId}
-        encounterId={currentPregnancy.encounterId}
-      />
-    </Box>
-  );
-};
-
 const CurrentPregnancy = (props) => {
   const { location } = props;
   const { patientId } = useParams();
@@ -109,7 +90,7 @@ const CurrentPregnancy = (props) => {
   if (pregnancyData.loading) {
     return (
       <Box
-        direction={'colomn'}
+        direction={'column'}
         gap={'large'}
         pad={'large'}
         justify={'center'}
@@ -127,7 +108,7 @@ const CurrentPregnancy = (props) => {
   if (pregnancyData.error) {
     return (
       <Box
-        direction={'colomn'}
+        direction={'column'}
         gap={'large'}
         pad={'large'}
         justify={'center'}
@@ -147,9 +128,9 @@ const CurrentPregnancy = (props) => {
         direction={'column'}
         gap={'medium'}
         pad={'medium'}
-        justify={'start'}
+        justify={'evenly'}
         align={'start'}
-        fill
+        fill={'horizontal'}
       >
         <AppTabs
           basicInfo={
@@ -157,7 +138,6 @@ const CurrentPregnancy = (props) => {
               currentPregnancy={pregnancyData.currentPregnancy}
             />
           }
-          arvs={<Arvs currentPregnancy={pregnancyData.currentPregnancy} />}
           diagnoses={
             <PregnancyDiagnoses
               currentPregnancy={pregnancyData.currentPregnancy}

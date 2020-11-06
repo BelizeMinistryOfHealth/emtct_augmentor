@@ -607,28 +607,34 @@ func (d *AcsisDb) FindArvsByPatient(patientId int) ([]models.ArvPrescription, er
 			INNER JOIN acsis_adt_pharmaceuticals aap ON adep.pharmaceutical_id=aap.pharmaceutical_id
 			INNER JOIN acsis_coe_frequency_units acfu ON acfu.frequency_unit_id =adep.frequency_unit_id
 			INNER JOIN acsis_adt_pharmaceutical_units aapu ON aapu.pharmaceutical_unit_id=aap.strength_unit_id
-		WHERE p.patient_id=$1 AND e.encounter_id=$2
+		WHERE p.patient_id=$1 AND adep.prescribed_time>=$2
 		ORDER BY adep.prescribed_time DESC;
 `
-	rows, err := d.Query(stmt, patientId, anc.Id)
+	ancDate := anc.BeginDate.Format(layoutISO)
+	rows, err := d.Query(stmt, patientId, ancDate)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving arvs from acsis: %+v", err)
 	}
 	defer rows.Close()
 	var arvs []models.ArvPrescription
+	var totalDoses sql.NullInt64
 	for rows.Next() {
 		var arv models.ArvPrescription
 		err := rows.Scan(&arv.Id,
-			&arv.TotalDoses,
+			&totalDoses,
 			&arv.Pharmaceutical,
 			&arv.Frequency,
 			&arv.Strength,
 			&arv.Comments,
 			&arv.PrescribedTime)
 		if err != nil {
-			return nil, fmt.Errorf("error scanning arv prescription from acsis: %+v", err)
+			return arvs, fmt.Errorf("error scanning arv prescription from acsis: %+v", err)
 		}
 		arv.PatientId = patientId
+		if totalDoses.Valid {
+			arv.TotalDoses = int(totalDoses.Int64)
+		}
+
 		arvs = append(arvs, arv)
 	}
 

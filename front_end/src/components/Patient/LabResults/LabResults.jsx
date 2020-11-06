@@ -94,7 +94,7 @@ const LabResults = (props) => {
   if (labData.loading) {
     return (
       <Box
-        direction={'colomn'}
+        direction={'column'}
         gap={'large'}
         pad={'large'}
         justify={'center'}

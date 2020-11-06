@@ -49,7 +49,7 @@ WHERE altri.test_id IN (2) -- the HIV Test
   -- AND altrrc.user_defined_list_value = 2
   -- test_result_id 348 is the HIV Confirmation result
   AND a.test_result_id = 348
-  AND p.patient_id = 591232
+--   AND p.patient_id = 591232
 ORDER BY released_time DESC;
 
 
@@ -112,3 +112,22 @@ AND aaed.diagnosis_time > (SELECT ahp.last_menstrual_period_date
 		      ahp.last_menstrual_period_date DESC LIMIT 1)
 ORDER BY aaed.diagnosis_time DESC;
 
+-- 1176134
+SELECT *
+FROM acsis_hc_births
+WHERE mother_id=591232
+ORDER BY last_modified_time DESC;
+
+SELECT
+       aed.disease_id,
+       aai10d.name as diagnosis,
+       aed.notes,
+       ap.first_name || ' ' || ap.last_name as doctor,
+       aed.diagnosis_time
+FROM acsis_adt_encounters e
+INNER JOIN acsis_adt_encounter_diagnoses aed ON e.encounter_id=aed.encounter_id
+INNER JOIN acsis_adt_icd10_diseases aai10d on aed.disease_id = aai10d.disease_id
+INNER JOIN acsis_hr_staff hs ON aed.doctor_id=hs.staff_id
+INNER JOIN acsis_people ap on hs.person_id = ap.person_id
+WHERE e.patient_id=985490
+ORDER BY aed.diagnosis_time DESC;
