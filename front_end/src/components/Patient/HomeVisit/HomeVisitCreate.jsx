@@ -45,7 +45,6 @@ const HomeVisitCreateForm = () => {
     const fetchPatient = async () => {
       try {
         const result = await httpInstance.get(`/patient/${patientId}`);
-        console.log({ result: result.data });
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);

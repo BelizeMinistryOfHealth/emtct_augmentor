@@ -15,9 +15,10 @@ import (
 )
 
 type NewHospitalAdmissionRequest struct {
-	PatientId    int       `json:"patientId"`
-	DateAdmitted time.Time `json:"dateAdmitted"`
-	Facility     string    `json:"facility"`
+	PatientId      int       `json:"patientId"`
+	DateAdmitted   time.Time `json:"dateAdmitted"`
+	Facility       string    `json:"facility"`
+	MchEncounterId int       `json:"mchEncounterId"`
 }
 
 func (a *App) CreateHospitalAdmissionHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,14 +38,15 @@ func (a *App) CreateHospitalAdmissionHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		admission := models.HospitalAdmission{
-			Id:           uuid.New().String(),
-			PatientId:    req.PatientId,
-			DateAdmitted: req.DateAdmitted,
-			Facility:     req.Facility,
-			CreatedAt:    time.Now(),
-			UpdatedAt:    nil,
-			CreatedBy:    user,
-			UpdatedBy:    nil,
+			Id:             uuid.New().String(),
+			PatientId:      req.PatientId,
+			MchEncounterId: req.MchEncounterId,
+			DateAdmitted:   req.DateAdmitted,
+			Facility:       req.Facility,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      nil,
+			CreatedBy:      user,
+			UpdatedBy:      nil,
 		}
 		err = a.Db.CreateHospitalAdmission(admission)
 		if err != nil {
@@ -67,6 +69,11 @@ func (a *App) CreateHospitalAdmissionHandler(w http.ResponseWriter, r *http.Requ
 		w.Header().Add("Content-Type", "application/json")
 		fmt.Fprintf(w, string(resp))
 	}
+}
+
+type HospitalAdmissionsResponse struct {
+	HospitalAdmissions []models.HospitalAdmission `json:"hospitalAdmissions"`
+	Patient            models.PatientBasicInfo    `json:"patient"`
 }
 
 func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +99,21 @@ func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		results, err := json.Marshal(admissions)
+		patient, err := a.AcsisDb.FindPatientBasicInfo(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId":  id,
+				"admissions": admissions,
+				"handler":    "HospitalAdmissionsByPatientHandler",
+			}).WithError(err).Error("error retrieving patient information")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		response := HospitalAdmissionsResponse{
+			HospitalAdmissions: admissions,
+			Patient:            *patient,
+		}
+		results, err := json.Marshal(response)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId":  patientId,

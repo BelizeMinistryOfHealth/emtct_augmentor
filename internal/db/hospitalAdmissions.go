@@ -8,8 +8,10 @@ import (
 )
 
 func (d *EmtctDb) HospitalAdmissionsByPatientId(patientId int) ([]models.HospitalAdmission, error) {
-	stmt := `SELECT id, patient_id, date_admitted, facility, created_at, created_by, updated_at, updated_by 
-FROM hospital_admission WHERE patient_id=$1`
+	stmt := `
+	SELECT id, patient_id, date_admitted, facility, created_at, created_by, updated_at, updated_by, mch_encounter_id 
+	FROM hospital_admission 
+	WHERE patient_id=$1`
 	var admissions []models.HospitalAdmission
 	rows, err := d.DB.Query(stmt, patientId)
 	if err != nil {
@@ -27,7 +29,8 @@ FROM hospital_admission WHERE patient_id=$1`
 			&h.CreatedAt,
 			&h.CreatedBy,
 			&h.UpdatedAt,
-			&h.UpdatedBy)
+			&h.UpdatedBy,
+			&h.MchEncounterId)
 		if err != nil {
 			return admissions, fmt.Errorf("error scanning hotpsital admissions result from the database: %+v", err)
 		}
@@ -39,8 +42,10 @@ FROM hospital_admission WHERE patient_id=$1`
 // FindHospitalAdmissionById returns a hospital admission that was created by the EMTCT tool. It does not
 // search for hospital admissions in the BHIS.
 func (d *EmtctDb) FindHospitalAdmissionById(id string) (*models.HospitalAdmission, error) {
-	stmt := `SELECT id, patient_id, date_admitted, facility, created_at, created_by, updated_at, updated_by
-FROM hospital_admission WHERE id=$1`
+	stmt := `
+	SELECT id, patient_id, date_admitted, facility, created_at, created_by, updated_at, updated_by, mch_encounter_id
+	FROM hospital_admission 
+	WHERE id=$1`
 	var admission models.HospitalAdmission
 	row := d.DB.QueryRow(stmt, id)
 	err := row.Scan(
@@ -51,7 +56,8 @@ FROM hospital_admission WHERE id=$1`
 		&admission.CreatedAt,
 		&admission.CreatedBy,
 		&admission.UpdatedAt,
-		&admission.UpdatedBy)
+		&admission.UpdatedBy,
+		&admission.MchEncounterId)
 	switch err {
 	case sql.ErrNoRows:
 		return nil, nil
@@ -63,9 +69,10 @@ FROM hospital_admission WHERE id=$1`
 }
 
 func (d *EmtctDb) CreateHospitalAdmission(h models.HospitalAdmission) error {
-	stmt := `INSERT INTO hospital_admission (id, patient_id, date_admitted, facility, created_at, created_by) 
-Values($1, $2, $3, $4, $5, $6)`
-	_, err := d.DB.Exec(stmt, h.Id, h.PatientId, h.DateAdmitted, h.Facility, h.CreatedAt, h.CreatedBy)
+	stmt := `
+	INSERT INTO hospital_admission (id, patient_id, date_admitted, facility, created_at, created_by, mch_encounter_id) 
+	Values($1, $2, $3, $4, $5, $6, $7)`
+	_, err := d.DB.Exec(stmt, h.Id, h.PatientId, h.DateAdmitted, h.Facility, h.CreatedAt, h.CreatedBy, h.MchEncounterId)
 	if err != nil {
 		return fmt.Errorf("error inserting a new hospital admission into the database: %+v", err)
 	}

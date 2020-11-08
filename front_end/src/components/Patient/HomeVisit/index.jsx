@@ -113,7 +113,6 @@ const HomeVisitList = (props) => {
     const fetchVisits = async () => {
       try {
         setData({ homeVisitsData: undefined, loading: true, error: undefined });
-        console.log('searching.......');
         const homeVisits = await fetchHomeVisits(patientId, httpInstance);
         setData({
           homeVisitsData: homeVisits,

@@ -2,8 +2,8 @@ import { format, parseISO } from 'date-fns';
 import {
   Box,
   Button,
-  Card,
   CardBody,
+  CardHeader,
   Heading,
   Layer,
   Table,
@@ -20,6 +20,7 @@ import { useHttpApi } from '../../../providers/HttpProvider';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
 import EditForm from './HospitalAdmissionsEdit';
+import AppCard from '../../AppCard/AppCard';
 
 const admissionsRow = (data, onClickEdit) => {
   return (
@@ -40,7 +41,7 @@ const admissionsRow = (data, onClickEdit) => {
 };
 
 const AdmissionsTable = ({ children, caption, admissions, onClickEdit }) => {
-  if (admissions.length === 0) {
+  if (!admissions || admissions.length === 0) {
     return (
       <Box
         gap={'medium'}
@@ -81,12 +82,13 @@ const HospitalAdmissions = (props) => {
   const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
   const [editingAdmission, setEditingAdmission] = React.useState(undefined);
+
   const [data, setData] = React.useState({
-    admissions: [],
+    admissionsData: undefined,
     loading: false,
     error: undefined,
   });
-  const [refreshAdmissions, setRefreshAdmissions] = React.useState(false);
+  const [refreshAdmissions, setRefreshAdmissions] = React.useState(true);
   const history = useHistory();
 
   const onClickEdit = (admission) => setEditingAdmission(admission);
@@ -98,18 +100,24 @@ const HospitalAdmissions = (props) => {
         const result = await httpInstance.get(
           `/patient/${patientId}/hospitalAdmissions`
         );
-        const admissions = result.data ?? [];
-        setData({ admissions, loading: false, error: undefined });
+        setData({
+          admissionsData: result.data,
+          loading: false,
+          error: undefined,
+        });
         setRefreshAdmissions(false);
       } catch (e) {
+        console.error(e);
         setData({
-          admissions: [],
+          admissions: undefined,
           loading: false,
           error: 'Failed to fetch hospital admissions!',
         });
       }
     };
-    fetchAdmissions();
+    if (refreshAdmissions) {
+      fetchAdmissions();
+    }
   }, [httpInstance, patientId, refreshAdmissions]);
 
   const closeEditForm = () => {
@@ -117,7 +125,7 @@ const HospitalAdmissions = (props) => {
     setRefreshAdmissions(true);
   };
 
-  if (data.loading) {
+  if (refreshAdmissions) {
     return <>Loading...</>;
   }
 
@@ -128,7 +136,41 @@ const HospitalAdmissions = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <Card fill={'horizontal'}>
+        <AppCard fill={'horizontal'} pad={'small'}>
+          <CardHeader>
+            <Box direction={'row'} align={'start'} fill='horizontal'>
+              <Box
+                direction={'column'}
+                align={'start'}
+                fill={'horizontal'}
+                justify={'between'}
+                alignContent={'center'}
+              >
+                <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+                  Hospital Admissions
+                </Text>
+                {data && data.admissionsData.patient && (
+                  <Text size={'large'} textAlign={'end'} weight={'normal'}>
+                    {data.admissionsData.patient.firstName}{' '}
+                    {data.admissionsData.patient.lastName}
+                  </Text>
+                )}
+              </Box>
+              <Box
+                align={'start'}
+                fill={'horizontal'}
+                direction={'row-reverse'}
+              >
+                <Button
+                  icon={<Add />}
+                  label={'Add'}
+                  onClick={() =>
+                    history.push(`/patient/${patientId}/admissions/new`)
+                  }
+                />
+              </Box>
+            </Box>
+          </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             {editingAdmission && (
               <Layer
@@ -164,29 +206,13 @@ const HospitalAdmissions = (props) => {
                 </Box>
               </Layer>
             )}
-            <Box
-              direction={'row-reverse'}
-              align={'start'}
-              pad={'medium'}
-              gap={'medium'}
-            >
-              <Box align={'end'} pad={'medium'} fill={'horizontal'}>
-                <Button
-                  icon={<Add />}
-                  label={'Add Hospital Admission'}
-                  onClick={() =>
-                    history.push(`/patient/${patientId}/admissions/new`)
-                  }
-                />
-              </Box>
-            </Box>
             <AdmissionsTable
-              admissions={data.admissions}
+              admissions={data.admissionsData.hospitalAdmissions}
               caption={'Hospital Admissions'}
               onClickEdit={onClickEdit}
             />
           </CardBody>
-        </Card>
+        </AppCard>
       </ErrorBoundary>
     </Layout>
   );

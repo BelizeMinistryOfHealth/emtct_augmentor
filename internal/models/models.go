@@ -147,14 +147,15 @@ type ContraceptiveUsed struct {
 }
 
 type HospitalAdmission struct {
-	Id           string     `json:"id"`
-	PatientId    int        `json:"patientId"`
-	DateAdmitted time.Time  `json:"dateAdmitted"`
-	Facility     string     `json:"facility"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    *time.Time `json:"updatedAt"`
-	CreatedBy    string     `json:"createdBy"`
-	UpdatedBy    *string    `json:"updatedBy"`
+	Id             string     `json:"id"`
+	PatientId      int        `json:"patientId"`
+	MchEncounterId int        `json:"mchEncounterId"`
+	DateAdmitted   time.Time  `json:"dateAdmitted"`
+	Facility       string     `json:"facility"`
+	CreatedAt      time.Time  `json:"createdAt"`
+	UpdatedAt      *time.Time `json:"updatedAt"`
+	CreatedBy      string     `json:"createdBy"`
+	UpdatedBy      *string    `json:"updatedBy"`
 }
 
 type AntenatalEncounter struct {
