@@ -17,6 +17,12 @@ const HivScreeningCreateForm = () => {
   const [screening, setScreening] = React.useState();
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
+  const [patientData, setPatientData] = React.useState({
+    data: undefined,
+    loading: true,
+    error: undefined,
+  });
+  const [errorMessage, setErrorMessage] = React.useState(undefined);
   const { patientId } = useParams();
   const history = useHistory();
   const { httpInstance } = useHttpApi();
@@ -27,19 +33,47 @@ const HivScreeningCreateForm = () => {
   };
 
   React.useEffect(() => {
-    const post = async (screening) => {
+    const fetchPatient = async () => {
       try {
-        await httpInstance.post(`/patient/hivScreening`, screening);
-        setStatus('SUCCESS');
+        const result = await httpInstance.get(`/patient/${patientId}`);
+        console.log({ result: result.data });
+        setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
-        setStatus('ERROR');
+        setPatientData({ data: undefined, loading: false, error: e });
       }
     };
+    if (patientData.loading) {
+      fetchPatient();
+    }
+  }, [httpInstance, patientId, patientData]);
+
+  React.useEffect(() => {
+    const post = (screening) => {
+      const mchEncounterId = patientData.data.antenatalEncounter.id;
+      httpInstance
+        .post(`/patient/hivScreening`, {
+          ...screening,
+          mchEncounterId,
+        })
+        .then(() => {
+          setStatus('SUCCESS');
+          setErrorMessage(undefined);
+        })
+        .catch((e) => {
+          console.error(e);
+          setStatus('ERROR');
+          if (e.response) {
+            console.dir({ response: e.response });
+            setErrorMessage(e.response.data);
+          }
+        });
+    };
     if (status === 'SUBMIT') {
+      setErrorMessage(undefined);
       post(screening);
     }
-  }, [screening, httpInstance, status]);
+  }, [screening, httpInstance, status, patientData, errorMessage]);
 
   if (status === 'SUBMIT') {
     return (
@@ -75,20 +109,32 @@ const HivScreeningCreateForm = () => {
         flex={false}
         direction={'row-responsive'}
         justify={'center'}
+        align={'start'}
         fill={'horizontal'}
       >
-        <Heading level={2} margin={'none'}>
-          Create HIV Screening
-        </Heading>
+        <Box direction={'column'}>
+          <Heading level={1} margin={'none'}>
+            Create HIV Screening
+          </Heading>
+          {patientData.data && (
+            <Heading level={3} margin={'none'}>
+              {`${patientData.data.patient.firstName} ${patientData.data.patient.lastName}`}
+            </Heading>
+          )}
+        </Box>
       </Box>
       {status === 'ERROR' && (
         <Box
           fill={'horizontal'}
           pad={'medium'}
           gap={'medium'}
-          background={'red'}
+          background={'accent-4'}
         >
-          <Text>Error creating hiv screening!</Text>
+          {errorMessage ? (
+            <Text>{errorMessage}</Text>
+          ) : (
+            <Text>Error creating hiv screening!</Text>
+          )}
         </Box>
       )}
 
@@ -97,7 +143,7 @@ const HivScreeningCreateForm = () => {
           <FormField label={'Test Name'} name={'testName'} required>
             <TextInput placeholder={'Test Name'} name={'testName'} />
           </FormField>
-          <FormField label={'Result'} name={'result'} required>
+          <FormField label={'Result'} name={'result'}>
             <TextInput placeholder={'Test Result'} name={'result'} />
           </FormField>
           <FormField label={'Screening Date'} name={'screeningDate'} required>
@@ -106,15 +152,27 @@ const HivScreeningCreateForm = () => {
           <FormField
             label={'Date Sample Received At HQ'}
             name={'dateSampleReceivedAtHq'}
-            required
           >
             <DateInput format={'yyyy-mm-dd'} name={'dateSampleReceivedAtHq'} />
+          </FormField>
+          <FormField
+            label={'Date Sample Taken'}
+            name={'dateSampleTaken'}
+            required
+          >
+            <DateInput format={'yyyy-mm-dd'} name={'dateSampleTaken'} />
+          </FormField>
+          <FormField label={'Due Date'} name={'dueDate'} required>
+            <DateInput format={'yyyy-mm-dd'} name={'dueDate'} />
           </FormField>
           <FormField label={'Date Result Received'} name={'dateResultReceived'}>
             <DateInput format={'yyyy-mm-dd'} name={'dateResultReceived'} />
           </FormField>
           <FormField label={'Date Result Shared'} name={'dateResultShared'}>
             <DateInput format={'yyyy-mm-dd'} name={'dateResultShared'} />
+          </FormField>
+          <FormField label={'Date Sample Shipped'} name={'dateSampleShipped'}>
+            <DateInput format={'yyyy-mm-dd'} name={'dateSampleShipped'} />
           </FormField>
           <FormField label={'Sample Code'} name={'sampleCode'} required>
             <TextInput placeholder={'Sample Code'} name={'sampleCode'} />

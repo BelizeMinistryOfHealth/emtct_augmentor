@@ -2,7 +2,6 @@ import { format, parseISO } from 'date-fns';
 import {
   Box,
   Button,
-  Card,
   CardBody,
   Table,
   TableCell,
@@ -17,6 +16,7 @@ import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import AppCard from '../../AppCard/AppCard';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
 import EditForm from './HivScreeningEdit';
@@ -169,7 +169,7 @@ const HivScreening = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <Card fill={'horizontal'}>
+        <AppCard fill={'horizontal'}>
           <CardBody gap={'medium'} pad={'medium'}>
             {editingScreening && (
               <Layer
@@ -224,7 +224,7 @@ const HivScreening = (props) => {
               onClickEdit={onClickEdit}
             />
           </CardBody>
-        </Card>
+        </AppCard>
       </ErrorBoundary>
     </Layout>
   );

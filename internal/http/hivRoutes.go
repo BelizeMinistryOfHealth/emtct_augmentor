@@ -26,9 +26,11 @@ type NewHivScreeningRequest struct {
 	DateResultReceived     *time.Time `json:"dateResultReceived,omitempty"`
 	Result                 string     `json:"result"`
 	DateResultShared       *time.Time `json:"dateResultShared,omitempty"`
+	DateSampleTaken        time.Time  `json:"dateSampleTaken"`
+	MchEncounterId         int        `json:"mchEncounterId"`
 }
 
-func (a *App) CreateHivScreening(user string, r NewHivScreeningRequest) (*models.HivScreening, error) {
+func (a *App) CreateHivScreening(user string, r NewHivScreeningRequest, timely bool) (*models.HivScreening, error) {
 	id := uuid.New().String()
 
 	s := models.HivScreening{
@@ -47,6 +49,7 @@ func (a *App) CreateHivScreening(user string, r NewHivScreeningRequest) (*models
 		UpdatedAt:              nil,
 		CreatedBy:              user,
 		UpdatedBy:              nil,
+		Timely:                 timely,
 	}
 
 	err := a.Db.CreateHivScreening(s)
@@ -71,7 +74,55 @@ func (a *App) CreateHivScreeningHandler(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		screening, err := a.CreateHivScreening(user, req)
+		// Calculate if the sample was taken in a timely manner. We need the birth date for this.
+		anc, err := a.AcsisDb.FindAntenatalEncounterById(req.PatientId, req.MchEncounterId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"request": req,
+				"user":    user,
+				"handler": "CreateHivScreeningHandler",
+			}).WithError(err).Error("error fetching the antenatal encounter when creating an hiv screening")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if anc == nil {
+			log.WithFields(log.Fields{
+				"request": req,
+				"user":    user,
+				"handler": "CreateHivScreeningHandler",
+			}).WithError(err).Error("an antenatal encounter was found when trying to save an hiv screening")
+			http.Error(w, fmt.Sprintf("the mch encounter (%d) does not exist", req.MchEncounterId), http.StatusBadRequest)
+			return
+		}
+		birth, err := a.AcsisDb.FindLatestBirth(req.PatientId, anc.Id)
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"user":    user,
+					"request": req,
+					"anc":     anc,
+					"handler": "CreateHivScreeningHandler",
+				}).
+				WithError(err).
+				Error("error while retrieving patient's latest child birth")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if birth == nil {
+			log.WithFields(
+				log.Fields{
+					"user":    user,
+					"request": req,
+					"anc":     anc,
+					"handler": "CreateHivScreeningHandler",
+				}).
+				WithError(err).
+				Error("error: no birth was found that happened for this mch encounter")
+			http.Error(w, fmt.Sprintf("no birth was found for this mch encounter(%d)", req.MchEncounterId), http.StatusBadRequest)
+			return
+		}
+		timely := models.IsHivScreeningTimely(*birth, req.TestName, req.DateSampleTaken)
+		screening, err := a.CreateHivScreening(user, req, timely)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"hivScreeningRequest": req,

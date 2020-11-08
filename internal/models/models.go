@@ -114,6 +114,7 @@ type HomeVisit struct {
 type HivScreening struct {
 	Id                     string     `json:"id"`
 	PatientId              int        `json:"patientId"`
+	MchEncounterId         int        `json:"mchEncounterId"`
 	TestName               string     `json:"testName"`
 	ScreeningDate          time.Time  `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty"`
@@ -121,8 +122,11 @@ type HivScreening struct {
 	DateSampleShipped      time.Time  `json:"dateSampleShipped"`
 	Destination            string     `json:"destination"`
 	DateResultReceived     *time.Time `json:"dateResultReceived,omitEmpty"`
+	DateSampleTaken        *time.Time `json:"dateSampleTaken,omitEmpty"`
+	DueDate                *time.Time `json:"dueDate,omitEmpty"`
 	Result                 string     `json:"result"`
 	DateResultShared       *time.Time `json:"dateResultShared,omitEmpty"`
+	Timely                 bool       `json:"timely"`
 	CreatedAt              time.Time  `json:"createdAt"`
 	UpdatedAt              *time.Time `json:"updatedAt"`
 	CreatedBy              string     `json:"createdBy"`
@@ -180,4 +184,33 @@ type InfantDiagnoses struct {
 	Doctor      string    `json:"doctor"`
 	Comments    string    `json:"comments"`
 	Date        time.Time `json:"date"`
+}
+
+type Birth struct {
+	PatientId   int
+	BirthStatus string
+	Date        time.Time
+	BirthDate   time.Time
+}
+
+// IsHivScreeningTimely indicates if an hiv screening was done in a timely manner.
+// The timeliness depends on the type of test and when the sample was taken:
+// PCR 1: sample must be taken 3 days or less after birth.
+// PCR 2: sample must be taken no later than 6 weeks after birth
+// PCR 3: sample must be taken no later than 90 days after birth
+// ELISA: sample must be taken no longer than 18 months after birth
+func IsHivScreeningTimely(birth Birth, testName string, dateSampleTaken time.Time) bool {
+	diff := dateSampleTaken.Sub(birth.BirthDate).Hours() * 24
+	switch testName {
+	case "PCR 1":
+		return diff < 4
+	case "PCR 2":
+		return diff < (6 * 7)
+	case "PCR 3":
+		return diff < 91
+	case "ELISA":
+		return diff <= (18 * 7 * 4)
+	default:
+		return false
+	}
 }

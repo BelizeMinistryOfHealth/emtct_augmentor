@@ -76,6 +76,11 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	// Obstetric History
 	r.HandleFunc("/patient/{patientId}/obstetricHistory", authHandlers.Then(app.ObstetricHistoryHandler)).Methods(http.MethodOptions, http.MethodGet)
 
+	fs := http.FileServer(http.Dir("./front_end/build/"))
+	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
+	staticFs := http.FileServer(http.Dir("./front_end/build/static/"))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFs))
+
 	return r
 }
 

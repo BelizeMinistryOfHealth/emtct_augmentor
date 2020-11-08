@@ -18,15 +18,14 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 // TestAuth tests that authentication is working
 func TestAuth(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user")
-	log.Printf("user: %+v", user)
-	fmt.Fprintf(w, "TEST")
+	fmt.Fprintf(w, "OK")
 }
 
 type PatientResponse struct {
-	Patient          *models.Patient           `json:"patient"`
-	ObstetricHistory []models.ObstetricHistory `json:"obstetricHistory"`
-	Diagnoses        []models.Diagnosis        `json:"diagnoses"`
+	Patient          *models.Patient            `json:"patient"`
+	ObstetricHistory []models.ObstetricHistory  `json:"obstetricHistory"`
+	Diagnoses        []models.Diagnosis         `json:"diagnoses"`
+	AncEncounter     *models.AntenatalEncounter `json:"antenatalEncounter"`
 }
 
 func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +63,11 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history")
 	}
 
+	ancEncounter, err := a.AcsisDb.FindLatestAntenatalEncounter(id)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": id}).WithError(err).Error("could not retrieve anc encounter")
+	}
+
 	if patient == nil {
 		w.Header().Add("Content-Type", "application/json")
 		emptyResponse := PatientResponse{
@@ -79,6 +83,7 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		Patient:          patient,
 		ObstetricHistory: obstetricHistory,
 		Diagnoses:        diagnoses,
+		AncEncounter:     ancEncounter,
 	}
 	resp, err := json.Marshal(response)
 	if err != nil {

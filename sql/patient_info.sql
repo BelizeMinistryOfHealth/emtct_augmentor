@@ -17,7 +17,7 @@ WHERE p.currently_pregnant IS TRUE
 AND c.chronic_disease_id IN (12, 13);
 
 -- FIND all HIV Confirmation tests for a patient
-SELECT altr.test_request_id, e.encounter_id, alt.name,
+SELECT p.patient_id, altr.test_request_id, e.encounter_id, alt.name,
     a.label, aludli.name as list_item, altri.released_time,
        l.first_name, l.last_name, l.middle_name, l.maiden_name,
        p.birth_date, p.ssi_number,p.birth_place, concat(l2.first_name, ' ', l2.last_name) as next_of_kin,
@@ -49,7 +49,19 @@ WHERE altri.test_id IN (2) -- the HIV Test
   -- AND altrrc.user_defined_list_value = 2
   -- test_result_id 348 is the HIV Confirmation result
   AND a.test_result_id = 348
---   AND p.patient_id = 591232
+  AND p.patient_id IN (690009,
+                    548549,
+                    14980,
+                    14980,
+                    661725,
+                    661725,
+                    562100,
+                    562100,
+                    562839,
+                    624815,
+                    624815,
+                    624815,
+                    589066095)
 ORDER BY released_time DESC;
 
 
@@ -132,3 +144,24 @@ INNER JOIN acsis_hr_staff hs ON aed.doctor_id=hs.staff_id
 INNER JOIN acsis_people ap on hs.person_id = ap.person_id
 WHERE e.patient_id=985490
 ORDER BY aed.diagnosis_time DESC;
+
+SELECT * FROM acsis_hc_pregnancies
+WHERE patient_id=562839
+ORDER BY last_modified_time DESC;
+
+SELECT p.patient_id, p.birth_date, hp.end_time, hp.last_modified_time
+FROM acsis_hc_patients p
+-- INNER JOIN acsis_hc_patient_chronic_diseases c ON c.patient_id = p.patient_id
+INNER JOIN acsis_people ppl ON p.person_id=ppl.person_id
+INNER JOIN acsis_genders g ON g.gender_id=ppl.gender_id
+INNER JOIN acsis_hc_pregnancies hp ON p.patient_id=hp.pregnancy_id
+WHERE
+-- c.chronic_disease_id IN (12, 13)
+g.gender_id=2
+ORDER BY hp.last_modified_time DESC;
+
+
+-- LAB TESTS
+-- The HIV Test has test_id 2 & 152
+-- The type of test is determined by the acsis_lab_test_results table
+-- The 2 types of tests: Abbott(356, 354) & Medmira(357, 355) & PCR(5015)
