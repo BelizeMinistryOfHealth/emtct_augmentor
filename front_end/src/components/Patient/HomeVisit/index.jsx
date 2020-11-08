@@ -1,8 +1,8 @@
 import {
   Box,
   Button,
-  Card,
   CardBody,
+  CardHeader,
   Heading,
   Layer,
   Table,
@@ -23,24 +23,29 @@ import EditForm from './HomeVisitEdit';
 import { fetchHomeVisits } from '../../../api/patient';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import { useHistory, useParams } from 'react-router-dom';
+import AppCard from '../../AppCard/AppCard';
 
 const homeVisitRow = (data, onClickEdit) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.reason}</Text>
+        <Text size={'small'}>{data.reason}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.comments}</Text>
+        <Text size={'small'}>{data.comments}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.dateOfVisit), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>
+          {format(parseISO(data.dateOfVisit), 'dd LLL yyyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.createdBy}</Text>
+        <Text size={'small'}>{data.createdBy}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.createdAt), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>
+          {format(parseISO(data.createdAt), 'dd LLL yyyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'} onClick={() => onClickEdit(data)}>
         <Edit />
@@ -63,22 +68,22 @@ const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
       <Table caption={caption}>
         <TableHeader>
           <TableRow>
-            <TableCell align={'start'}>
-              <Text>Reason</Text>
+            <TableCell align={'start'} colspan={2}>
+              <Text size={'small'}>Reason</Text>
             </TableCell>
-            <TableCell align={'start'}>
-              <Text>Comments</Text>
+            <TableCell align={'start'} colspan={4}>
+              <Text size={'small'}>Comments</Text>
             </TableCell>
-            <TableCell align={'start'}>
-              <Text>Date of Visit</Text>
+            <TableCell align={'start'} colspan={1}>
+              <Text size={'small'}>Date of Visit</Text>
             </TableCell>
-            <TableCell>
-              <Text>Created By</Text>
+            <TableCell colspan={2}>
+              <Text size={'small'}>Created By</Text>
             </TableCell>
-            <TableCell>
-              <Text>Date Created</Text>
+            <TableCell colspan={1}>
+              <Text size={'small'}>Date Created</Text>
             </TableCell>
-            <TableCell />
+            <TableCell colspan={1} />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,11 +99,11 @@ const HomeVisitList = (props) => {
   const { httpInstance } = useHttpApi();
   const [editingHomeVisit, setEditingHomeVisit] = React.useState(undefined);
   const [data, setData] = React.useState({
-    homeVisits: [],
+    homeVisitsData: undefined,
     loading: false,
     error: undefined,
   });
-  const [refreshHomeVisits, setRefreshHomeVisits] = React.useState(false);
+  const [refreshHomeVisits, setRefreshHomeVisits] = React.useState(true);
 
   const history = useHistory();
 
@@ -107,19 +112,27 @@ const HomeVisitList = (props) => {
   React.useEffect(() => {
     const fetchVisits = async () => {
       try {
-        setData({ homeVisits: [], loading: true, error: undefined });
+        setData({ homeVisitsData: undefined, loading: true, error: undefined });
+        console.log('searching.......');
         const homeVisits = await fetchHomeVisits(patientId, httpInstance);
-        setData({ homeVisits, loading: false, error: undefined });
+        setData({
+          homeVisitsData: homeVisits,
+          loading: false,
+          error: undefined,
+        });
         setRefreshHomeVisits(false);
       } catch (e) {
+        console.error(e);
         setData({
-          homeVisits: [],
+          homeVisitsData: undefined,
           loading: false,
           error: 'Failed to fetch home visits',
         });
       }
     };
-    fetchVisits();
+    if (refreshHomeVisits) {
+      fetchVisits();
+    }
   }, [httpInstance, patientId, refreshHomeVisits]);
 
   const closeEditForm = () => {
@@ -130,7 +143,20 @@ const HomeVisitList = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <Card>
+        <AppCard fill={'horizontal'}>
+          <CardHeader>
+            <Box pad={'small'}>
+              <Heading level={1} gap={'none'}>
+                Home Visits
+              </Heading>
+              {data && data.homeVisitsData && (
+                <Heading level={3} pad={'none'} gap={'none'}>
+                  {data.homeVisitsData.patient.firstName}{' '}
+                  {data.homeVisitsData.patient.lastName}
+                </Heading>
+              )}
+            </Box>
+          </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             {editingHomeVisit && (
               <Layer
@@ -180,13 +206,17 @@ const HomeVisitList = (props) => {
                 />
               </Box>
             </Box>
-            <HomeVisitsTable
-              homeVisits={data.homeVisits}
-              caption={'Home Visits'}
-              onClickEdit={onClickEdit}
-            />
+            {refreshHomeVisits ? (
+              <Text>Loading....</Text>
+            ) : (
+              <HomeVisitsTable
+                homeVisits={data.homeVisitsData.homeVisits}
+                caption={'Home Visits'}
+                onClickEdit={onClickEdit}
+              />
+            )}
           </CardBody>
-        </Card>
+        </AppCard>
       </ErrorBoundary>
     </Layout>
   );

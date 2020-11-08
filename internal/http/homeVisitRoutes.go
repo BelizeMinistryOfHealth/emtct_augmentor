@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,13 +14,26 @@ import (
 	"moh.gov.bz/mch/emtct/internal/models"
 )
 
+type HomeVisitResponse struct {
+	HomeVisits []models.HomeVisit      `json:"homeVisits"`
+	Patient    models.PatientBasicInfo `json:"patient"`
+}
+
 func (a *App) FindHomeVisitsByPatient(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
 	}
 
 	vars := mux.Vars(r)
-	patientId := vars["id"]
+	id := vars["id"]
+	patientId, err := strconv.Atoi(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": id,
+		}).WithError(err).Error("error trying to retrieve home visits using a non-numeric patient id")
+		http.Error(w, "the patient id must be a valid number", http.StatusBadRequest)
+		return
+	}
 	homeVisits, err := a.Db.FindHomeVisitsByPatientId(patientId)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId}).
@@ -28,8 +42,20 @@ func (a *App) FindHomeVisitsByPatient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	results, err := json.Marshal(homeVisits)
+	patient, err := a.AcsisDb.FindPatientBasicInfo(patientId)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": patient,
+			"handler":   "FindHomeVisitsByPatient",
+		}).WithError(err).Error("error retrieving patient information")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	response := HomeVisitResponse{
+		HomeVisits: homeVisits,
+		Patient:    *patient,
+	}
+	results, err := json.Marshal(response)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": patientId, "homeVisits": homeVisits}).
 			WithError(err).
@@ -147,10 +173,11 @@ func (a *App) EditHomeVisit(id, user string, r HomeVisitRequest) (*models.HomeVi
 }
 
 type NewHomeVisitRequest struct {
-	PatientId   int       `json:"patientId"`
-	Reason      string    `json:"reason"`
-	Comments    string    `json:"comments"`
-	DateOfVisit time.Time `json:"dateOfVisit"`
+	PatientId      int       `json:"patientId"`
+	Reason         string    `json:"reason"`
+	Comments       string    `json:"comments"`
+	DateOfVisit    time.Time `json:"dateOfVisit"`
+	MchEncounterId int       `json:"mchEncounterId"`
 }
 
 func (a *App) PostHomeVisit(w http.ResponseWriter, r *http.Request) {
@@ -206,15 +233,16 @@ func (a *App) CreateHomeVisit(user string, r NewHomeVisitRequest) (*models.HomeV
 	}
 
 	homeVisit := models.HomeVisit{
-		Id:          id,
-		PatientId:   r.PatientId,
-		Reason:      r.Reason,
-		Comments:    r.Comments,
-		DateOfVisit: r.DateOfVisit,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   nil,
-		CreatedBy:   user,
-		UpdatedBy:   nil,
+		Id:             id,
+		PatientId:      r.PatientId,
+		MchEncounterId: r.MchEncounterId,
+		Reason:         r.Reason,
+		Comments:       r.Comments,
+		DateOfVisit:    r.DateOfVisit,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      nil,
+		CreatedBy:      user,
+		UpdatedBy:      nil,
 	}
 
 	err := a.Db.CreateHomeVisit(homeVisit)

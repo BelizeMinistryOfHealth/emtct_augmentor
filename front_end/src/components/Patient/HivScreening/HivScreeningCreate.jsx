@@ -64,7 +64,6 @@ const HivScreeningCreateForm = () => {
           console.error(e);
           setStatus('ERROR');
           if (e.response) {
-            console.dir({ response: e.response });
             setErrorMessage(e.response.data);
           }
         });
