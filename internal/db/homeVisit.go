@@ -3,20 +3,17 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"moh.gov.bz/mch/emtct/internal/models"
 )
 
-func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisit, error) {
-	id, err := strconv.Atoi(patientId)
-	if err != nil {
-		return []models.HomeVisit{}, fmt.Errorf("patientId is not a number")
-	}
+func (d *EmtctDb) FindHomeVisitsByPatientId(patientId int) ([]models.HomeVisit, error) {
 
-	stmt := `SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by FROM home_visit WHERE patient_id=$1`
-	rows, err := d.DB.Query(stmt, id)
+	stmt := `
+	SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by, mch_encounter_id 
+	FROM home_visit WHERE patient_id=$1`
+	rows, err := d.DB.Query(stmt, patientId)
 	if err != nil {
 		return nil, fmt.Errorf("error executing query for retrieving home visits: %+v", err)
 	}
@@ -35,6 +32,7 @@ func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisi
 			&homeVisit.UpdatedAt,
 			&homeVisit.CreatedBy,
 			&homeVisit.UpdatedBy,
+			&homeVisit.MchEncounterId,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning a home visit row: %+v", err)
@@ -46,7 +44,9 @@ func (d *EmtctDb) FindHomeVisitsByPatientId(patientId string) ([]models.HomeVisi
 }
 
 func (d *EmtctDb) FindHomeVisitById(id string) (*models.HomeVisit, error) {
-	stmt := `SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by FROM home_visit WHERE id=$1`
+	stmt := `
+	SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by, mch_encounter_id 
+	FROM home_visit WHERE id=$1`
 	var homeVisit models.HomeVisit
 	row := d.DB.QueryRow(stmt, id)
 	err := row.Scan(
@@ -59,6 +59,7 @@ func (d *EmtctDb) FindHomeVisitById(id string) (*models.HomeVisit, error) {
 		&homeVisit.UpdatedBy,
 		&homeVisit.CreatedBy,
 		&homeVisit.UpdatedBy,
+		&homeVisit.MchEncounterId,
 	)
 
 	switch err {
@@ -72,8 +73,11 @@ func (d *EmtctDb) FindHomeVisitById(id string) (*models.HomeVisit, error) {
 }
 
 func (d *EmtctDb) CreateHomeVisit(v models.HomeVisit) error {
-	stmt := `INSERT INTO home_visit (id, patient_id, reason, comments, date_of_visit, created_at, created_by) VALUES($1, $2, $3, $4, $5, $6, $7)`
-	_, err := d.DB.Exec(stmt, v.Id, v.PatientId, v.Reason, v.Comments, v.DateOfVisit, v.CreatedAt, v.CreatedBy)
+	stmt := `
+	INSERT INTO home_visit 
+	    (id, patient_id, reason, comments, date_of_visit, created_at, created_by, mch_encounter_id) 
+	    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
+	_, err := d.DB.Exec(stmt, v.Id, v.PatientId, v.Reason, v.Comments, v.DateOfVisit, v.CreatedAt, v.CreatedBy, v.MchEncounterId)
 	if err != nil {
 		return fmt.Errorf("error creating a home visit: %+v", err)
 	}
@@ -81,7 +85,10 @@ func (d *EmtctDb) CreateHomeVisit(v models.HomeVisit) error {
 }
 
 func (d *EmtctDb) EditHomeVisit(v models.HomeVisit) (*models.HomeVisit, error) {
-	stmt := `UPDATE home_visit SET reason=$1, comments=$2, date_of_visit=$3, updated_by=$4, updated_at=$5 WHERE id=$6`
+	stmt := `
+	UPDATE home_visit 
+	SET reason=$1, comments=$2, date_of_visit=$3, updated_by=$4, updated_at=$5
+	WHERE id=$6`
 	updateddAt := time.Now()
 	_, err := d.DB.Exec(stmt,
 		v.Reason,

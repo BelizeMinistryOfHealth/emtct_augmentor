@@ -100,15 +100,16 @@ func FindLabResultsBetweenDates(labResults []LabResult, lmp time.Time) []LabResu
 }
 
 type HomeVisit struct {
-	Id          string     `json:"id"`
-	PatientId   int        `json:"patientId"`
-	Reason      string     `json:"reason"`
-	Comments    string     `json:"comments"`
-	DateOfVisit time.Time  `json:"dateOfVisit"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   *time.Time `json:"updatedAt"`
-	CreatedBy   string     `json:"createdBy"`
-	UpdatedBy   *string    `json:"updatedBy"`
+	Id             string     `json:"id"`
+	PatientId      int        `json:"patientId"`
+	MchEncounterId int        `json:"mchEncounterId"`
+	Reason         string     `json:"reason"`
+	Comments       string     `json:"comments"`
+	DateOfVisit    time.Time  `json:"dateOfVisit"`
+	CreatedAt      time.Time  `json:"createdAt"`
+	UpdatedAt      *time.Time `json:"updatedAt"`
+	CreatedBy      string     `json:"createdBy"`
+	UpdatedBy      *string    `json:"updatedBy"`
 }
 
 type HivScreening struct {
