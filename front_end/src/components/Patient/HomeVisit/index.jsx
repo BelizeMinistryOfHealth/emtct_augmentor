@@ -55,7 +55,7 @@ const homeVisitRow = (data, onClickEdit) => {
 };
 
 const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
-  if (homeVisits.length === 0) {
+  if (!homeVisits || homeVisits.length === 0) {
     return (
       <Box gap={'medium'} align={'center'}>
         <Text>Patient has not had any Home Visits.</Text>
