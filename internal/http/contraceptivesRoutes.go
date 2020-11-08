@@ -72,6 +72,11 @@ func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+type contraceptivesResponse struct {
+	Contraceptives []models.ContraceptiveUsed `json:"contraceptives"`
+	Patient        models.PatientBasicInfo    `json:"patient"`
+}
+
 func (a *App) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
@@ -94,11 +99,26 @@ func (a *App) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	results, err := json.Marshal(contraceptives)
+	patient, err := a.AcsisDb.FindPatientBasicInfo(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId":      id,
+			"contraceptives": contraceptives,
+			"handler":        "ContraceptivesByPatientHandler",
+		}).WithError(err).Error("error retrieving patient's information")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	response := contraceptivesResponse{
+		Contraceptives: contraceptives,
+		Patient:        *patient,
+	}
+	results, err := json.Marshal(response)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"patientId":      patientId,
 			"contraceptives": contraceptives,
+			"response":       response,
 		}).WithError(err).Error("failed to marshal list of contraceptives")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   CardBody,
-  Card,
   Table,
   TableBody,
   TableCell,
@@ -12,11 +11,13 @@ import {
   Text,
   Layer,
   Heading,
+  CardHeader,
 } from 'grommet';
 import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import AppCard from '../../AppCard/AppCard';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
 import EditForm from './ContraceptivesEdit';
@@ -46,7 +47,7 @@ const ContraceptivesTable = ({
   caption,
   onClickEdit,
 }) => {
-  if (contraceptives.length === 0) {
+  if (!contraceptives || contraceptives.length === 0) {
     return (
       <Box gap={'medium'} align={'center'}>
         <Text>No Contraceptives Information Exists for this Patient!</Text>
@@ -84,8 +85,8 @@ const ContraceptivesUsed = (props) => {
   const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
   const [data, setData] = React.useState({
-    contraceptives: [],
-    loading: false,
+    result: undefined,
+    loading: true,
     error: undefined,
   });
   const [editingContraceptive, setEditingContraceptive] = React.useState(
@@ -98,22 +99,22 @@ const ContraceptivesUsed = (props) => {
   React.useEffect(() => {
     const fetchContraceptives = async () => {
       try {
-        setData({ contraceptives: [], loading: true, error: undefined });
         const result = await httpInstance.get(
           `/patient/${patientId}/contraceptivesUsed`
         );
-        const contraceptives = result.data ?? [];
-        setData({ contraceptives, loading: false, error: undefined });
+        setData({ result: result.data, loading: false, error: undefined });
       } catch (e) {
         setData({
-          contraceptives: [],
+          result: undefined,
           loading: false,
           error: 'Error occurred while fetching contraceptive information!',
         });
       }
     };
-    fetchContraceptives();
-  }, [httpInstance, patientId]);
+    if (data.loading) {
+      fetchContraceptives();
+    }
+  }, [httpInstance, patientId, data]);
   if (data.loading) {
     return <>Loading....</>;
   }
@@ -121,7 +122,41 @@ const ContraceptivesUsed = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <Card fill={'horizontal'}>
+        <AppCard fill={'horizontal'} pad={'small'}>
+          <CardHeader>
+            <Box direction={'row'} align={'start'} fill='horizontal'>
+              <Box
+                direction={'column'}
+                align={'start'}
+                fill={'horizontal'}
+                justify={'between'}
+                alignContent={'center'}
+              >
+                <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+                  Contraceptives Used
+                </Text>
+                {data && data.result.patient && (
+                  <Text size={'large'} textAlign={'end'} weight={'normal'}>
+                    {data.result.patient.firstName}{' '}
+                    {data.result.patient.lastName}
+                  </Text>
+                )}
+              </Box>
+              <Box
+                align={'start'}
+                fill={'horizontal'}
+                direction={'row-reverse'}
+              >
+                <Button
+                  icon={<Add />}
+                  label={'Add'}
+                  onClick={() =>
+                    history.push(`/patient/${patientId}/contraceptives/new`)
+                  }
+                />
+              </Box>
+            </Box>
+          </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             {editingContraceptive && (
               <Layer
@@ -154,29 +189,13 @@ const ContraceptivesUsed = (props) => {
                 </Box>
               </Layer>
             )}
-            <Box
-              direction={'row-reverse'}
-              align={'start'}
-              pad={'medium'}
-              gap={'medium'}
-            >
-              <Box align={'end'} pad={'medium'} fill={'horizontal'}>
-                <Button
-                  icon={<Add />}
-                  label={'Add Contraceptive'}
-                  onClick={() =>
-                    history.push(`/patient/${patientId}/contraceptives/new`)
-                  }
-                />
-              </Box>
-            </Box>
             <ContraceptivesTable
-              contraceptives={data.contraceptives}
+              contraceptives={data.result.contraceptives}
               caption={'Contraceptives Used'}
               onClickEdit={onClickEdit}
             />
           </CardBody>
-        </Card>
+        </AppCard>
       </ErrorBoundary>
     </Layout>
   );
