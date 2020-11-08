@@ -15,10 +15,11 @@ import (
 )
 
 type NewContraceptiveUsedRequest struct {
-	PatientId     int       `json:"patientId"`
-	Contraceptive string    `json:"contraceptive"`
-	Comments      string    `json:"comments"`
-	DateUsed      time.Time `json:"dateUsed"`
+	PatientId      int       `json:"patientId"`
+	MchEncounterId int       `json:"mchEncounterId"'`
+	Contraceptive  string    `json:"contraceptive"`
+	Comments       string    `json:"comments"`
+	DateUsed       time.Time `json:"dateUsed"`
 }
 
 func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,15 +37,16 @@ func (a *App) CreateContraceptiveUsedHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		contraceptive := models.ContraceptiveUsed{
-			Id:            uuid.New().String(),
-			PatientId:     req.PatientId,
-			Contraceptive: req.Contraceptive,
-			Comments:      req.Comments,
-			DateUsed:      req.DateUsed,
-			CreatedAt:     time.Now(),
-			UpdatedAt:     nil,
-			CreatedBy:     user,
-			UpdatedBy:     nil,
+			Id:             uuid.New().String(),
+			PatientId:      req.PatientId,
+			MchEncounterId: req.MchEncounterId,
+			Contraceptive:  req.Contraceptive,
+			Comments:       req.Comments,
+			DateUsed:       req.DateUsed,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      nil,
+			CreatedBy:      user,
+			UpdatedBy:      nil,
 		}
 		err = a.Db.CreateContraceptiveUsed(contraceptive)
 		if err != nil {
