@@ -31,30 +31,33 @@ const homeVisitRow = (data, onClickEdit) => {
       <TableCell align={'start'}>
         <Text size={'small'}>{data.reason}</Text>
       </TableCell>
-      <TableCell align={'start'}>
-        <Text size={'small'}>{data.comments}</Text>
+      <TableCell align={'start'} alignContent={'start'}>
+        <Text size={'small'} wordBreak={'break-word'} textAlign={'start'}>
+          {data.comments}
+        </Text>
       </TableCell>
-      <TableCell align={'start'}>
+      <TableCell align={'end'}>
         <Text size={'small'}>
           {format(parseISO(data.dateOfVisit), 'dd LLL yyyy')}
         </Text>
       </TableCell>
-      <TableCell align={'start'}>
-        <Text size={'small'}>{data.createdBy}</Text>
-      </TableCell>
-      <TableCell align={'start'}>
+
+      <TableCell align={'end'}>
         <Text size={'small'}>
           {format(parseISO(data.createdAt), 'dd LLL yyyy')}
         </Text>
       </TableCell>
-      <TableCell align={'start'} onClick={() => onClickEdit(data)}>
-        <Edit />
+      <TableCell align={'end'}>
+        <Text size={'small'}>{data.createdBy}</Text>
+      </TableCell>
+      <TableCell align={'center'} onClick={() => onClickEdit(data)}>
+        <Edit size={'small'} />
       </TableCell>
     </TableRow>
   );
 };
 
-const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
+const HomeVisitsTable = ({ children, homeVisits, onClickEdit }) => {
   if (!homeVisits || homeVisits.length === 0) {
     return (
       <Box gap={'medium'} align={'center'}>
@@ -65,7 +68,7 @@ const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
   return (
     <Box gap={'medium'} align={'center'} width={'meidum'} fill={'horizontal'}>
       {children}
-      <Table caption={caption}>
+      <Table>
         <TableHeader>
           <TableRow>
             <TableCell align={'start'} colspan={2}>
@@ -74,14 +77,14 @@ const HomeVisitsTable = ({ children, homeVisits, caption, onClickEdit }) => {
             <TableCell align={'start'} colspan={4}>
               <Text size={'small'}>Comments</Text>
             </TableCell>
-            <TableCell align={'start'} colspan={1}>
+            <TableCell align={'end'} colspan={1}>
               <Text size={'small'}>Date of Visit</Text>
             </TableCell>
-            <TableCell colspan={2}>
-              <Text size={'small'}>Created By</Text>
-            </TableCell>
-            <TableCell colspan={1}>
+            <TableCell colspan={1} align={'end'}>
               <Text size={'small'}>Date Created</Text>
+            </TableCell>
+            <TableCell colspan={2} align={'end'}>
+              <Text size={'small'}>Created By</Text>
             </TableCell>
             <TableCell colspan={1} />
           </TableRow>
@@ -142,18 +145,40 @@ const HomeVisitList = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <AppCard fill={'horizontal'}>
+        <AppCard fill={'horizontal'} pad={'small'}>
           <CardHeader>
-            <Box pad={'small'}>
-              <Heading level={1} gap={'none'}>
-                Home Visits
-              </Heading>
-              {data && data.homeVisitsData && (
-                <Heading level={3} pad={'none'} gap={'none'}>
-                  {data.homeVisitsData.patient.firstName}{' '}
-                  {data.homeVisitsData.patient.lastName}
-                </Heading>
-              )}
+            <Box direction={'row'} align={'start'} fill='horizontal'>
+              <Box
+                direction={'column'}
+                align={'start'}
+                fill={'horizontal'}
+                justify={'between'}
+                alignContent={'center'}
+              >
+                <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+                  Home Visits
+                </Text>
+
+                {data && data.homeVisitsData && (
+                  <Text size={'large'} textAlign={'end'} weight={'normal'}>
+                    {data.homeVisitsData.patient.firstName}{' '}
+                    {data.homeVisitsData.patient.lastName}
+                  </Text>
+                )}
+              </Box>
+              <Box
+                align={'start'}
+                fill={'horizontal'}
+                direction={'row-reverse'}
+              >
+                <Button
+                  icon={<Add />}
+                  label={'Add'}
+                  onClick={() =>
+                    history.push(`/patient/${patientId}/home_visits/new`)
+                  }
+                />
+              </Box>
             </Box>
           </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
@@ -188,29 +213,12 @@ const HomeVisitList = (props) => {
                 </Box>
               </Layer>
             )}
-            <Box
-              direction={'row-reverse'}
-              align={'start'}
-              pad={'medium'}
-              gap={'medium'}
-              background={'neutral-0'}
-            >
-              <Box align={'center'} pad={'medium'}>
-                <Button
-                  icon={<Add />}
-                  label={'Create Home Visit'}
-                  onClick={() =>
-                    history.push(`/patient/${patientId}/home_visits/new`)
-                  }
-                />
-              </Box>
-            </Box>
+
             {refreshHomeVisits ? (
               <Text>Loading....</Text>
             ) : (
               <HomeVisitsTable
                 homeVisits={data.homeVisitsData.homeVisits}
-                caption={'Home Visits'}
                 onClickEdit={onClickEdit}
               />
             )}

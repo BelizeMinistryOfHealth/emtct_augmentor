@@ -11,6 +11,7 @@ import {
   Text,
   Layer,
   Heading,
+  CardHeader,
 } from 'grommet';
 import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
@@ -68,7 +69,7 @@ const screeningRow = (data, onClickEdit) => {
 };
 
 const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
-  if (screenings.length === 0) {
+  if (!screenings || screenings.length === 0) {
     return (
       <Box
         gap={'medium'}
@@ -129,8 +130,8 @@ const HivScreening = (props) => {
   const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
   const [data, setData] = React.useState({
-    screenings: [],
-    loading: false,
+    screenings: undefined,
+    loading: true,
     error: undefined,
   });
   const [editingScreening, setEditingScreening] = React.useState(undefined);
@@ -141,22 +142,23 @@ const HivScreening = (props) => {
   React.useEffect(() => {
     const fetchScreenings = async () => {
       try {
-        setData({ screenings: [], loading: true, error: undefined });
+        // setData({ screenings: undefined, loading: true, error: undefined });
         const result = await httpInstance.get(
           `/patient/${patientId}/hivScreenings`
         );
-        const screenings = result.data ?? [];
-        setData({ screenings, loading: false, error: undefined });
+        setData({ screenings: result.data, loading: false, error: undefined });
       } catch (e) {
         setData({
-          screenings: [],
+          screenings: undefined,
           loading: false,
           error: 'Failed to fetch hiv screenings',
         });
       }
     };
-    fetchScreenings();
-  }, [httpInstance, patientId]);
+    if (data.loading) {
+      fetchScreenings();
+    }
+  }, [httpInstance, patientId, data]);
 
   if (data.loading) {
     return <>Loading....</>;
@@ -169,7 +171,41 @@ const HivScreening = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <AppCard fill={'horizontal'}>
+        <AppCard fill={'horizontal'} pad={'small'}>
+          <CardHeader>
+            <Box direction={'row'} align={'start'} fill='horizontal'>
+              <Box
+                direction={'column'}
+                align={'start'}
+                fill={'horizontal'}
+                justify={'between'}
+                alignContent={'center'}
+              >
+                <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+                  HIV Screenings
+                </Text>
+                {data && data.screenings.patient && (
+                  <Text size={'large'} textAlign={'end'} weight={'normal'}>
+                    {data.screenings.patient.firstName}{' '}
+                    {data.screenings.patient.lastName}
+                  </Text>
+                )}
+              </Box>
+              <Box
+                align={'start'}
+                fill={'horizontal'}
+                direction={'row-reverse'}
+              >
+                <Button
+                  icon={<Add />}
+                  label={'Add'}
+                  onClick={() =>
+                    history.push(`/patient/${patientId}/hiv_screenings/new`)
+                  }
+                />
+              </Box>
+            </Box>
+          </CardHeader>
           <CardBody gap={'medium'} pad={'medium'}>
             {editingScreening && (
               <Layer
@@ -202,24 +238,8 @@ const HivScreening = (props) => {
                 </Box>
               </Layer>
             )}
-            <Box
-              direction={'row-reverse'}
-              align={'start'}
-              pad={'medium'}
-              gap={'medium'}
-            >
-              <Box align={'end'} pad={'medium'} fill={'horizontal'}>
-                <Button
-                  icon={<Add />}
-                  label={'Create Hiv Screening'}
-                  onClick={() =>
-                    history.push(`/patient/${patientId}/hiv_screenings/new`)
-                  }
-                />
-              </Box>
-            </Box>
             <HivScreeningTable
-              screenings={data.screenings}
+              screenings={data.screenings.hivScreenings}
               caption={'HIV Screenings'}
               onClickEdit={onClickEdit}
             />

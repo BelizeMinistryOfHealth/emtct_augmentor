@@ -150,6 +150,11 @@ func (a *App) CreateHivScreeningHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+type hivScreeningsResponse struct {
+	HivScreenings []models.HivScreening   `json:"hivScreenings"`
+	Patient       models.PatientBasicInfo `json:"patient"`
+}
+
 func (a *App) HivScreeningsByPatientIdHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -172,8 +177,19 @@ func (a *App) HivScreeningsByPatientIdHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	patient, err := a.AcsisDb.FindPatientBasicInfo(id)
+	if err != nil {
+		log.WithFields(log.Fields{"patientId": id, "screenings": screenings}).WithError(err).
+			Error("error retrieving patient when fetching hiv screenings")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	response := hivScreeningsResponse{
+		HivScreenings: screenings,
+		Patient:       *patient,
+	}
 
-	results, err := json.Marshal(screenings)
+	results, err := json.Marshal(response)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"patientId":  patientId,
