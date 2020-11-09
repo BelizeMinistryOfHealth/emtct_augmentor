@@ -10,7 +10,7 @@ import {
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
-const EditForm = ({ screening }) => {
+const EditForm = ({ screening, closeEditScreen }) => {
   const [testName, setTestName] = React.useState(screening.testName);
   const [result, setResult] = React.useState(screening.result);
   const [sampleCode, setSampleCode] = React.useState(screening.sampleCode);
@@ -41,6 +41,7 @@ const EditForm = ({ screening }) => {
     const data = {
       patientId: screening.patientId,
       id: screening.id,
+      mchEncounterId: screening.mchEncounterId,
       result,
       testName,
       destination,
@@ -60,6 +61,7 @@ const EditForm = ({ screening }) => {
       try {
         await httpInstance.put(`/patient/hivScreening/${body.id}`, body);
         setStatus('SUCCESS');
+        closeEditScreen();
       } catch (e) {
         console.error(e);
         setStatus('ERROR');
@@ -68,7 +70,7 @@ const EditForm = ({ screening }) => {
     if (status === 'SUBMIT' && screenData) {
       submit(screenData);
     }
-  }, [screenData, status, httpInstance]);
+  }, [screenData, status, httpInstance, closeEditScreen]);
 
   return (
     <Box>

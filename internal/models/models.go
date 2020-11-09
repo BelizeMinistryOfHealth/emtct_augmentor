@@ -217,3 +217,21 @@ func IsHivScreeningTimely(birth Birth, testName string, dateSampleTaken time.Tim
 		return false
 	}
 }
+
+// HivScreeningDueDate calculates the due date for taking a sample for an HIV screening.
+// PCR 1: sample must be taken 3 days or less after birth.
+// PCR 2: sample must be taken no later than 6 weeks after birth
+// PCR 3: sample must be taken no later than 90 days after birth
+// ELISA: sample must be taken no longer than 18 months after birth
+func HivScreeningDueDate(testName string, birthDate time.Time) time.Time {
+	switch testName {
+	case "PCR 1":
+		return birthDate.AddDate(0, 0, 3)
+	case "PCR 2":
+		return birthDate.AddDate(0, 0, 42)
+	case "PCR 3":
+		return birthDate.AddDate(0, 0, 90)
+	default:
+		return birthDate.AddDate(0, 18, 0)
+	}
+}

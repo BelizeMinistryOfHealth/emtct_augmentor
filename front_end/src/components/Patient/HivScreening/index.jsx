@@ -39,10 +39,17 @@ const screeningRow = (data, onClickEdit) => {
         <Text size={'small'}>{data.result}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text size={'small'}>{data.sampleCode}</Text>
+        <Text size={'small'} wordBreak={'break-word'}>
+          {data.sampleCode}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>{data.destination}</Text>
+      </TableCell>
+      <TableCell align={'start'}>
+        <Text size={'small'}>
+          {format(parseISO(data.dueDate), 'dd LLL yyyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>
@@ -119,6 +126,9 @@ const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
               <Text size={'small'}>Destination</Text>
             </TableCell>
             <TableCell align={'start'}>
+              <Text size={'small'}>Due Date</Text>
+            </TableCell>
+            <TableCell align={'start'}>
               <Text size={'small'}>Screening Date</Text>
             </TableCell>
             <TableCell align={'start'}>
@@ -156,6 +166,11 @@ const HivScreening = (props) => {
   const history = useHistory();
 
   const onClickEdit = (screening) => setEditingScreening(screening);
+
+  const closeEditScreen = () => {
+    setEditingScreening(undefined);
+    setData({ screenings: undefined, loading: true, error: undefined });
+  };
 
   React.useEffect(() => {
     const fetchScreenings = async () => {
@@ -252,7 +267,10 @@ const HivScreening = (props) => {
                       onClick={() => setEditingScreening(undefined)}
                     />
                   </Box>
-                  <EditForm screening={editingScreening} />
+                  <EditForm
+                    screening={editingScreening}
+                    closeEditScreen={closeEditScreen}
+                  />
                 </Box>
               </Layer>
             )}

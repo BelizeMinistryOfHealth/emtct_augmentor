@@ -94,7 +94,7 @@ func (d *EmtctDb) EditHivScreening(v models.HivScreening) (*models.HivScreening,
 	UPDATE hiv_screening 
 	SET test_name=$1, result=$2, sample_code=$3, destination=$4, screening_date=$5, date_sample_received_at_hq=$6, 
 	    date_sample_shipped=$7, date_result_received=$8, date_result_shared=$9, updated_at=$10, updated_by=$11, 
-	    date_sample_taken=$12, timely=$13, due_date=$14 
+	    date_sample_taken=$12, timely=$13
 	WHERE id=$14
 `
 	updatedAt := time.Now()
@@ -112,7 +112,6 @@ func (d *EmtctDb) EditHivScreening(v models.HivScreening) (*models.HivScreening,
 		v.UpdatedBy,
 		v.DateSampleTaken,
 		v.Timely,
-		v.DueDate,
 		v.Id)
 	if err != nil {
 		return nil, fmt.Errorf("error updating hiv screening in database: %+v", err)

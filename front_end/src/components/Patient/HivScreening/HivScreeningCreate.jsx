@@ -166,9 +166,6 @@ const HivScreeningCreateForm = () => {
             >
               <DateInput format={'yyyy-mm-dd'} name={'dateSampleTaken'} />
             </FormField>
-            <FormField label={'Due Date'} name={'dueDate'} required>
-              <DateInput format={'yyyy-mm-dd'} name={'dueDate'} />
-            </FormField>
             <FormField
               label={'Date Result Received'}
               name={'dateResultReceived'}
