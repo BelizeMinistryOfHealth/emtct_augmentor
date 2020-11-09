@@ -13,7 +13,7 @@ import {
   Heading,
   CardHeader,
 } from 'grommet';
-import { Add, Close, Edit } from 'grommet-icons';
+import { Add, Checkmark, Close, Edit, Subtract } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
@@ -24,7 +24,14 @@ import EditForm from './HivScreeningEdit';
 
 const screeningRow = (data, onClickEdit) => {
   return (
-    <TableRow key={data.id}>
+    <TableRow key={data.id} color={'red'}>
+      <TableCell align={'end'}>
+        {data.timely ? (
+          <Checkmark size={'medium'} color={'blue'} />
+        ) : (
+          <Subtract size={'medium'} color={'red'} />
+        )}
+      </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>{data.testName}</Text>
       </TableCell>
@@ -44,7 +51,14 @@ const screeningRow = (data, onClickEdit) => {
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>
-          {format(parseISO(data.dateSampleReceivedAtHq), 'dd LLL yyyy')}
+          {format(parseISO(data.dateSampleTaken), 'dd LLL yyyy')}
+        </Text>
+      </TableCell>
+      <TableCell align={'start'}>
+        <Text size={'small'}>
+          {data.dateSampleReceivedAtHq
+            ? format(parseISO(data.dateSampleReceivedAtHq), 'dd LLL yyyy')
+            : 'N/A'}
         </Text>
       </TableCell>
       <TableCell align={'start'}>
@@ -91,6 +105,7 @@ const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
       <Table caption={caption}>
         <TableHeader>
           <TableRow>
+            <TableCell align={'start'} />
             <TableCell align={'start'}>
               <Text size={'small'}>Test Name</Text>
             </TableCell>
@@ -105,6 +120,9 @@ const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
             </TableCell>
             <TableCell align={'start'}>
               <Text size={'small'}>Screening Date</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Date Sample Taken</Text>
             </TableCell>
             <TableCell align={'start'}>
               <Text size={'small'}>Date Sample Received at HQ</Text>
@@ -171,7 +189,7 @@ const HivScreening = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <AppCard fill={'horizontal'} pad={'small'}>
+        <AppCard fill={'horizontal'} pad={'small'} overflow={'scroll'}>
           <CardHeader>
             <Box direction={'row'} align={'start'} fill='horizontal'>
               <Box

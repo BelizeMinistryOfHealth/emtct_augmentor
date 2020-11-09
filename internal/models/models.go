@@ -120,7 +120,7 @@ type HivScreening struct {
 	ScreeningDate          time.Time  `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty"`
 	SampleCode             string     `json:"sampleCode"`
-	DateSampleShipped      time.Time  `json:"dateSampleShipped"`
+	DateSampleShipped      *time.Time `json:"dateSampleShipped"`
 	Destination            string     `json:"destination"`
 	DateResultReceived     *time.Time `json:"dateResultReceived,omitEmpty"`
 	DateSampleTaken        *time.Time `json:"dateSampleTaken,omitEmpty"`
@@ -203,7 +203,7 @@ type Birth struct {
 // PCR 3: sample must be taken no later than 90 days after birth
 // ELISA: sample must be taken no longer than 18 months after birth
 func IsHivScreeningTimely(birth Birth, testName string, dateSampleTaken time.Time) bool {
-	diff := dateSampleTaken.Sub(birth.BirthDate).Hours() * 24
+	diff := dateSampleTaken.Sub(birth.BirthDate).Hours() / 24
 	switch testName {
 	case "PCR 1":
 		return diff < 4

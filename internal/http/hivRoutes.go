@@ -21,7 +21,7 @@ type NewHivScreeningRequest struct {
 	ScreeningDate          time.Time  `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitempty"`
 	SampleCode             string     `json:"sampleCode"`
-	DateSampleShipped      time.Time  `json:"dateSampleShipped"`
+	DateSampleShipped      *time.Time `json:"dateSampleShipped"`
 	Destination            string     `json:"destination"`
 	DateResultReceived     *time.Time `json:"dateResultReceived,omitempty"`
 	Result                 string     `json:"result"`
@@ -45,6 +45,8 @@ func (a *App) CreateHivScreening(user string, r NewHivScreeningRequest, timely b
 		DateResultReceived:     r.DateResultReceived,
 		Result:                 r.Result,
 		DateResultShared:       r.DateResultShared,
+		DateSampleTaken:        &r.DateSampleTaken,
+		MchEncounterId:         r.MchEncounterId,
 		CreatedAt:              time.Now(),
 		UpdatedAt:              nil,
 		CreatedBy:              user,

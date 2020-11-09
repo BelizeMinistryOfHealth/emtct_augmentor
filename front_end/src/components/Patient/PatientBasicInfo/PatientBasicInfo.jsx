@@ -79,7 +79,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
           </Text>
 
           <Text size={'small'} textAlign={'start'} gap={'medium'}>
-            {ssn}
+            {ssn ? ssn : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {countryOfBirth}
@@ -88,7 +88,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             {address}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {education}
+            {education ? education : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {ethnicity}

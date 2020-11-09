@@ -44,7 +44,7 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	patient, err := a.AcsisDb.FindByPatientId(id)
+	patient, err := a.AcsisDb.FindByPatientId2(id)
 	if err != nil {
 		log.WithFields(
 			log.Fields{"request": r}).WithError(err).Error("could not find patient with specified id")
@@ -56,6 +56,9 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WithFields(
 			log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history for the patient")
+	}
+	if diagnoses == nil {
+		diagnoses = []models.Diagnosis{}
 	}
 
 	obstetricHistory, err := a.AcsisDb.FindObstetricHistory(id)

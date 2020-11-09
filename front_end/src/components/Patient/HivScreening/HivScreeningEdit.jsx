@@ -27,6 +27,9 @@ const EditForm = ({ screening }) => {
   const [dateResultShared, setDateResultShared] = React.useState(
     screening.dateResultShared
   );
+  const [dateSampleTaken, setDateSampleTaken] = React.useState(
+    screening.dateSampleTaken
+  );
 
   const [screenData, setScreenData] = React.useState();
   const { httpInstance } = useHttpApi();
@@ -46,6 +49,7 @@ const EditForm = ({ screening }) => {
       dateSampleReceivedAtHq,
       dateResultReceived,
       dateResultShared,
+      dateSampleTaken,
     };
     setScreenData(data);
     setStatus('SUBMIT');
@@ -125,6 +129,18 @@ const EditForm = ({ screening }) => {
               value={dateSampleReceivedAtHq}
               name={'dateSampleReceivedAtHq'}
               onChange={(e) => setDateSampleReceivedAtHq(e.value)}
+            />
+          </FormField>
+          <FormField
+            label={'Date Sample Taken'}
+            name={'dateSampleTaken'}
+            required
+          >
+            <DateInput
+              format={'yyyy-mm-dd'}
+              name={'dateSampleTaken'}
+              value={dateSampleTaken}
+              onChange={(e) => setDateSampleTaken(e.value)}
             />
           </FormField>
           <FormField label={'Date Result Receivd'} name={'dateResultReceived'}>

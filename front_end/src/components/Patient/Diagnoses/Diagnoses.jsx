@@ -18,10 +18,12 @@ const diagnosisRow = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.date), 'dd LLL yyyy')}</Text>
+        <Text size={'small'}>{format(parseISO(data.date), 'dd LLL yyyy')}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text align={'start'}>{data.name}</Text>
+        <Text align={'start'} size={'small'}>
+          {data.name}
+        </Text>
       </TableCell>
     </TableRow>
   );
@@ -35,10 +37,10 @@ const DiagnosisTable = ({ children, data, caption, ...rest }) => {
         <TableHeader>
           <TableRow>
             <TableCell align={'start'}>
-              <Text>Date</Text>
+              <Text size={'small'}>Date</Text>
             </TableCell>
             <TableCell align={'start'}>
-              <Text>Illness</Text>
+              <Text size={'small'}>Illness</Text>
             </TableCell>
           </TableRow>
         </TableHeader>

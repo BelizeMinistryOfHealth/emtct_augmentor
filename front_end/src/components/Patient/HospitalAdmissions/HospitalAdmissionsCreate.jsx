@@ -53,7 +53,7 @@ const HospitalAdmissionCreateForm = () => {
       try {
         await httpInstance.post(`/patient/hospitalAdmissions`, {
           ...admission,
-          mchEncounterid: patientData.data.antenatalEncounter.id,
+          mchEncounterId: patientData.data.antenatalEncounter.id,
         });
         setStatus('SUBMIT');
       } catch (e) {
