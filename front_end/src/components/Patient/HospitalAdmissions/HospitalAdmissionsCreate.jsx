@@ -55,7 +55,7 @@ const HospitalAdmissionCreateForm = () => {
           ...admission,
           mchEncounterId: patientData.data.antenatalEncounter.id,
         });
-        setStatus('SUBMIT');
+        setStatus('SUCCESS');
       } catch (e) {
         console.error(e);
         setStatus('ERROR');
