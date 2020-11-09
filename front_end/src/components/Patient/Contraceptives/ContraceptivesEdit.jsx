@@ -11,7 +11,7 @@ import {
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
-const EditForm = ({ contraceptive }) => {
+const EditForm = ({ contraceptive, onCloseForm }) => {
   const [name, setName] = React.useState(contraceptive.contraceptive);
   const [comments, setComments] = React.useState(contraceptive.comments);
   const [dateUsed, setDateUsed] = React.useState(contraceptive.dateUsed);
@@ -38,6 +38,7 @@ const EditForm = ({ contraceptive }) => {
       try {
         await httpInstance.put(`/patient/contraceptivesUsed/${body.id}`, body);
         setStatus('SUCCESS');
+        onCloseForm();
       } catch (e) {
         console.error(e);
         setStatus('ERROR');
@@ -46,7 +47,7 @@ const EditForm = ({ contraceptive }) => {
     if (status === 'SUBMIT' && contraceptiveData) {
       submit(contraceptiveData);
     }
-  }, [contraceptiveData, status, httpInstance]);
+  }, [contraceptiveData, status, httpInstance, onCloseForm]);
 
   return (
     <Box>

@@ -96,6 +96,11 @@ const ContraceptivesUsed = (props) => {
 
   const onClickEdit = (contraceptive) => setEditingContraceptive(contraceptive);
 
+  const onCloseForm = () => {
+    setData({ result: undefined, loading: true, error: undefined });
+    setEditingContraceptive(undefined);
+  };
+
   React.useEffect(() => {
     const fetchContraceptives = async () => {
       try {
@@ -185,7 +190,10 @@ const ContraceptivesUsed = (props) => {
                       onClick={() => setEditingContraceptive(undefined)}
                     />
                   </Box>
-                  <EditForm contraceptive={editingContraceptive} />
+                  <EditForm
+                    contraceptive={editingContraceptive}
+                    onCloseForm={onCloseForm}
+                  />
                 </Box>
               </Layer>
             )}
