@@ -43,7 +43,7 @@ const ArvsTable = ({ children, data, ...rest }) => {
   return (
     <Box gap={'medium'} align={'center'} {...rest}>
       {children}
-      <Table caption={'Arv Treatment'}>
+      <Table>
         <TableHeader>
           <TableRow>
             <TableCell align={'start'}>
@@ -70,12 +70,21 @@ const BasicInfo = (props) => {
   const { basicInfo } = props;
 
   return (
-    <Box>
-      <Heading>
-        <span>
+    <Box direction={'row'} align={'start'} fill='horizontal'>
+      <Box
+        direction={'column'}
+        align={'start'}
+        fill={'horizontal'}
+        justify={'between'}
+        alignContent={'center'}
+      >
+        <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+          ARVs
+        </Text>
+        <Text size={'large'} textAlign={'end'} weight={'normal'}>
           {basicInfo.firstName} {basicInfo.lastName}{' '}
-        </span>
-      </Heading>
+        </Text>
+      </Box>
     </Box>
   );
 };
@@ -149,7 +158,7 @@ const ArvTreatment = (props) => {
         align={'center'}
         fill
       >
-        <AppCard>
+        <AppCard fill={'horizontal'}>
           <CardHeader gap={'medium'} pad={'medium'}>
             <BasicInfo basicInfo={arvData.arvs.patient} />
           </CardHeader>

@@ -708,6 +708,9 @@ func (d *AcsisDb) FindArvsByPatient(patientId int) ([]models.ArvPrescription, er
 			INNER JOIN acsis_coe_frequency_units acfu ON acfu.frequency_unit_id =adep.frequency_unit_id
 			INNER JOIN acsis_adt_pharmaceutical_units aapu ON aapu.pharmaceutical_unit_id=aap.strength_unit_id
 		WHERE p.patient_id=$1 AND adep.prescribed_time>=$2
+			AND (aap.name ILIKE '%Lamivudine%'
+			OR aap.name ILIKE '%Zidovudine%'
+			OR aap.name ILIKE '%Nevirapine%')
 		ORDER BY adep.prescribed_time DESC;
 `
 	ancDate := anc.BeginDate.Format(layoutISO)
