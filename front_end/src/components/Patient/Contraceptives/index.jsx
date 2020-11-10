@@ -125,7 +125,7 @@ const ContraceptivesUsed = (props) => {
   }
 
   return (
-    <Layout location={props.location} {...props}>
+    <Layout {...props}>
       <ErrorBoundary>
         <AppCard fill={'horizontal'} pad={'small'}>
           <CardHeader>
@@ -140,7 +140,7 @@ const ContraceptivesUsed = (props) => {
                 <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
                   Contraceptives Used
                 </Text>
-                {data && data.result.patient && (
+                {data && data.result && data.result.patient && (
                   <Text size={'large'} textAlign={'end'} weight={'normal'}>
                     {data.result.patient.firstName}{' '}
                     {data.result.patient.lastName}
@@ -198,7 +198,9 @@ const ContraceptivesUsed = (props) => {
               </Layer>
             )}
             <ContraceptivesTable
-              contraceptives={data.result.contraceptives}
+              contraceptives={
+                data && data.result ? data.result.contraceptives : []
+              }
               caption={'Contraceptives Used'}
               onClickEdit={onClickEdit}
             />

@@ -89,19 +89,21 @@ const CurrentPregnancy = (props) => {
 
   if (pregnancyData.loading) {
     return (
-      <Box
-        direction={'column'}
-        gap={'large'}
-        pad={'large'}
-        justify={'center'}
-        align={'center'}
-        fill
-      >
-        <Heading>
-          <Text>Loading </Text>
-          <InProgress />
-        </Heading>
-      </Box>
+      <Layout>
+        <Box
+          direction={'column'}
+          gap={'large'}
+          pad={'large'}
+          justify={'center'}
+          align={'center'}
+          fill
+        >
+          <Heading>
+            <Text>Loading </Text>
+            <InProgress />
+          </Heading>
+        </Box>
+      </Layout>
     );
   }
 

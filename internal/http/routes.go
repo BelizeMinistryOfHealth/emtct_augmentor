@@ -156,6 +156,11 @@ func (a *App) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(resp))
 }
 
+type pregnancyLabResultsResponse struct {
+	LabResults []models.LabResult      `json:"labResults"`
+	Patient    models.PatientBasicInfo `json:"patient"`
+}
+
 func (a *App) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -178,8 +183,19 @@ func (a *App) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	results, err := json.Marshal(labResults)
+	patient, err := a.AcsisDb.FindPatientBasicInfo(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": id,
+			"handler":   "FindPregnancyLabResults",
+		}).
+			WithError(err).
+			Error("error fetching patient information")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	response := pregnancyLabResultsResponse{Patient: *patient, LabResults: labResults}
+	results, err := json.Marshal(response)
 	if err != nil {
 		log.WithFields(log.Fields{"labResults": labResults, "patientId": patientId}).
 			WithError(err).

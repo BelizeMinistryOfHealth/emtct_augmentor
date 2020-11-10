@@ -43,8 +43,15 @@ const labResultsRow = (data) => {
 };
 
 const LabResultsTable = ({ children, data, ...rest }) => {
+  const labTests = data ?? [];
   return (
-    <Box gap={'medium'} pad={'medium'} align={'center'} {...rest}>
+    <Box
+      gap={'medium'}
+      pad={'medium'}
+      align={'start'}
+      fill={'horizontal'}
+      {...rest}
+    >
       {children}
       <Table>
         <TableHeader>
@@ -60,7 +67,7 @@ const LabResultsTable = ({ children, data, ...rest }) => {
             </TableCell>
           </TableRow>
         </TableHeader>
-        <TableBody>{data.map((d) => labResultsRow(d))}</TableBody>
+        <TableBody>{labTests.map((d) => labResultsRow(d))}</TableBody>
       </Table>
     </Box>
   );
@@ -70,7 +77,7 @@ const LabResults = (props) => {
   const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
   const [labData, setLabData] = React.useState({
-    labResults: [],
+    results: undefined,
     loading: true,
     error: undefined,
   });
@@ -79,11 +86,10 @@ const LabResults = (props) => {
     const getLabResults = async () => {
       try {
         const results = await fetchPregnancyLabResults(patientId, httpInstance);
-        console.dir({ results });
-        setLabData({ labResults: results, loading: false, error: undefined });
+        setLabData({ results, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
-        setLabData({ labResults: [], loading: false, error: e });
+        setLabData({ results: undefined, loading: false, error: e });
       }
     };
     if (labData.loading) {
@@ -134,13 +140,30 @@ const LabResults = (props) => {
         pad={'medium'}
         justify={'evenly'}
         align={'center'}
+        fill
       >
-        <AppCard>
+        <AppCard fill={'horizontal'} pad={'small'}>
           <CardHeader justify={'evenly'}>
-            <Heading gap={'medium'}>Lab Tests</Heading>
+            <Box direction={'row'} align={'start'} fill='horizontal'>
+              <Box
+                direction={'column'}
+                align={'start'}
+                fill={'horizontal'}
+                justify={'between'}
+                alignContent={'center'}
+              >
+                <Text size={'xxlarge'} weight={'bold'} textAlign={'start'}>
+                  Lab Tests
+                </Text>
+                <Text size={'large'} textAlign={'end'} weight={'normal'}>
+                  {labData.results.patient.firstName}{' '}
+                  {labData.results.patient.lastName}
+                </Text>
+              </Box>
+            </Box>
           </CardHeader>
-          <CardBody gap={'medium'} pad={'medium'}>
-            <LabResultsTable data={labData.labResults} />
+          <CardBody gap={'medium'} pad={'medium'} alignContent={'start'}>
+            <LabResultsTable data={labData.results.labResults} />
           </CardBody>
         </AppCard>
       </Box>

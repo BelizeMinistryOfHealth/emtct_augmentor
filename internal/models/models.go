@@ -48,23 +48,23 @@ type Diagnosis struct {
 }
 
 type PregnancyVitals struct {
-	Id                   int       `json:"id"`
-	PatientId            int       `json:"patientId"`
-	GestationalAge       int       `json:"gestationalAge"`
-	Para                 int       `json:"para"`
-	Cs                   bool      `json:"cs"`
-	PregnancyOutcome     string    `json:"pregnancyOutcome"`
-	DiagnosisDate        time.Time `json:"diagnosisDate"`
-	Planned              bool      `json:"planned"`
-	AgeAtLmp             int       `json:"ageAtLmp"`
-	Lmp                  time.Time `json:"lmp"`
-	Edd                  time.Time `json:"edd"`
-	DateOfBooking        time.Time `json:"dateOfBooking"`
-	PrenatalCareProvider string    `json:"prenatalCareProvider"`
-	TotalChecks          int       `json:"totalChecks"`
-	ApgarFirstMinute     int       `json:"apgarFirstMinute"`
-	ApgarFifthMinute     int       `json:"apgarFifthMinute"`
-	BirthStatus          string    `json:"birthStatus"`
+	Id                   int        `json:"id"`
+	PatientId            int        `json:"patientId"`
+	GestationalAge       int        `json:"gestationalAge"`
+	Para                 int        `json:"para"`
+	Cs                   int        `json:"cs"`
+	PregnancyOutcome     string     `json:"pregnancyOutcome"`
+	DiagnosisDate        time.Time  `json:"diagnosisDate"`
+	Planned              bool       `json:"planned"`
+	AgeAtLmp             int        `json:"ageAtLmp"`
+	Lmp                  time.Time  `json:"lmp"`
+	Edd                  time.Time  `json:"edd"`
+	DateOfBooking        *time.Time `json:"dateOfBooking"`
+	PrenatalCareProvider string     `json:"prenatalCareProvider"`
+	TotalChecks          int        `json:"totalChecks"`
+	ApgarFirstMinute     int        `json:"apgarFirstMinute"`
+	ApgarFifthMinute     int        `json:"apgarFifthMinute"`
+	BirthStatus          string     `json:"birthStatus"`
 }
 
 func FindCurrentPregnancy(ps []PregnancyVitals) *PregnancyVitals {

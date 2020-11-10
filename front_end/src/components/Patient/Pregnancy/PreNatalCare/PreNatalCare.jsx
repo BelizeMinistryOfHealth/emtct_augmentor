@@ -25,7 +25,9 @@ const CareInfo = ({ children, info, ...rest }) => {
         </Box>
         <Box>
           <Text size={'medium'} textAlign={'start'}>
-            {format(parseISO(info.dateOfBooking), 'dd LLL yyyy')}
+            {info.dateOfBooking
+              ? format(parseISO(info.dateOfBooking), 'dd LLL yyyy')
+              : 'N/A'}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
             {info.gestationAge}

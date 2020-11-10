@@ -51,13 +51,15 @@ func (d *AcsisDb) FindByPatientId2(id int) (*models.Patient, error) {
 		LEFT JOIN acsis_contacts ac2 ON l2.contact_id = ac2.contact_id
 		LEFT JOIN acsis_ethnicities ae on p.ethnicity_id = ae.ethnicity_id
 		LEFT JOIN acsis_hc_schooling_levels ahsl on p.schooling_level_id = ahsl.schooling_level_id
-		WHERE ed.disease_id IN (473, 474, 475, 476, 477, 9921, 32590) -- the HIV Test
+		WHERE ed.disease_id IN (473, 474, 475, 476, 477, 9921, 32590, 33195) -- the HIV Test
 		AND p.patient_id = $1
 	    ORDER BY ed.diagnosis_time DESC
 		LIMIT 1;`
 
 	var patient models.Patient
 	row := d.DB.QueryRow(stmt, id)
+	var nok sql.NullString
+	var nokPhone sql.NullString
 	err := row.Scan(&patient.Id,
 		&patient.PregnancyId,
 		&patient.HivDiagnosisDate,
@@ -67,8 +69,8 @@ func (d *AcsisDb) FindByPatientId2(id int) (*models.Patient, error) {
 		&patient.Dob,
 		&patient.Ssn,
 		&patient.CountryOfBirth,
-		&patient.NextOfKin,
-		&patient.NextOfKinPhone,
+		&nok,
+		&nokPhone,
 		&patient.Ethnicity,
 		&patient.Education,
 		&patient.Address)
@@ -78,6 +80,13 @@ func (d *AcsisDb) FindByPatientId2(id int) (*models.Patient, error) {
 		return nil, nil
 	case nil:
 		patient.Hiv = true
+		if nok.Valid {
+			patient.NextOfKin = nok.String
+		}
+		if nokPhone.Valid {
+			patient.NextOfKinPhone = nok.String
+		}
+
 		return &patient, nil
 	default:
 		return nil, fmt.Errorf("error querying acsis db for patient: %+v", err)
@@ -259,7 +268,7 @@ func (d *AcsisDb) FindLatestAntenatalEncounter(patientId int) (*models.Antenatal
        		COALESCE(amed.gestational_age_by_calculation, amed.gestational_age_by_ultrasound) AS gestational_age,
            amed.number_of_antenatal_visits
         FROM acsis_hc_patients p
-        INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id
+        INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id AND e.encounter_type='M'
         INNER JOIN acsis_adt_mch_encounter_details amed ON e.encounter_details_id=amed.mch_encounter_details_id
         WHERE p.patient_id=$1
         ORDER BY e.begin_time DESC
@@ -822,7 +831,7 @@ func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error
 	}
 
 	birth := births[0]
-	// Check if the birth has been recorded. The latest birth should be newer than the and begin date.
+	// Check if the birth has been recorded. The latest birth should be newer than the anc begin date.
 	if anc.BeginDate.After(birth.Date) {
 		return nil, nil
 	}
