@@ -60,10 +60,25 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   let interval = 0;
   if (obstetricHistory.length > 0) {
     const lastPregnancy = obstetricHistory[0].date;
-    interval = differenceInCalendarDays(
-      parseISO(vitals.lmp),
-      parseISO(lastPregnancy)
-    );
+    if (vitals.lmp) {
+      if (lastPregnancy) {
+        interval = differenceInCalendarDays(
+          parseISO(vitals.lmp),
+          parseISO(lastPregnancy)
+        );
+      }
+      if (interval < 0 && obstetricHistory[1]) {
+        interval = differenceInCalendarDays(
+          parseISO(obstetricHistory[0]),
+          parseISO(obstetricHistory[1])
+        );
+      }
+    }
+
+    if (interval < 0) {
+      interval = 0;
+    }
+
     console.dir({
       interval,
       lmp: parseISO(vitals.lmp),

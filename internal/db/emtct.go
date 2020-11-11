@@ -286,7 +286,10 @@ func (d *EmtctDb) FindPregnancyLabResults(patientId string) ([]models.LabResult,
 		labResults = append(labResults, labResult)
 	}
 
-	return models.FindLabResultsBetweenDates(labResults, lmp), nil
+	if lmp == nil {
+		return []models.LabResult{}, nil
+	}
+	return models.FindLabResultsBetweenDates(labResults, *lmp), nil
 }
 
 func (d *EmtctDb) CreateLabResult(l models.LabResult) error {

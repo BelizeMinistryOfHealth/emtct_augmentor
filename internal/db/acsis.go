@@ -360,6 +360,37 @@ LIMIT 1;`
 
 }
 
+type PregnancyDiagnosis struct {
+	PatientId   int
+	EncounterId int
+	Date        time.Time
+}
+
+func (d *AcsisDb) findPreviousPregnancyDiagnosis(patientId int) (*PregnancyDiagnosis, error) {
+	stmt := `
+	SELECT e.encounter_id, ed.diagnosis_time
+    FROM acsis_adt_encounters e
+    INNER JOIN acsis_adt_encounter_diagnoses ed ON e.encounter_id=ed.encounter_id
+    WHERE ed.disease_id=32657
+    AND e.patient_id=$1
+    ORDER BY ed.diagnosis_time DESC
+	LIMIT 2;
+`
+	row := d.QueryRow(stmt, patientId)
+	var pregnancy PregnancyDiagnosis
+	err := row.Scan(&pregnancy.EncounterId, &pregnancy.Date)
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		pregnancy.PatientId = patientId
+		return &pregnancy, nil
+	default:
+		return nil, fmt.Errorf("error retrieving pregnancy diagnosis from acsis: %+v", err)
+	}
+
+}
+
 func (d *AcsisDb) FindCurrentPregnancy(patientId int) (*models.PregnancyVitals, error) {
 	// Find the anc encounter. This is the most recent anc encounter in patient's docket.
 	anc, err := d.FindLatestAntenatalEncounter(patientId)
@@ -411,7 +442,10 @@ LIMIT 1;
 		if err != nil {
 			return nil, fmt.Errorf("error while retrieving pregnancy details from acsis: %+v", err)
 		}
-		ageAtLmp := age.AgeAt(*dob, v.Lmp)
+		ageAtLmp := 0
+		if v.Lmp != nil {
+			ageAtLmp = age.AgeAt(*dob, *v.Lmp)
+		}
 		vitals.AgeAtLmp = ageAtLmp
 		vitals.Para = v.Para
 		vitals.Id = v.Id
@@ -422,6 +456,13 @@ LIMIT 1;
 		vitals.PregnancyOutcome, err = d.abortiveOutcome(vitals)
 		if err != nil {
 			return nil, fmt.Errorf("error while calculating abortive outcome when retrieving pregnancy details from acsis: %+v", err)
+		}
+		p, err := d.findPreviousPregnancyDiagnosis(patientId)
+		if err != nil {
+			return nil, fmt.Errorf("error while retrieving current pregnancy info from acsis: %+v", err)
+		}
+		if p != nil {
+			vitals.DiagnosisDate = &p.Date
 		}
 
 		return &vitals, nil

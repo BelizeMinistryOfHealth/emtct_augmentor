@@ -55,7 +55,9 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
             {vitals.abortiveOutcome}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {format(parseISO(vitals.diagnosisDate), 'dd LLL yyyy')}
+            {vitals.diagnosisDate
+              ? format(parseISO(vitals.diagnosisDate), 'dd LLL yyyy')
+              : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {vitals.planned ? 'Yes' : 'No'}
@@ -64,7 +66,7 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
             {vitals.ageAtLmp}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {format(parseISO(vitals.lmp), 'dd LLL yyyy')}
+            {vitals.lmp ? format(parseISO(vitals.lmp), 'dd LLL yyyy') : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {format(parseISO(vitals.edd), 'dd LLL yyyy')}

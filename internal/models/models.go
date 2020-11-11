@@ -54,10 +54,10 @@ type PregnancyVitals struct {
 	Para                 int        `json:"para"`
 	Cs                   int        `json:"cs"`
 	PregnancyOutcome     string     `json:"pregnancyOutcome"`
-	DiagnosisDate        time.Time  `json:"diagnosisDate"`
+	DiagnosisDate        *time.Time `json:"diagnosisDate"`
 	Planned              bool       `json:"planned"`
 	AgeAtLmp             int        `json:"ageAtLmp"`
-	Lmp                  time.Time  `json:"lmp"`
+	Lmp                  *time.Time `json:"lmp"`
 	Edd                  time.Time  `json:"edd"`
 	DateOfBooking        *time.Time `json:"dateOfBooking"`
 	PrenatalCareProvider string     `json:"prenatalCareProvider"`
