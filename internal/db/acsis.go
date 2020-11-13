@@ -160,7 +160,19 @@ func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 
 }
 
+// FindDiagnosesBeforePregnancy returns all diagnoses before the current pregnancy.
+// It retrieves the obstetric details as a separate query so it can use the pregnancy id to filter diagnoses
+// where the diagnosis time is before the lmp.
 func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosis, error) {
+	// Retrieve the obstetric details so we can use the current pregnancy's id.
+	obs, err := d.findObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving diagnoses outside pregnancy from acsis: %+v", err)
+	}
+
+	if obs == nil {
+		return nil, fmt.Errorf("error: no obstetric details found for current pregnancy in acsis")
+	}
 	stmt := `SELECT aaed.encounter_diagnosis_id,
        		e.patient_id,
 			aai10d.name, 
@@ -170,11 +182,10 @@ func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosi
 		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
 		WHERE e.patient_id=$1
 		AND aaed.diagnosis_time < (SELECT ahp.last_menstrual_period_date
-		      FROM acsis_hc_pregnancies ahp WHERE ahp.patient_id = e.patient_id ORDER BY
-		      ahp.last_menstrual_period_date DESC LIMIT 1)  
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.pregnancy_id = $2 LIMIT 1)  
 		ORDER BY aaed.diagnosis_time DESC`
 	var diagnoses []models.Diagnosis
-	rows, err := d.Query(stmt, patientId)
+	rows, err := d.Query(stmt, patientId, obs.Id)
 	if err != nil {
 		return nil, fmt.Errorf("error querying diagnoses before pregnancy from acsis: %+v", err)
 	}
