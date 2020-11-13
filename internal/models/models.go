@@ -77,13 +77,15 @@ func FindCurrentPregnancy(ps []PregnancyVitals) *PregnancyVitals {
 }
 
 type LabResult struct {
-	Id                int        `json:"id"`
-	PatientId         int        `json:"patientId"`
-	TestResult        string     `json:"testResult"`
-	TestName          string     `json:"testName"`
-	TestRequestItemId int        `json:"testRequestItemId"`
-	DateSampleTaken   *time.Time `json:"dateSampleTaken"`
-	ResultDate        *time.Time `json:"resultDate"`
+	Id                     int        `json:"id"`
+	PatientId              int        `json:"patientId"`
+	TestResult             string     `json:"testResult"`
+	TestName               string     `json:"testName"`
+	TestRequestItemId      int        `json:"testRequestItemId"`
+	DateSampleTaken        *time.Time `json:"dateSampleTaken"`
+	ResultDate             *time.Time `json:"resultDate"`
+	ReleasedTime           *time.Time `json:"releasedTime"`
+	DateOrderReceivedByLab *time.Time `json:"dateOrderReceivedByLab"`
 }
 
 // FindLabResultsBetweenDates finds lab results between a range of two dates.

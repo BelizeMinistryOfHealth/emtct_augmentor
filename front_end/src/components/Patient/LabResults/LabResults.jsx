@@ -24,17 +24,33 @@ const labResultsRow = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text align={'start'}>
+        <Text align={'start'} size={'small'}>
           {data.dateSampleTaken
             ? format(parseISO(data.dateSampleTaken), 'dd LLL yyyy')
             : 'N/A'}
         </Text>
       </TableCell>
-      <TableCell>
-        <Text align={'start'}>{data.testResult}</Text>
+      <TableCell align={'start'}>
+        <Text align={'start'} size={'small'}>
+          {data.releasedTime
+            ? format(parseISO(data.releasedTime), 'dd LLL yyyy')
+            : 'N/A'}
+        </Text>
+      </TableCell>
+      <TableCell align={'start'}>
+        <Text align={'start'} size={'small'}>
+          {data.dateOrderReceivedByLab
+            ? format(parseISO(data.dateOrderReceivedByLab), 'dd LLL yyyy')
+            : 'N/A'}
+        </Text>
       </TableCell>
       <TableCell>
-        <Text align={'start'} weight={'bold'}>
+        <Text align={'start'} size={'small'}>
+          {data.testResult}
+        </Text>
+      </TableCell>
+      <TableCell>
+        <Text align={'start'} weight={'bold'} size={'small'}>
           {data.testName}
         </Text>
       </TableCell>
@@ -58,6 +74,12 @@ const LabResultsTable = ({ children, data, ...rest }) => {
           <TableRow>
             <TableCell align={'start'}>
               <Text align={'start'}> Date sample taken</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text align={'start'}> Date Released</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text align={'start'}> Date Received @ Lab</Text>
             </TableCell>
             <TableCell align={'start'}>
               <Text align={'start'}> Test Result</Text>

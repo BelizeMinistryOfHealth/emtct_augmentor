@@ -575,12 +575,14 @@ func (d *AcsisDb) abortiveOutcome(v models.PregnancyVitals) (string, error) {
 }
 
 type testRequestItem struct {
-	PatientId         int
-	EncounterId       int
-	TestRequestId     int
-	TestRequestItemId int
-	TestName          string
-	TestResult        string
+	PatientId              int
+	EncounterId            int
+	TestRequestId          int
+	TestRequestItemId      int
+	TestName               string
+	TestResult             string
+	ReleasedTime           *time.Time
+	DateOrderReceivedByLab *time.Time
 }
 
 // findCurrentTestRequestItems finds all test requests in a given encounter. This is used when
@@ -590,6 +592,8 @@ func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int) ([]tes
                     e.encounter_id,
                     tri.test_request_item_id,
                     tr.test_request_id,
+       				tri.released_time,
+       				tr.order_received_by_lab_time,
                     t.name
              FROM acsis_hc_patients p
              INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id AND encounter_type='M'
@@ -610,6 +614,8 @@ func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int) ([]tes
 			&t.EncounterId,
 			&t.TestRequestItemId,
 			&t.TestRequestId,
+			&t.ReleasedTime,
+			&t.DateOrderReceivedByLab,
 			&t.TestName)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning test request item from acsis: %+v", err)
@@ -739,13 +745,15 @@ func (d *AcsisDb) FindLabTestsDuringPregnancy(patientId int) ([]models.LabResult
 		}
 		for _, r := range testResults {
 			result := models.LabResult{
-				Id:                r.Id,
-				PatientId:         patientId,
-				TestName:          fmt.Sprintf("%s - %s", r.TestName, r.TestLabel),
-				TestResult:        r.TestResult,
-				TestRequestItemId: r.TestRequestItemId,
-				DateSampleTaken:   nil,
-				ResultDate:        nil,
+				Id:                     r.Id,
+				PatientId:              patientId,
+				TestName:               fmt.Sprintf("%s - %s", r.TestName, r.TestLabel),
+				TestResult:             r.TestResult,
+				TestRequestItemId:      r.TestRequestItemId,
+				ReleasedTime:           t.ReleasedTime,
+				DateOrderReceivedByLab: t.DateOrderReceivedByLab,
+				DateSampleTaken:        nil,
+				ResultDate:             nil,
 			}
 			labResults = append(labResults, result)
 		}
