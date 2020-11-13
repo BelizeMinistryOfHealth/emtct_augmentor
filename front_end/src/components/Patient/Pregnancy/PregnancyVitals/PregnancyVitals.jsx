@@ -49,7 +49,7 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
             {vitals.para}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.cs ? 'Yes' : 'No'}
+            {vitals.cs}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {vitals.abortiveOutcome}
