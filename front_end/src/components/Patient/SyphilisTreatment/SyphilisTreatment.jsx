@@ -20,16 +20,18 @@ const row = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.pharmaceuticals}</Text>
+        <Text size={'small'}>{data.pharmaceutical}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.strength}</Text>
+        <Text size={'small'}>{data.strength}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.prescribedTime), 'dd LLL yyy')}</Text>
+        <Text size={'small'}>
+          {format(parseISO(data.prescribedTime), 'dd LLL yyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.comments}</Text>
+        <Text size={'small'}>{data.comments}</Text>
       </TableCell>
     </TableRow>
   );
@@ -39,7 +41,7 @@ const PrescriptionsTable = ({ children, data, ...rest }) => {
   const prescriptions = data.prescriptions ?? [];
 
   return (
-    <Box gap={'medium'} align={'center'} {...rest}>
+    <Box gap={'medium'} align={'center'} {...rest} fill={'horizontal'}>
       {children}
       <Table>
         <TableHeader>
