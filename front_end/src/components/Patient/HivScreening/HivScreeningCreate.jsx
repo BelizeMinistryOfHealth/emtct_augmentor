@@ -7,6 +7,7 @@ import {
   TextInput,
   DateInput,
   Text,
+  Select,
 } from 'grommet';
 import { FormPreviousLink } from 'grommet-icons';
 import React from 'react';
@@ -142,10 +143,20 @@ const HivScreeningCreateForm = () => {
         <Box flex={'grow'} overflow={'auto'} pad={{ vertical: 'medium' }}>
           <Form onSubmit={onSubmit}>
             <FormField label={'Test Name'} name={'testName'} required>
-              <TextInput placeholder={'Test Name'} name={'testName'} />
+              <Select
+                id={'testName'}
+                placeholder={'Test Name'}
+                options={['PCR 1', 'PCR 2', 'PCR 3', 'ELISA', 'RPR']}
+                name={'testName'}
+              />
             </FormField>
-            <FormField label={'Result'} name={'result'}>
-              <TextInput placeholder={'Test Result'} name={'result'} />
+            <FormField label={'Result'} name={'result'} htmlFor={'select'}>
+              <Select
+                id={'result'}
+                placeholder={'Test Result'}
+                options={['Positive', 'Negative']}
+                name={'result'}
+              />
             </FormField>
             <FormField label={'Screening Date'} name={'screeningDate'} required>
               <DateInput format={'yyyy-mm-dd'} name={'screeningDate'} />

@@ -103,7 +103,7 @@ func (a *App) CreateHivScreeningHandler(w http.ResponseWriter, r *http.Request) 
 				"request": req,
 				"handler": "CreateHivScreeningHandler",
 			}).WithError(err).Error("")
-			http.Error(w, fmt.Sprintf("no birth was found for this mch encounter: %s", req.MchEncounterId), http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("no birth was found for this mch encounter: %d", req.MchEncounterId), http.StatusBadRequest)
 			return
 		}
 		timely := models.IsHivScreeningTimely(*birth, req.TestName, req.DateSampleTaken)

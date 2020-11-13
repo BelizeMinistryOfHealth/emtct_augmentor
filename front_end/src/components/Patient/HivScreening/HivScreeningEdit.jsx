@@ -6,6 +6,7 @@ import {
   DateInput,
   Button,
   Text,
+  Select,
 } from 'grommet';
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
@@ -86,18 +87,29 @@ const EditForm = ({ screening, closeEditScreen }) => {
           </Box>
         )}
         <Form onSubmit={onSubmit}>
-          <FormField label={'Test Name'} name={'testName'} required>
-            <TextInput
+          <FormField
+            label={'Test Name'}
+            name={'testName'}
+            htmlFor={'select'}
+            required
+          >
+            <Select
+              id={'testName'}
               value={testName}
               name={'testName'}
-              onChange={(e) => setTestName(e.target.value.trim())}
+              placeholder={'Test Name'}
+              options={['PCR 1', 'PCR 2', 'PCR 3', 'ELISA', 'RPR']}
+              onChange={({ option }) => setTestName(option)}
             />
           </FormField>
-          <FormField label={'Result'} name={'result'}>
-            <TextInput
+          <FormField label={'Result'} name={'result'} htmlFor={'select'}>
+            <Select
+              id={'result'}
+              placeholder={'Test Result'}
               value={result}
-              name={'result'}
-              onChange={(e) => setResult(e.target.value.trim())}
+              // name={'result'}
+              options={['Positive', 'Negative']}
+              onChange={({ option }) => setResult(option)}
             />
           </FormField>
           <FormField label={'Sample Code'} name={'sampleCode'} required>

@@ -106,6 +106,8 @@ const HivScreeningTable = ({ children, caption, screenings, onClickEdit }) => {
     );
   }
 
+  screenings.sort((a, b) => a.dueDate > b.dueDate);
+
   return (
     <Box gap={'medium'} align={'center'} width={'medium'} fill={'horizontal'}>
       {children}
