@@ -14,12 +14,12 @@ func main() {
 	flag.StringVar(&confFile, "c", "", "Specify configuration file.")
 	flag.Parse()
 	if len(confFile) == 0 {
-		fmt.Errorf("please specify the configuration file using the -c flag")
+		fmt.Print("please specify the configuration file using the -c flag")
 		os.Exit(1)
 	}
 	cnf, err := config.ReadConf(confFile)
 	if err != nil {
-		fmt.Errorf("could not parse the configuration file")
+		fmt.Print("could not parse the configuration file")
 	}
 	http.NewServer(*cnf)
 }
