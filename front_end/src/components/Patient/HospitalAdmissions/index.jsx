@@ -33,6 +33,9 @@ const admissionsRow = (data, onClickEdit) => {
       <TableCell align={'start'}>
         <Text size={'small'}>{data.facility}</Text>
       </TableCell>
+      <TableCell align={'start'}>
+        <Text size={'small'}>{data.reason}</Text>
+      </TableCell>
       <TableCell align={'center'} onClick={() => onClickEdit(data)}>
         <Edit />
       </TableCell>
@@ -66,6 +69,9 @@ const AdmissionsTable = ({ children, caption, admissions, onClickEdit }) => {
             </TableCell>
             <TableCell align={'start'}>
               <Text size={'small'}>Facility</Text>
+            </TableCell>
+            <TableCell align={'start'}>
+              <Text size={'small'}>Reason</Text>
             </TableCell>
             <TableCell align={'start'} />
           </TableRow>

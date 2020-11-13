@@ -15,6 +15,7 @@ const EditForm = ({ admission, closeForm }) => {
   const [dateAdmitted, setDateAdmitted] = React.useState(
     admission.dateAdmitted
   );
+  const [reason, setReason] = React.useState(admission.reason);
   const [admissionData, setAdmissionData] = React.useState();
   const { httpInstance } = useHttpApi();
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
@@ -26,6 +27,7 @@ const EditForm = ({ admission, closeForm }) => {
       id: admission.id,
       patientId: admission.patientId,
       facility: facility,
+      reason: reason,
       dateAdmitted: dateAdmitted,
     };
     setAdmissionData(data);
@@ -72,6 +74,13 @@ const EditForm = ({ admission, closeForm }) => {
               value={facility}
               name={'facility'}
               onChange={(e) => setFacility(e.target.value)}
+            />
+          </FormField>
+          <FormField label={'Reason for Admission'} name={'reason'} required>
+            <TextInput
+              value={reason}
+              name={'reason'}
+              onChange={(e) => setReason(e.target.value)}
             />
           </FormField>
           <FormField label={'Date Admitted'} name={'dateAdmitted'} required>

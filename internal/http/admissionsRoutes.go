@@ -18,6 +18,7 @@ type NewHospitalAdmissionRequest struct {
 	PatientId      int       `json:"patientId"`
 	DateAdmitted   time.Time `json:"dateAdmitted"`
 	Facility       string    `json:"facility"`
+	Reason         string    `json:"reason"`
 	MchEncounterId int       `json:"mchEncounterId"`
 }
 
@@ -43,6 +44,7 @@ func (a *App) CreateHospitalAdmissionHandler(w http.ResponseWriter, r *http.Requ
 			MchEncounterId: req.MchEncounterId,
 			DateAdmitted:   req.DateAdmitted,
 			Facility:       req.Facility,
+			Reason:         req.Reason,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      nil,
 			CreatedBy:      user,

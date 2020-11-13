@@ -143,6 +143,9 @@ const HospitalAdmissionCreateForm = () => {
             <FormField label={'Facility'} name={'facility'} required>
               <TextInput placeholder={'Facility'} name={'facility'} />
             </FormField>
+            <FormField label={'Reason for Admission'} name={'reason'} required>
+              <TextInput placeholder={'Reason for Admission'} name={'reason'} />
+            </FormField>
             <FormField label={'Date Admitted'} name={'dateAdmitted'} required>
               <DateInput format={'yyyy-mm-dd'} name={'dateAdmitted'} />
             </FormField>

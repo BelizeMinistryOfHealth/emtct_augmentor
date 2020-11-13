@@ -155,6 +155,7 @@ type HospitalAdmission struct {
 	MchEncounterId int        `json:"mchEncounterId"`
 	DateAdmitted   time.Time  `json:"dateAdmitted"`
 	Facility       string     `json:"facility"`
+	Reason         string     `json:"reason"`
 	CreatedAt      time.Time  `json:"createdAt"`
 	UpdatedAt      *time.Time `json:"updatedAt"`
 	CreatedBy      string     `json:"createdBy"`
