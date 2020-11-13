@@ -465,6 +465,7 @@ func (d *AcsisDb) FindCurrentPregnancy(patientId int) (*models.PregnancyVitals, 
            WHEN ft.facility_type_id = 14 THEN 'Private'
            ELSE 'Public'
        END AS care_provider,
+       f.name as facility,
        e.begin_time as date_of_booking,
        CASE
            WHEN bs.name IS NULL THEN ''
@@ -486,15 +487,19 @@ LIMIT 1;
 `
 	var vitals models.PregnancyVitals
 	var dob *time.Time
+	var careProvider string
+	var facility string
 	row := d.QueryRow(stmt, patientId, anc.Id)
 	err = row.Scan(
-		&vitals.PrenatalCareProvider,
+		&careProvider,
+		&facility,
 		&vitals.DateOfBooking,
 		&vitals.BirthStatus,
 		&vitals.ApgarFifthMinute,
 		&vitals.ApgarFirstMinute,
 		&dob,
 	)
+	vitals.PrenatalCareProvider = fmt.Sprintf("%s - %s", careProvider, facility)
 
 	switch err {
 	case sql.ErrNoRows:
