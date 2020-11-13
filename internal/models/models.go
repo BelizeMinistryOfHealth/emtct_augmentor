@@ -169,7 +169,7 @@ type AntenatalEncounter struct {
 	NumberAntenatalVisits int        `json:"numberAntenatalVisits"`
 }
 
-type ArvPrescription struct {
+type Prescription struct {
 	Id             int       `json:"id"`
 	PatientId      int       `json:"patientId"`
 	TotalDoses     int       `json:"totalDoses"`

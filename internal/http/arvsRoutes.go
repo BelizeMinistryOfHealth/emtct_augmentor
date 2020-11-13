@@ -13,8 +13,8 @@ import (
 )
 
 type ArvsResponse struct {
-	Arvs    []models.ArvPrescription `json:"arvs"`
-	Patient models.PatientBasicInfo  `json:"patient"`
+	Arvs    []models.Prescription   `json:"arvs"`
+	Patient models.PatientBasicInfo `json:"patient"`
 }
 
 func (a *App) ArvsHandler(w http.ResponseWriter, r *http.Request) {

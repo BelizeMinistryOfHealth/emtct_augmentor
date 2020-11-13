@@ -76,6 +76,9 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	// Obstetric History
 	r.HandleFunc("/patient/{patientId}/obstetricHistory", authHandlers.Then(app.ObstetricHistoryHandler)).Methods(http.MethodOptions, http.MethodGet)
 
+	//Syphilis Treatment
+	r.HandleFunc("/patient/{patientId}/syphilisTreatments", authHandlers.Then(app.SyphilisTreatmentHandler)).Methods(http.MethodGet, http.MethodOptions)
+
 	fs := http.FileServer(http.Dir("./front_end/build/"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
 	staticFs := http.FileServer(http.Dir("./front_end/build/static/"))

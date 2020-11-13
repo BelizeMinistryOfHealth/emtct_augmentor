@@ -20,6 +20,7 @@ import HospitalAdmissionCreateForm from './components/Patient/HospitalAdmissions
 import LabResults from './components/Patient/LabResults/LabResults';
 import ArvTreatment from './components/Patient/ArvTreatment/ArvTreatment';
 import InfantDiagnoses from './components/Patient/Infants/InfantDiagnoses';
+import SyphilisTreatment from './components/Patient/SyphilisTreatment/SyphilisTreatment';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -99,6 +100,10 @@ function App() {
                 <Route
                   path={'/patient/:patientId/arvs'}
                   component={ArvTreatment}
+                />
+                <Route
+                  path={'/patient/:patientId/syphilisTreatment'}
+                  component={SyphilisTreatment}
                 />
                 <Route
                   path={'/patient/:patientId'}

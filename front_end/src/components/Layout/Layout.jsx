@@ -30,6 +30,10 @@ const Layout = ({ children }) => {
             link: `/patient/${patientId}/arvs`,
           },
           {
+            label: 'Syphilis Treatment',
+            link: `/patient/${patientId}/syphilisTreatment`,
+          },
+          {
             label: 'Infant Diagnoses',
             link: `/patient/${patientId}/infant/diagnoses`,
           },
