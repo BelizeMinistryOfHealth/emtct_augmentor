@@ -326,33 +326,71 @@ func (d *AcsisDb) FindAntenatalEncounterById(patientId, ancId int) (*models.Ante
 	}
 }
 
+// findObstetricPatientDetails retrieves the number of liveborn pregnancies for the patient,
+// and previous C/S and planned pregnancies. Not all patients will have data in this table.
+// If we do a join of this table when trying to retrieve other obstetric information from the
+// pregnancies table, the results are skewed because we can not guarantee that the patient will
+// exist in the acsis_hc_obstetric_patient_details_table
+func (d *AcsisDb) findObstetricPatientDetails(patientId int) (*models.PregnancyVitals, error) {
+	stmt := `SELECT
+       ahopd.number_liveborn_pregnancies,
+       ahopd.number_caesarean_sections,
+       ahopd.previous_pregnancy_planned
+FROM acsis_hc_patients p
+INNER JOIN acsis_hc_obstetric_patient_details ahopd on p.obstetric_patient_details_id = ahopd.obstetric_patient_details_id
+WHERE p.patient_id=$1 LIMIT 1;`
+
+	var vitals models.PregnancyVitals
+	row := d.QueryRow(stmt, patientId)
+	err := row.Scan(
+		&vitals.Para,
+		&vitals.Cs,
+		&vitals.Planned)
+	switch err {
+	case sql.ErrNoRows:
+		return nil, nil
+	case nil:
+		return &vitals, nil
+	default:
+		return nil, fmt.Errorf("error querying obstetric patient details from acsis: %+v", err)
+	}
+
+}
+
+// findObstetricDetails retrieves the patient's LMP, EDD from the acsis_hc_pregnancies
+// and the Para/Cs/Planned data as a second query from the acsis_hc_obstetric_patient_details
+// table because there is no guarantee that the patient will have data in the latter table.
+// When no data is available in that table, we get the wrong results.
 func (d *AcsisDb) findObstetricDetails(patientId int) (*models.PregnancyVitals, error) {
 	stmt := `SELECT
        hp.pregnancy_id,
-       ahopd.number_liveborn_pregnancies,
-       ahopd.number_caesarean_sections,
-       ahopd.previous_pregnancy_planned,
        hp.last_menstrual_period_date,
        hp.estimated_delivery_date
 FROM acsis_hc_patients p
 INNER JOIN acsis_hc_pregnancies hp ON p.patient_id = hp.patient_id
-INNER JOIN acsis_hc_obstetric_patient_details ahopd on p.obstetric_patient_details_id = ahopd.obstetric_patient_details_id
 WHERE p.patient_id=$1
-ORDER BY hp.last_menstrual_period_date DESC
+ORDER BY hp.last_modified_time DESC
 LIMIT 1;`
 
 	var vitals models.PregnancyVitals
 	row := d.QueryRow(stmt, patientId)
 	err := row.Scan(&vitals.Id,
-		&vitals.Para,
-		&vitals.Cs,
-		&vitals.Planned,
 		&vitals.Lmp,
 		&vitals.Edd)
 	switch err {
 	case sql.ErrNoRows:
 		return nil, nil
 	case nil:
+		v, err := d.findObstetricPatientDetails(patientId)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving obstetric patient detials when consolidating the obstetric details: %+v", err)
+		}
+		if v != nil {
+			vitals.Para = v.Para
+			vitals.Cs = v.Cs
+			vitals.Planned = v.Planned
+		}
+
 		return &vitals, nil
 	default:
 		return nil, fmt.Errorf("error querying obstetric details from acsis: %+v", err)
