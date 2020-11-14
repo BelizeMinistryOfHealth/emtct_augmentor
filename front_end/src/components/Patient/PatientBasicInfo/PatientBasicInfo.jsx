@@ -20,9 +20,9 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
     hivDiagnosisDate,
   } = basicInfo;
   return (
-    <Box gap='medium' align='center'>
+    <Box gap='medium' align='center' fill={'horizontal'}>
       {children}
-      <Box direction={'row'} gap={'medium'}>
+      <Box direction={'row'} gap={'medium'} fill={'horizontal'}>
         <Box>
           <Text size={'small'} weight={'bold'} textAlign={'start'}>
             Name:

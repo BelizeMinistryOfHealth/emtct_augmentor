@@ -26,13 +26,13 @@ const BasicInfoComponent = ({ currentPregnancy }) => {
         pad={'medium'}
         justify={'start'}
         align={'start'}
-        fill
+        fill={'horizontal'}
       >
         <PatientBasicInfo
           basicInfo={currentPregnancy.basicInfo}
           nextOfKin={currentPregnancy.nextOfKin}
         />
-        <PregnancyVitals vitals={currentPregnancy.vitals} />
+        <PregnancyVitals vitals={currentPregnancy.vitals} fill={'horizontal'} />
       </Box>
       <Box>
         <PreNatalCare info={currentPregnancy.prenatalCareInfo} />

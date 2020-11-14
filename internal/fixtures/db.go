@@ -122,97 +122,97 @@ func SampleObstetricHistory(db db.EmtctDb) error {
 }
 
 func SamplePregnancies(db db.EmtctDb) error {
-	patientId, _ := strconv.Atoi(PatientIds[0])
-	pregnancy := models.PregnancyVitals{
-		Id:                   1,
-		PatientId:            patientId,
-		GestationalAge:       4,
-		Para:                 10,
-		Cs:                   false,
-		PregnancyOutcome:     "",
-		DiagnosisDate:        time.Date(2020, time.August, 3, 0, 0, 0, 0, time.UTC),
-		Planned:              false,
-		AgeAtLmp:             28,
-		Lmp:                  time.Date(2020, time.July, 6, 0, 0, 0, 0, time.UTC),
-		Edd:                  time.Date(2021, time.April, 4, 0, 0, 0, 0, time.UTC),
-		DateOfBooking:        time.Date(2020, time.August, 3, 0, 0, 0, 0, time.UTC),
-		PrenatalCareProvider: "Public",
-		TotalChecks:          2,
-	}
-	err := db.CreatePregnancy(pregnancy)
-	if err != nil {
-		return fmt.Errorf("error inserting pregnancy: %+v", err)
-	}
+	//patientId, _ := strconv.Atoi(PatientIds[0])
+	//pregnancy := models.PregnancyVitals{
+	//	Id:                   1,
+	//	PatientId:            patientId,
+	//	GestationalAge:       4,
+	//	Para:                 10,
+	//	Cs:                   0,
+	//	PregnancyOutcome:     "",
+	//	DiagnosisDate:        time.Date(2020, time.August, 3, 0, 0, 0, 0, time.UTC),
+	//	Planned:              false,
+	//	AgeAtLmp:             28,
+	//	Lmp:                  time.Date(2020, time.July, 6, 0, 0, 0, 0, time.UTC),
+	//	Edd:                  time.Date(2021, time.April, 4, 0, 0, 0, 0, time.UTC),
+	//	DateOfBooking:        time.Date(2020, time.August, 3, 0, 0, 0, 0, time.UTC),
+	//	PrenatalCareProvider: "Public",
+	//	TotalChecks:          2,
+	//}
+	//err := db.CreatePregnancy(pregnancy)
+	//if err != nil {
+	//	return fmt.Errorf("error inserting pregnancy: %+v", err)
+	//}
 	return nil
 }
 
 func SampleLabResults(db db.EmtctDb) error {
-	patientId, _ := strconv.Atoi(PatientIds[0])
-	labResults := []models.LabResult{
-		{
-			Id:              1,
-			PatientId:       patientId,
-			TestResult:      "Negative",
-			TestName:        "Hb",
-			DateSampleTaken: time.Date(2020, time.September, 10, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.September, 14, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              2,
-			PatientId:       patientId,
-			TestResult:      "Negative",
-			TestName:        "Urinalysis",
-			DateSampleTaken: time.Date(2020, time.September, 10, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.September, 14, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              3,
-			PatientId:       patientId,
-			TestResult:      "Negative",
-			TestName:        "Hepatitis B",
-			DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.July, 1, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              4,
-			PatientId:       patientId,
-			TestResult:      "Negative",
-			TestName:        "HIV",
-			DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              5,
-			PatientId:       patientId,
-			TestResult:      "120",
-			TestName:        "CD4 Count",
-			DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              6,
-			PatientId:       patientId,
-			TestResult:      "0",
-			TestName:        "Viral Load",
-			DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			Id:              7,
-			PatientId:       patientId,
-			TestResult:      "Negative",
-			TestName:        "Syphilis",
-			DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
-			ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
-		},
-	}
-
-	for _, l := range labResults {
-		err := db.CreateLabResult(l)
-		if err != nil {
-			return fmt.Errorf("error inserting lab result: %+v", err)
-		}
-	}
+	//patientId, _ := strconv.Atoi(PatientIds[0])
+	//labResults := []models.LabResult{
+	//	{
+	//		Id:              1,
+	//		PatientId:       patientId,
+	//		TestResult:      "Negative",
+	//		TestName:        "Hb",
+	//		DateSampleTaken: time.Date(2020, time.September, 10, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.September, 14, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              2,
+	//		PatientId:       patientId,
+	//		TestResult:      "Negative",
+	//		TestName:        "Urinalysis",
+	//		DateSampleTaken: time.Date(2020, time.September, 10, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.September, 14, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              3,
+	//		PatientId:       patientId,
+	//		TestResult:      "Negative",
+	//		TestName:        "Hepatitis B",
+	//		DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.July, 1, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              4,
+	//		PatientId:       patientId,
+	//		TestResult:      "Negative",
+	//		TestName:        "HIV",
+	//		DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              5,
+	//		PatientId:       patientId,
+	//		TestResult:      "120",
+	//		TestName:        "CD4 Count",
+	//		DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              6,
+	//		PatientId:       patientId,
+	//		TestResult:      "0",
+	//		TestName:        "Viral Load",
+	//		DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
+	//	},
+	//	{
+	//		Id:              7,
+	//		PatientId:       patientId,
+	//		TestResult:      "Negative",
+	//		TestName:        "Syphilis",
+	//		DateSampleTaken: time.Date(2020, time.June, 30, 0, 0, 0, 0, time.UTC),
+	//		ResultDate:      time.Date(2020, time.July, 3, 0, 0, 0, 0, time.UTC),
+	//	},
+	//}
+	//
+	//for _, l := range labResults {
+	//	err := db.CreateLabResult(l)
+	//	if err != nil {
+	//		return fmt.Errorf("error inserting lab result: %+v", err)
+	//	}
+	//}
 	return nil
 }
 
