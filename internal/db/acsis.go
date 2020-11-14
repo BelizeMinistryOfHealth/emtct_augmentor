@@ -165,7 +165,7 @@ func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 // where the diagnosis time is before the lmp.
 func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosis, error) {
 	// Retrieve the obstetric details so we can use the current pregnancy's id.
-	obs, err := d.findObstetricDetails(patientId)
+	obs, err := d.FindObstetricDetails(patientId)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving diagnoses outside pregnancy from acsis: %+v", err)
 	}
@@ -210,7 +210,7 @@ func (d *AcsisDb) FindDiagnosesBeforePregnancy(patientId int) ([]models.Diagnosi
 // in filtering out the result so that the proper LMP and EDD are used when comparing diagnoses date.
 func (d *AcsisDb) FindDiagnosesDuringPregnancy(patientId int) ([]models.Diagnosis, error) {
 	// Retrieve the obstetric details so we can use the current pregnancy's id.
-	obs, err := d.findObstetricDetails(patientId)
+	obs, err := d.FindObstetricDetails(patientId)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving current pregnancy's diagnoses from acsis: %+v", err)
 	}
@@ -283,13 +283,12 @@ func (d *AcsisDb) FindObstetricHistory(patientId int) ([]models.ObstetricHistory
 	return obstetricHistory, nil
 }
 
-func (d *AcsisDb) FindLatestAntenatalEncounter(patientId int) (*models.AntenatalEncounter, error) {
+func (d *AcsisDb) FindLatestAntenatalEncounter(patientId int, lmp *time.Time) (*models.AntenatalEncounter, error) {
 	stmt := `SELECT e.encounter_id,
            e.patient_id,
            amed.mch_encounter_details_id, 
            amed.estimated_delivery_date,
            e.begin_time,
-       		COALESCE(amed.gestational_age_by_calculation, amed.gestational_age_by_ultrasound) AS gestational_age,
            amed.number_of_antenatal_visits
         FROM acsis_hc_patients p
         INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id AND e.encounter_type='M'
@@ -305,12 +304,17 @@ func (d *AcsisDb) FindLatestAntenatalEncounter(patientId int) (*models.Antenatal
 		&anc.MchEncounterDetailsId,
 		&anc.EstimatedDeliveryDate,
 		&anc.BeginDate,
-		&anc.GestationalAge,
-		&anc.NumberAntenatalVisits)
+		&anc.NumberAntenatalVisits,
+	)
 	switch err {
 	case sql.ErrNoRows:
 		return nil, nil
 	case nil:
+		//Gestational Age at booking is the difference b/w LMP and begin time
+		if lmp == nil {
+			return &anc, nil
+		}
+		anc.GestationalAge = int(anc.BeginDate.Sub(*lmp).Hours() / 24)
 		return &anc, nil
 	default:
 		return nil, fmt.Errorf("error querying for mch details from acsis: %+v", err)
@@ -381,11 +385,11 @@ WHERE p.patient_id=$1 LIMIT 1;`
 
 }
 
-// findObstetricDetails retrieves the patient's LMP, EDD from the acsis_hc_pregnancies
+// FindObstetricDetails retrieves the patient's LMP, EDD from the acsis_hc_pregnancies
 // and the Para/Cs/Planned data as a second query from the acsis_hc_obstetric_patient_details
 // table because there is no guarantee that the patient will have data in the latter table.
 // When no data is available in that table, we get the wrong results.
-func (d *AcsisDb) findObstetricDetails(patientId int) (*models.PregnancyVitals, error) {
+func (d *AcsisDb) FindObstetricDetails(patientId int) (*models.PregnancyVitals, error) {
 	stmt := `SELECT
        hp.pregnancy_id,
        hp.last_menstrual_period_date,
@@ -453,9 +457,22 @@ func (d *AcsisDb) findPreviousPregnancyDiagnosis(patientId int) (*PregnancyDiagn
 
 }
 
+// FindCurrentPregnancy returns details about the patient's current pregnancy.
+// Under the hood it is 4 separate queries:
+// 1. Finds obstetric details. This is information in the acsis_hc_pregnancies table, and contains the LMP and EDD.
+// 2. Finds the latest anc encounter.
+// 3. Retrieves apgar information
+// 4. Retrieves previous diagnoses
+// These are all separate queries because the database is not designed in a way to make it possible to retrieve
+// all this information using joins. This is partly due to there not being any link between the pregnancies table and
+// the encounters table that allows us to retrieve the corresponding anc encounter for a pregnancy.
 func (d *AcsisDb) FindCurrentPregnancy(patientId int) (*models.PregnancyVitals, error) {
+	v, err := d.FindObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving pregnancy details from acsis: %+v", err)
+	}
 	// Find the anc encounter. This is the most recent anc encounter in patient's docket.
-	anc, err := d.FindLatestAntenatalEncounter(patientId)
+	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("could not find current pregnancy details because no antenatal encounter was found: %+v", err)
 	}
@@ -505,10 +522,6 @@ LIMIT 1;
 	case sql.ErrNoRows:
 		return nil, nil
 	case nil:
-		v, err := d.findObstetricDetails(patientId)
-		if err != nil {
-			return nil, fmt.Errorf("error while retrieving pregnancy details from acsis: %+v", err)
-		}
 		ageAtLmp := 0
 		if v.Lmp != nil {
 			ageAtLmp = age.AgeAt(*dob, *v.Lmp)
@@ -531,6 +544,7 @@ LIMIT 1;
 		if p != nil {
 			vitals.DiagnosisDate = &p.Date
 		}
+		vitals.GestationalAge = anc.GestationalAge
 
 		return &vitals, nil
 	default:
@@ -727,7 +741,11 @@ func (d *AcsisDb) findTestSamples(tr testRequestItem) (*testSample, error) {
 // 3. Find the samples for each test request item
 // 4. Create the response that will merge the data from all these queries.
 func (d *AcsisDb) FindLabTestsDuringPregnancy(patientId int) ([]models.LabResult, error) {
-	anc, err := d.FindLatestAntenatalEncounter(patientId)
+	v, err := d.FindObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving lab tests during pregnancy details from acsis: %+v", err)
+	}
+	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("rerror retrieving antenatal encounter when retrieving lab tests during pregnancy: %+v", err)
 	}
@@ -802,7 +820,11 @@ func findLabResultIndex(rs []models.LabResult, id int) int {
 }
 
 func (d *AcsisDb) FindPatientSyphilisTreatment(patientId int) ([]models.Prescription, error) {
-	anc, err := d.FindLatestAntenatalEncounter(patientId)
+	v, err := d.FindObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving syphilis treatment from acsis: %+v", err)
+	}
+	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving syphilis treatment from acsis: %+v", err)
 	}
@@ -859,7 +881,11 @@ func (d *AcsisDb) FindPatientSyphilisTreatment(patientId int) ([]models.Prescrip
 // FindArvsByPatient finds all ARVs prescribed to a patient during pregnancy.
 // It finds the current antenatal encounter, so that it can filter all prescriptions for only that encounter.
 func (d *AcsisDb) FindArvsByPatient(patientId int) ([]models.Prescription, error) {
-	anc, err := d.FindLatestAntenatalEncounter(patientId)
+	v, err := d.FindObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving arvs treatment from acsis: %+v", err)
+	}
+	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving arvs from acsis: %+v", err)
 	}
@@ -991,7 +1017,11 @@ func (d *AcsisDb) FindLatestBirth(motherId, ancId int) (*models.Birth, error) {
 }
 
 func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error) {
-	anc, err := d.FindLatestAntenatalEncounter(motherId)
+	v, err := d.FindObstetricDetails(motherId)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving arvs infant diagnoses from acsis: %+v", err)
+	}
+	anc, err := d.FindLatestAntenatalEncounter(motherId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving infant diagnoses: %+v", err)
 	}

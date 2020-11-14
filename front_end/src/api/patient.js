@@ -78,18 +78,21 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
     if (interval < 0) {
       interval = 0;
     }
-
-    console.dir({
-      interval,
-      lmp: parseISO(vitals.lmp),
-      last: parseISO(lastPregnancy),
-    });
   }
   vitals.interval = interval;
+  let gestationalAge = 'N/A';
+  if (vitals.gestationalAge > 7) {
+    gestationalAge = `${Math.ceil(vitals.gestationalAge / 7)} weeks`;
+  }
+
+  if (vitals.gestationalAge < 7) {
+    gestationalAge = `${vitals.gestationalAge} days`;
+  }
+  vitals.gestationalAge = gestationalAge;
 
   const prenatalCareInfo = {
     dateOfBooking: vitals.dateOfBooking,
-    gestationAge: vitals.gestationalAge,
+    gestationAge: gestationalAge,
     prenatalCareProvider: vitals.prenatalCareProvider,
     totalChecks: vitals.totalChecks,
   };

@@ -11,9 +11,6 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
       <Box direction={'row'} gap={'medium'}>
         <Box>
           <Text size={'small'} weight={'bold'} textAlign={'start'}>
-            Gestational Age:
-          </Text>
-          <Text size={'small'} weight={'bold'} textAlign={'start'}>
             Para:
           </Text>
           <Text size={'small'} weight={'bold'} textAlign={'start'}>
@@ -42,9 +39,6 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
           </Text>
         </Box>
         <Box>
-          <Text size={'small'} textAlign={'start'}>
-            {vitals.gestationalAge}
-          </Text>
           <Text size={'small'} textAlign={'start'}>
             {vitals.para}
           </Text>

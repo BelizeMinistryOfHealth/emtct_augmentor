@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -66,7 +67,17 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(log.Fields{"request": r}).WithError(err).Error("could not retrieve obstetric history")
 	}
 
-	ancEncounter, err := a.AcsisDb.FindLatestAntenatalEncounter(id)
+	v, err := a.AcsisDb.FindObstetricDetails(id)
+	var lmp *time.Time
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": id,
+		}).WithError(err).Error("could not find patient's obstetric details, using nil for lmp")
+	}
+	if v != nil {
+		lmp = v.Lmp
+	}
+	ancEncounter, err := a.AcsisDb.FindLatestAntenatalEncounter(id, lmp)
 	if err != nil {
 		log.WithFields(log.Fields{"patientId": id}).WithError(err).Error("could not retrieve anc encounter")
 	}
