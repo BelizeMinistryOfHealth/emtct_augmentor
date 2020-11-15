@@ -41,8 +41,8 @@ const EditForm = ({ screening, closeEditScreen }) => {
     e.preventDefault();
     const data = {
       patientId: screening.patientId,
+      motherId: screening.motherId,
       id: screening.id,
-      mchEncounterId: screening.mchEncounterId,
       result,
       testName,
       destination,
@@ -60,7 +60,10 @@ const EditForm = ({ screening, closeEditScreen }) => {
   React.useEffect(() => {
     const submit = async (body) => {
       try {
-        await httpInstance.put(`/patient/hivScreening/${body.id}`, body);
+        await httpInstance.put(
+          `/patient/${screening.motherId}/infant/${screening.patientId}/hivScreenings/${body.id}`,
+          body
+        );
         setStatus('SUCCESS');
         closeEditScreen();
       } catch (e) {
@@ -71,7 +74,7 @@ const EditForm = ({ screening, closeEditScreen }) => {
     if (status === 'SUBMIT' && screenData) {
       submit(screenData);
     }
-  }, [screenData, status, httpInstance, closeEditScreen]);
+  }, [screenData, status, httpInstance, closeEditScreen, screening]);
 
   return (
     <Box>

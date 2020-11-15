@@ -42,18 +42,15 @@ const TabsItem = ({ content, onClickTab }) => {
         fill={'horizontal'}
       >
         <Tab title={'Info'}>{content}</Tab>
-        <Tab title={'HIV Screenings'}>
-          <Box margin='small'>The second tab is active.</Box>
-        </Tab>
-        <Tab title={'Diagnoses'}>
-          <Box margin='small'>The third tab is active.</Box>
-        </Tab>
+        <Tab title={'HIV Screenings'}></Tab>
+        <Tab title={'Diagnoses'}></Tab>
+        <Tab title={'Syphilis Screening'}></Tab>
       </Tabs>
     </Box>
   );
 };
 
-const InfantTabs = ({ content, data }) => {
+const InfantTabs = ({ data, children }) => {
   const { mother, infant } = data;
   const history = useHistory();
   const onClickTab = (nextIndex) => {
@@ -81,7 +78,7 @@ const InfantTabs = ({ content, data }) => {
       alignContent={'start'}
     >
       <ThemeContext.Extend value={customTheme}>
-        <TabsItem content={content} onClickTab={onClickTab} />
+        <TabsItem onClickTab={onClickTab} content={children} />
       </ThemeContext.Extend>
     </Box>
   );

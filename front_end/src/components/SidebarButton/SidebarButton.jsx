@@ -7,7 +7,7 @@ const SidebarButton = ({ label, ...rest }) => {
       {({ hover }) => (
         <Box
           background={hover ? 'accent-2' : undefined}
-          pad={{ horizontal: 'medium', vertical: 'small' }}
+          pad={{ horizontal: 'small', vertical: 'small' }}
         >
           <Text size='medium'>{label}</Text>
         </Box>

@@ -13,6 +13,7 @@ class HttpApi {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
     });
   }

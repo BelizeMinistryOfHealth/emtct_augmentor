@@ -55,10 +55,8 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).Methods(http.MethodOptions, http.MethodPost)
 	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/{patientId}/hivScreenings", authHandlers.Then(app.HivScreeningsByPatientIdHandler)).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
-	r.HandleFunc("/patient/hivScreening", authHandlers.Then(app.CreateHivScreeningHandler)).Methods(http.MethodOptions, http.MethodPost)
-	r.HandleFunc("/patient/hivScreening/{screeningId}", authHandlers.Then(app.HivScreeningApi)).Methods(http.MethodOptions, http.MethodPut)
+
 	// Contraceptives
 	r.HandleFunc("/patient/{patientId}/contraceptivesUsed", authHandlers.Then(app.ContraceptivesByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
 	r.HandleFunc("/patient/contraceptivesUsed", authHandlers.Then(app.CreateContraceptiveUsedHandler)).Methods(http.MethodOptions, http.MethodPost)
@@ -78,6 +76,10 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 
 	// Infant Diagnoses
 	r.HandleFunc("/patient/{motherId}/infant/{infantId}/diagnoses", authHandlers.Then(app.InfantDiagnosesHandler)).Methods(http.MethodOptions, http.MethodGet)
+
+	//Infant HIV Screenings
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings/{screeningId}", authHandlers.Then(app.HivScreeningApi)).Methods(http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings", authHandlers.Then(app.HivScreeningsByPatientIdHandler)).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 
 	// Infants
 	r.HandleFunc("/patient/{patientId}/infant", authHandlers.Then(app.InfantHandler)).Methods(http.MethodOptions, http.MethodGet)

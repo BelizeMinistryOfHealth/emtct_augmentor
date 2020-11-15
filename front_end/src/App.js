@@ -11,8 +11,6 @@ import CurrentPregnancy from './components/Patient/Pregnancy/CurrentPregnancy/Cu
 import HttpApiProvider from './providers/HttpProvider';
 import HomeVisitList from './components/Patient/HomeVisit';
 import HomeVisitCreateForm from './components/Patient/HomeVisit/HomeVisitCreate';
-import HivScreening from './components/Patient/HivScreening';
-import HivScreeningCreateForm from './components/Patient/HivScreening/HivScreeningCreate';
 import ContraceptivesUsed from './components/Patient/Contraceptives';
 import ContraceptivesCreateForm from './components/Patient/Contraceptives/ContraceptivesCreate';
 import HospitalAdmissions from './components/Patient/HospitalAdmissions';
@@ -23,6 +21,7 @@ import SyphilisTreatment from './components/Patient/SyphilisTreatment/SyphilisTr
 import Infant from './components/Infant';
 import InfantHivScreenings from './components/Infant/HivScreenings';
 import InfantDiagnoses from './components/Infant/Diagnoses';
+import HivScreeningCreateForm from './components/Infant/HivScreenings/HivScreeningCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -64,21 +63,10 @@ function App() {
                   component={HomeVisitCreateForm}
                 />
                 <Route
-                  path={'/patient/:patientId/hiv_screenings/new'}
-                  component={HivScreeningCreateForm}
-                />
-                <Route
-                  path={'/patient/:patientId/contraceptives/new'}
-                  component={ContraceptivesCreateForm}
-                />
-                <Route
                   path={'/patient/:patientId/home_visits'}
                   component={HomeVisitList}
                 />
-                <Route
-                  path={'/patient/:patientId/hiv_screenings'}
-                  component={HivScreening}
-                />
+
                 <Route
                   path={'/patient/:patientId/contraceptives'}
                   component={ContraceptivesUsed}
@@ -91,7 +79,6 @@ function App() {
                   path={'/patient/:patientId/admissions'}
                   component={HospitalAdmissions}
                 />
-
                 <Route
                   path={'/patient/:patientId/lab_results'}
                   component={LabResults}
@@ -105,8 +92,18 @@ function App() {
                   component={SyphilisTreatment}
                 />
                 <Route
+                  path={
+                    '/patient/:patientId/infant/:infantId/hivScreenings/new'
+                  }
+                  component={HivScreeningCreateForm}
+                />
+                <Route
                   path={'/patient/:patientId/infant/:infantId/hivScreenings'}
                   component={InfantHivScreenings}
+                />
+                <Route
+                  path={'/patient/:patientId/contraceptives/new'}
+                  component={ContraceptivesCreateForm}
                 />
                 <Route
                   path={'/patient/:patientId/infant/:infantId/diagnoses'}

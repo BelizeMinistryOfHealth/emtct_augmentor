@@ -992,6 +992,7 @@ func (d *AcsisDb) FindInfantDiagnoses(infantId int) ([]models.InfantDiagnoses, e
 	return diagnoses, nil
 }
 
+// FindPregnancyInfant returns the infant that was born after the mother's current LMP.
 func (d *AcsisDb) FindPregnancyInfant(motherId int) (*models.Infant, error) {
 	stmt := `
 	SELECT 
@@ -1038,6 +1039,48 @@ func (d *AcsisDb) FindPregnancyInfant(motherId int) (*models.Infant, error) {
 	}
 	if obs.Lmp.After(*infant.Infant.Dob) {
 		return nil, fmt.Errorf("no infant found in acsis for the current pregnancy: %+v", err)
+	}
+
+	return &infant, nil
+}
+
+func (d *AcsisDb) FindInfant(infantId int) (*models.Infant, error) {
+	stmt := `
+	SELECT 
+	       b.patient_id,
+	       ppl.first_name,
+	       ppl.middle_name,
+	       ppl.last_name,
+	       pt.birth_date,
+	       mppl.first_name as mfirst_name,
+	       mppl.middle_name as mmiddle_name,
+	       mppl.last_name as mlast_name,
+	       mpt.birth_date as mdob,
+	       mpt.patient_id as mother_id
+    FROM acsis_hc_births b
+	INNER JOIN acsis_hc_patients pt ON pt.patient_id=b.patient_id
+	INNER JOIN acsis_people ppl ON pt.person_id = ppl.person_id
+	INNER JOIN acsis_hc_patients mpt ON b.mother_id=mpt.patient_id
+	INNER JOIN acsis_people mppl ON mppl.person_id=mpt.person_id
+	WHERE pt.patient_id=$1
+	ORDER BY pt.birth_date DESC
+	LIMIT 1;
+`
+	var infant models.Infant
+	row := d.QueryRow(stmt, infantId)
+	err := row.Scan(
+		&infant.Infant.PatientId,
+		&infant.Infant.FirstName,
+		&infant.Infant.MiddleName,
+		&infant.Infant.LastName,
+		&infant.Infant.Dob,
+		&infant.Mother.FirstName,
+		&infant.Mother.MiddleName,
+		&infant.Mother.LastName,
+		&infant.Mother.Dob,
+		&infant.Mother.PatientId)
+	if err != nil {
+		return nil, fmt.Errorf("error querying infant basic information from acsis: %+v", err)
 	}
 
 	return &infant, nil

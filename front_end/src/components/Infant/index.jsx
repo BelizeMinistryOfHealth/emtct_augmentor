@@ -145,10 +145,9 @@ const Infant = () => {
         alignSelf={'start'}
         fill={'horizontal'}
       >
-        <InfantTabs
-          content={<InfantInfo data={infantData.data} />}
-          data={infantData.data}
-        />
+        <InfantTabs data={infantData.data}>
+          <InfantInfo data={infantData.data} />
+        </InfantTabs>
       </Box>
     </Layout>
   );

@@ -12,8 +12,8 @@ const Layout = ({ children }) => {
       align={'start'}
       justify={'start'}
       direction={'row-responsive'}
-      gap={'medium'}
-      pad={'medium'}
+      gap={'xxsmall'}
+      pad={'xxsmall'}
       fill={'horizontal'}
     >
       <Nav background={'neutral-2'}>
@@ -40,10 +40,6 @@ const Layout = ({ children }) => {
           {
             label: 'Hospital/Clinic Admissions',
             link: `/patient/${patientId}/admissions`,
-          },
-          {
-            label: 'HIV Screenings',
-            link: `/patient/${patientId}/hiv_screenings`,
           },
           {
             label: 'Contraceptives',

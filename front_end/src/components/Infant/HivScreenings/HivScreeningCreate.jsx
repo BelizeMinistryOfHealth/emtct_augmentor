@@ -25,7 +25,7 @@ const HivScreeningCreateForm = () => {
     error: undefined,
   });
   const [errorMessage, setErrorMessage] = React.useState(undefined);
-  const { patientId } = useParams();
+  const { patientId, infantId } = useParams();
   const history = useHistory();
   const { httpInstance } = useHttpApi();
 
@@ -38,7 +38,6 @@ const HivScreeningCreateForm = () => {
     const fetchPatient = async () => {
       try {
         const result = await httpInstance.get(`/patient/${patientId}`);
-        console.log({ result: result.data });
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -52,11 +51,11 @@ const HivScreeningCreateForm = () => {
 
   React.useEffect(() => {
     const post = (screening) => {
-      const mchEncounterId = patientData.data.antenatalEncounter.id;
       httpInstance
-        .post(`/patient/hivScreening`, {
+        .post(`/patient/${patientId}/infant/${infantId}/hivScreenings`, {
           ...screening,
-          mchEncounterId,
+          motherId: parseInt(patientId),
+          patientId: parseInt(infantId),
         })
         .then(() => {
           setStatus('SUCCESS');
@@ -68,13 +67,22 @@ const HivScreeningCreateForm = () => {
           if (e.response) {
             setErrorMessage(e.response.data);
           }
+          setScreening(screening);
         });
     };
     if (status === 'SUBMIT') {
       setErrorMessage(undefined);
       post(screening);
     }
-  }, [screening, httpInstance, status, patientData, errorMessage]);
+  }, [
+    screening,
+    httpInstance,
+    status,
+    patientData,
+    errorMessage,
+    infantId,
+    patientId,
+  ]);
 
   if (status === 'SUBMIT') {
     return (
@@ -91,7 +99,7 @@ const HivScreeningCreateForm = () => {
   }
 
   if (status === 'SUCCESS') {
-    history.push(`/patient/${patientId}/hiv_screenings`);
+    history.push(`/patient/${patientId}/infant/${infantId}/hivScreenings`);
   }
 
   return (
@@ -105,7 +113,11 @@ const HivScreeningCreateForm = () => {
       >
         <Button
           icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/hiv_screenings`)}
+          onClick={() =>
+            history.push(
+              `/patient/${patientId}/infant/${infantId}/hivScreenings`
+            )
+          }
         />
         <Box
           flex={false}

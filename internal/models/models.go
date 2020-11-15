@@ -117,7 +117,7 @@ type HomeVisit struct {
 type HivScreening struct {
 	Id                     string     `json:"id"`
 	PatientId              int        `json:"patientId"`
-	MchEncounterId         int        `json:"mchEncounterId"`
+	MotherId               int        `json:"motherId"`
 	TestName               string     `json:"testName"`
 	ScreeningDate          time.Time  `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty"`
@@ -218,8 +218,8 @@ type Infant struct {
 // PCR 2: sample must be taken no later than 6 weeks after birth
 // PCR 3: sample must be taken no later than 90 days after birth
 // ELISA: sample must be taken no longer than 18 months after birth
-func IsHivScreeningTimely(birth Birth, testName string, dateSampleTaken time.Time) bool {
-	diff := dateSampleTaken.Sub(birth.BirthDate).Hours() / 24
+func IsHivScreeningTimely(birthDate time.Time, testName string, dateSampleTaken time.Time) bool {
+	diff := dateSampleTaken.Sub(birthDate).Hours() / 24
 	switch testName {
 	case "PCR 1":
 		return diff < 4

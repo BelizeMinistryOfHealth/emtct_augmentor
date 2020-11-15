@@ -13,7 +13,7 @@ func (d *EmtctDb) CreateHivScreening(v models.HivScreening) error {
 	INSERT INTO hiv_Screening 
     	(id, patient_id, test_name, screening_date, date_sample_received_at_hq, sample_code,
 		date_sample_shipped, destination, date_result_received, result, date_result_shared, created_at, created_by, 
-		date_sample_taken, mch_encounter_id, timely, due_date)
+		date_sample_taken, mother_id, timely, due_date)
 	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`
 	_, err := d.DB.Exec(stmt,
 		v.Id,
@@ -30,7 +30,7 @@ func (d *EmtctDb) CreateHivScreening(v models.HivScreening) error {
 		v.CreatedAt,
 		v.CreatedBy,
 		v.DateSampleTaken,
-		v.MchEncounterId,
+		v.MotherId,
 		v.Timely,
 		v.DueDate)
 	if err != nil {
@@ -43,7 +43,7 @@ func (d *EmtctDb) CreateHivScreening(v models.HivScreening) error {
 func (d *EmtctDb) FindHivScreeningsByPatient(patientId int) ([]models.HivScreening, error) {
 	stmt := `
 	SELECT 
-		id, patient_id, mch_encounter_id, test_name, screening_date, date_sample_received_at_hq, sample_code,
+		id, patient_id, mother_id, test_name, screening_date, date_sample_received_at_hq, sample_code,
 		date_sample_shipped, date_sample_taken, destination, date_result_received, result, date_result_shared, 
 		created_at, created_by, updated_at, updated_by, timely, due_date 
 	FROM hiv_screening 
@@ -63,7 +63,7 @@ func (d *EmtctDb) FindHivScreeningsByPatient(patientId int) ([]models.HivScreeni
 		err := rows.Scan(
 			&s.Id,
 			&s.PatientId,
-			&s.MchEncounterId,
+			&s.MotherId,
 			&s.TestName,
 			&s.ScreeningDate,
 			&s.DateSampleReceivedAtHq,
@@ -123,7 +123,7 @@ func (d *EmtctDb) EditHivScreening(v models.HivScreening) (*models.HivScreening,
 func (d *EmtctDb) FindHivScreeningById(id string) (*models.HivScreening, error) {
 	stmt := `
 	SELECT 
-		id, patient_id, mch_encounter_id, test_name, result, sample_code, destination, screening_date,
+		id, patient_id, mother_id, test_name, result, sample_code, destination, screening_date,
 		date_sample_received_at_hq, date_sample_shipped, date_sample_taken, date_result_received, date_result_shared, 
 		updated_at, updated_by, timely, due_date
 	FROM hiv_screening 
@@ -133,7 +133,7 @@ func (d *EmtctDb) FindHivScreeningById(id string) (*models.HivScreening, error) 
 	err := row.Scan(
 		&screening.Id,
 		&screening.PatientId,
-		&screening.MchEncounterId,
+		&screening.MotherId,
 		&screening.TestName,
 		&screening.Result,
 		&screening.SampleCode,

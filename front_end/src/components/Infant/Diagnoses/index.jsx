@@ -21,7 +21,7 @@ import InfantTabs from '../InfantTabs';
 
 const diagnosisRow = (data) => {
   return (
-    <TableRow key={data.id}>
+    <TableRow key={data.diagnosisId}>
       <TableCell align={'start'}>
         <Text align={'start'} size={'small'}>
           {data.date ? format(parseISO(data.date), 'dd LLL yyyy') : 'N/A'}
@@ -152,52 +152,49 @@ const InfantDiagnoses = () => {
         align={'center'}
         fill
       >
-        <InfantTabs
-          content={
-            <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
-              <CardHeader justify={'start'} pad={'medium'}>
-                <Box>
+        <InfantTabs data={data.result.infant}>
+          <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
+            <CardHeader justify={'start'} pad={'medium'}>
+              <Box>
+                <span>
+                  <Text size={'xxlarge'} weight={'bold'}>
+                    Infant Diagnoses
+                  </Text>
                   <span>
-                    <Text size={'xxlarge'} weight={'bold'}>
-                      Infant Diagnoses
+                    <Text size={'large'}>
+                      {' '}
+                      {data.result.infant.infant.firstName}{' '}
+                      {data.result.infant.infant.lastName}
                     </Text>
-                    <span>
-                      <Text size={'large'}>
-                        {' '}
-                        {data.result.infant.infant.firstName}{' '}
-                        {data.result.infant.infant.lastName}
-                      </Text>
-                    </span>
-                    <span>
-                      <Text size={'medium'}>
-                        {' '}
-                        |{' '}
-                        {format(
-                          parseISO(data.result.infant.infant.dob),
-                          'dd LLL yyy'
-                        )}
-                      </Text>
-                    </span>
                   </span>
+                  <span>
+                    <Text size={'medium'}>
+                      {' '}
+                      |{' '}
+                      {format(
+                        parseISO(data.result.infant.infant.dob),
+                        'dd LLL yyy'
+                      )}
+                    </Text>
+                  </span>
+                </span>
 
-                  <span>
-                    <Text size={'medium'}>
-                      <strong>Mother: </strong>
-                    </Text>
-                    <Text size={'medium'}>
-                      {data.result.infant.mother.firstName}{' '}
-                      {data.result.infant.mother.lastName}
-                    </Text>
-                  </span>
-                </Box>
-              </CardHeader>
-              <CardBody gap={'medium'} pad={'medium'}>
-                <DiagnosesTable data={data.result.diagnoses} />
-              </CardBody>
-            </AppCard>
-          }
-          data={data.result.infant}
-        />
+                <span>
+                  <Text size={'medium'}>
+                    <strong>Mother: </strong>
+                  </Text>
+                  <Text size={'medium'}>
+                    {data.result.infant.mother.firstName}{' '}
+                    {data.result.infant.mother.lastName}
+                  </Text>
+                </span>
+              </Box>
+            </CardHeader>
+            <CardBody gap={'medium'} pad={'medium'}>
+              <DiagnosesTable data={data.result.diagnoses} />
+            </CardBody>
+          </AppCard>
+        </InfantTabs>
       </Box>
     </Layout>
   );
