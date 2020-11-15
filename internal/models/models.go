@@ -199,6 +199,19 @@ type Birth struct {
 	BirthDate   time.Time
 }
 
+type Person struct {
+	PatientId  int        `json:"patientId"`
+	FirstName  string     `json:"firstName"`
+	LastName   string     `json:"lastName"`
+	MiddleName string     `json:"middleName"`
+	Dob        *time.Time `json:"dob"`
+}
+
+type Infant struct {
+	Infant Person `json:"infant"`
+	Mother Person `json:"mother"`
+}
+
 // IsHivScreeningTimely indicates if an hiv screening was done in a timely manner.
 // The timeliness depends on the type of test and when the sample was taken:
 // PCR 1: sample must be taken 3 days or less after birth.

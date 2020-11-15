@@ -952,30 +952,7 @@ func (d *AcsisDb) FindLatestBirth(motherId, ancId int) (*models.Birth, error) {
 	return &birth, nil
 }
 
-func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error) {
-	v, err := d.FindObstetricDetails(motherId)
-	if err != nil {
-		return nil, fmt.Errorf("error while retrieving arvs infant diagnoses from acsis: %+v", err)
-	}
-	anc, err := d.FindLatestAntenatalEncounter(motherId, v.Lmp)
-	if err != nil {
-		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving infant diagnoses: %+v", err)
-	}
-	births, err := d.findBirths(motherId)
-	if err != nil {
-		return nil, fmt.Errorf("could not fetch births while retrieving infant diagnoses from acsis: %+v", err)
-	}
-	// Return early if there are no births
-	if len(births) == 0 {
-		return nil, nil
-	}
-
-	birth := births[0]
-	// Check if the birth has been recorded. The latest birth should be newer than the anc begin date.
-	if anc.BeginDate.After(birth.Date) {
-		return nil, nil
-	}
-
+func (d *AcsisDb) FindInfantDiagnoses(infantId int) ([]models.InfantDiagnoses, error) {
 	stmt := `
 		SELECT
 			aed.disease_id,
@@ -992,7 +969,7 @@ func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error
 		WHERE e.patient_id=$1 
 		ORDER BY aed.diagnosis_time DESC;
 `
-	rows, err := d.Query(stmt, birth.PatientId)
+	rows, err := d.Query(stmt, infantId)
 	if err != nil {
 		return nil, fmt.Errorf("error querying for infant diagnoses from acsis: %+v", err)
 	}
@@ -1013,4 +990,55 @@ func (d *AcsisDb) InfantDiagnoses(motherId int) ([]models.InfantDiagnoses, error
 	}
 
 	return diagnoses, nil
+}
+
+func (d *AcsisDb) FindPregnancyInfant(motherId int) (*models.Infant, error) {
+	stmt := `
+	SELECT 
+	       b.patient_id,
+	       ppl.first_name,
+	       ppl.middle_name,
+	       ppl.last_name,
+	       pt.birth_date,
+	       mppl.first_name as mfirst_name,
+	       mppl.middle_name as mmiddle_name,
+	       mppl.last_name as mlast_name,
+	       mpt.birth_date as mdob
+    FROM acsis_hc_births b
+	INNER JOIN acsis_hc_patients pt ON pt.patient_id=b.patient_id
+	INNER JOIN acsis_people ppl ON pt.person_id = ppl.person_id
+	INNER JOIN acsis_hc_patients mpt ON b.mother_id=mpt.patient_id
+	INNER JOIN acsis_people mppl ON mppl.person_id=mpt.person_id
+	WHERE b.mother_id=$1
+	ORDER BY pt.birth_date DESC
+	LIMIT 1;
+`
+	var infant models.Infant
+	row := d.QueryRow(stmt, motherId)
+	err := row.Scan(
+		&infant.Infant.PatientId,
+		&infant.Infant.FirstName,
+		&infant.Infant.MiddleName,
+		&infant.Infant.LastName,
+		&infant.Infant.Dob,
+		&infant.Mother.FirstName,
+		&infant.Mother.MiddleName,
+		&infant.Mother.LastName,
+		&infant.Mother.Dob)
+	if err != nil {
+		return nil, fmt.Errorf("error querying infant basic information from acsis: %+v", err)
+	}
+	infant.Mother.PatientId = motherId
+
+	// Compare the date of birth with the mother's LMP.
+	// If the date is not after LMP, then this birth does not belong to the latest pregnancy.
+	obs, err := d.FindObstetricDetails(motherId)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching infant details: %+v", err)
+	}
+	if obs.Lmp.After(*infant.Infant.Dob) {
+		return nil, fmt.Errorf("no infant found in acsis for the current pregnancy: %+v", err)
+	}
+
+	return &infant, nil
 }

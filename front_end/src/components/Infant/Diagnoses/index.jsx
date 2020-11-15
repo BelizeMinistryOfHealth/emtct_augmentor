@@ -5,35 +5,42 @@ import {
   CardHeader,
   Heading,
   Table,
-  TableBody,
   TableCell,
   TableHeader,
   TableRow,
+  TableBody,
   Text,
 } from 'grommet';
 import { InProgress } from 'grommet-icons';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useHttpApi } from '../../../../providers/HttpProvider';
-import AppCard from '../../../AppCard/AppCard';
-import Layout from '../../../Layout/Layout';
+import { useHttpApi } from '../../../providers/HttpProvider';
+import AppCard from '../../AppCard/AppCard';
+import Layout from '../../Layout/Layout';
+import InfantTabs from '../InfantTabs';
 
 const diagnosisRow = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text align={'start'}>
+        <Text align={'start'} size={'small'}>
           {data.date ? format(parseISO(data.date), 'dd LLL yyyy') : 'N/A'}
         </Text>
       </TableCell>
       <TableCell>
-        <Text align={'start'}>{data.diagnosis}</Text>
+        <Text size={'small'} align={'start'}>
+          {data.diagnosis}
+        </Text>
       </TableCell>
       <TableCell>
-        <Text align={'start'}>{data.doctor}</Text>
+        <Text align={'start'} size={'small'}>
+          {data.doctor}
+        </Text>
       </TableCell>
       <TableCell>
-        <Text align={'start'}>{data.comments}</Text>
+        <Text align={'start'} size={'small'}>
+          {data.comments}
+        </Text>
       </TableCell>
     </TableRow>
   );
@@ -68,9 +75,9 @@ const DiagnosesTable = ({ children, data }) => {
 
 const InfantDiagnoses = () => {
   const { httpInstance } = useHttpApi();
-  const { patientId } = useParams();
+  const { patientId, infantId } = useParams();
   const [data, setData] = React.useState({
-    result: { diagnoses: [], patient: {} },
+    result: undefined,
     loading: true,
     error: undefined,
   });
@@ -79,7 +86,7 @@ const InfantDiagnoses = () => {
     const fetchData = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/infants/diagnoses`
+          `/patient/${patientId}/infant/${infantId}/diagnoses`
         );
         setData({
           result: result.data,
@@ -98,7 +105,7 @@ const InfantDiagnoses = () => {
     if (data.loading) {
       fetchData();
     }
-  }, [patientId, httpInstance, data]);
+  }, [patientId, httpInstance, data, infantId]);
 
   if (data.loading) {
     return (
@@ -140,31 +147,57 @@ const InfantDiagnoses = () => {
       <Box
         direction={'column'}
         gap={'xxlarge'}
-        pad={'medium'}
+        pad={{ left: 'small', bottom: 'xxsmall' }}
         justify={'evenly'}
         align={'center'}
         fill
       >
-        <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
-          <CardHeader justify={'start'} pad={'medium'}>
-            <Box>
-              <Heading pad={'large'} gap={'medium'}>
-                Infant Diagnoses
-              </Heading>
-              <span>
-                <Text size={'large'}>
-                  <strong>Mother: </strong>
-                </Text>
-                <Text size={'large'}>
-                  {data.result.patient.firstName} {data.result.patient.lastName}
-                </Text>
-              </span>
-            </Box>
-          </CardHeader>
-          <CardBody gap={'medium'} pad={'medium'}>
-            <DiagnosesTable data={data.result.diagnoses} />
-          </CardBody>
-        </AppCard>
+        <InfantTabs
+          content={
+            <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
+              <CardHeader justify={'start'} pad={'medium'}>
+                <Box>
+                  <span>
+                    <Text size={'xxlarge'} weight={'bold'}>
+                      Infant Diagnoses
+                    </Text>
+                    <span>
+                      <Text size={'large'}>
+                        {' '}
+                        {data.result.infant.infant.firstName}{' '}
+                        {data.result.infant.infant.lastName}
+                      </Text>
+                    </span>
+                    <span>
+                      <Text size={'medium'}>
+                        {' '}
+                        |{' '}
+                        {format(
+                          parseISO(data.result.infant.infant.dob),
+                          'dd LLL yyy'
+                        )}
+                      </Text>
+                    </span>
+                  </span>
+
+                  <span>
+                    <Text size={'medium'}>
+                      <strong>Mother: </strong>
+                    </Text>
+                    <Text size={'medium'}>
+                      {data.result.infant.mother.firstName}{' '}
+                      {data.result.infant.mother.lastName}
+                    </Text>
+                  </span>
+                </Box>
+              </CardHeader>
+              <CardBody gap={'medium'} pad={'medium'}>
+                <DiagnosesTable data={data.result.diagnoses} />
+              </CardBody>
+            </AppCard>
+          }
+          data={data.result.infant}
+        />
       </Box>
     </Layout>
   );

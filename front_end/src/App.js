@@ -19,8 +19,10 @@ import HospitalAdmissions from './components/Patient/HospitalAdmissions';
 import HospitalAdmissionCreateForm from './components/Patient/HospitalAdmissions/HospitalAdmissionsCreate';
 import LabResults from './components/Patient/LabResults/LabResults';
 import ArvTreatment from './components/Patient/ArvTreatment/ArvTreatment';
-import InfantDiagnoses from './components/Patient/Infants/InfantDiagnoses';
 import SyphilisTreatment from './components/Patient/SyphilisTreatment/SyphilisTreatment';
+import Infant from './components/Infant';
+import InfantHivScreenings from './components/Infant/HivScreenings';
+import InfantDiagnoses from './components/Infant/Diagnoses';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -89,10 +91,7 @@ function App() {
                   path={'/patient/:patientId/admissions'}
                   component={HospitalAdmissions}
                 />
-                <Route
-                  path={'/patient/:patientId/infant/diagnoses'}
-                  component={InfantDiagnoses}
-                />
+
                 <Route
                   path={'/patient/:patientId/lab_results'}
                   component={LabResults}
@@ -105,6 +104,15 @@ function App() {
                   path={'/patient/:patientId/syphilisTreatment'}
                   component={SyphilisTreatment}
                 />
+                <Route
+                  path={'/patient/:patientId/infant/:infantId/hivScreenings'}
+                  component={InfantHivScreenings}
+                />
+                <Route
+                  path={'/patient/:patientId/infant/:infantId/diagnoses'}
+                  component={InfantDiagnoses}
+                />
+                <Route path={'/patient/:patientId/infant'} component={Infant} />
                 <Route
                   path={'/patient/:patientId'}
                   component={PatientSummary}

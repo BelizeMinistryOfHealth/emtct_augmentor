@@ -14,7 +14,7 @@ import (
 
 type infantDiagnosesResponse struct {
 	Diagnoses []models.InfantDiagnoses `json:"diagnoses"`
-	Patient   models.PatientBasicInfo  `json:"patient"`
+	Infant    models.Infant            `json:"infant"`
 }
 
 func (a *App) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,20 +23,28 @@ func (a *App) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	case http.MethodGet:
 		vars := mux.Vars(r)
-		id := vars["motherId"]
-		motherId, err := strconv.Atoi(id)
+		id := vars["infantId"]
+		infantId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{"infantId": id}).WithError(err).
+				Error("the infant id is not a valid number")
+			http.Error(w, "infant id must be a numeric value", http.StatusBadRequest)
+			return
+		}
+		mId := vars["motherId"]
+		motherId, err := strconv.Atoi(mId)
 		if err != nil {
 			log.WithFields(log.Fields{"motherId": id}).WithError(err).
 				Error("the mother id is not a valid number")
-			http.Error(w, "motherId must be a numeric value", http.StatusBadRequest)
+			http.Error(w, "mother id must be a numeric value", http.StatusBadRequest)
 			return
 		}
 		token := r.Context().Value("user").(JwtToken)
 		user := token.Email
-		diagnoses, err := a.AcsisDb.InfantDiagnoses(motherId)
+		diagnoses, err := a.AcsisDb.FindInfantDiagnoses(infantId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"motherId": motherId,
+				"infantId": infantId,
 				"user":     user,
 				"handler":  "InfantDiagnosesHandler",
 			}).
@@ -49,25 +57,21 @@ func (a *App) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
 		if diagnoses == nil {
 			diagnoses = []models.InfantDiagnoses{}
 		}
-		patientInfo, err := a.AcsisDb.FindPatientBasicInfo(motherId)
+
+		infantInfo, err := a.AcsisDb.FindPregnancyInfant(motherId)
 		if err != nil {
 			log.WithFields(log.Fields{
+				"infantId": infantId,
 				"motherId": motherId,
 				"user":     user,
-			}).
-				WithError(err).
-				Error("error retrieving patient basic info")
+			}).WithError(err).Error("could not find infant info")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
-		}
-		patient := models.PatientBasicInfo{}
-		if patientInfo != nil {
-			patient = *patientInfo
 		}
 
 		response := infantDiagnosesResponse{
 			Diagnoses: diagnoses,
-			Patient:   patient,
+			Infant:    *infantInfo,
 		}
 		result, err := json.Marshal(response)
 		if err != nil {

@@ -23,6 +23,10 @@ const Layout = ({ children }) => {
             label: 'Current Pregnancy',
             link: `/patient/${patientId}/current_pregnancy`,
           },
+          {
+            label: 'Infant',
+            link: `/patient/${patientId}/infant`,
+          },
           { label: 'Lab Results', link: `/patient/${patientId}/lab_results` },
           { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
           {
@@ -32,10 +36,6 @@ const Layout = ({ children }) => {
           {
             label: 'Syphilis Treatment',
             link: `/patient/${patientId}/syphilisTreatment`,
-          },
-          {
-            label: 'Infant Diagnoses',
-            link: `/patient/${patientId}/infant/diagnoses`,
           },
           {
             label: 'Hospital/Clinic Admissions',

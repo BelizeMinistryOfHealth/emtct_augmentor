@@ -1,0 +1,90 @@
+import { Box, Tab, Tabs, ThemeContext } from 'grommet';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
+
+const colors = {
+  border: '#999999',
+  'border-strong': '#666666',
+  'border-weak': '#BBBBBB',
+  'active-background': 'background-contrast',
+  'active-text': 'text',
+};
+
+const customTheme = {
+  global: {
+    colors,
+  },
+  tab: {
+    border: {
+      disabled: {
+        color: 'border-weak',
+      },
+    },
+    disabled: {
+      color: 'text-weak',
+    },
+  },
+};
+
+const TabsItem = ({ content, onClickTab }) => {
+  const [index, setIndex] = React.useState(0);
+  const onActive = (nextIndex) => {
+    setIndex(nextIndex);
+    onClickTab(nextIndex);
+  };
+  return (
+    <Box gap='medium' pad='medium' fill={'horizontal'} alignSelf={'start'}>
+      <Tabs
+        activeIndex={index}
+        onActive={onActive}
+        alignControls={'start'}
+        alignContent={'start'}
+        fill={'horizontal'}
+      >
+        <Tab title={'Info'}>{content}</Tab>
+        <Tab title={'HIV Screenings'}>
+          <Box margin='small'>The second tab is active.</Box>
+        </Tab>
+        <Tab title={'Diagnoses'}>
+          <Box margin='small'>The third tab is active.</Box>
+        </Tab>
+      </Tabs>
+    </Box>
+  );
+};
+
+const InfantTabs = ({ content, data }) => {
+  const { mother, infant } = data;
+  const history = useHistory();
+  const onClickTab = (nextIndex) => {
+    switch (nextIndex) {
+      case 0:
+        history.push(`/patient/${mother.patientId}/infant/${infant.patientId}`);
+        break;
+      case 1:
+        history.push(
+          `/patient/${mother.patientId}/infant/${infant.patientId}/hivScreenings`
+        );
+        break;
+      case 2:
+        history.push(
+          `/patient/${mother.patientId}/infant/${infant.patientId}/diagnoses`
+        );
+        break;
+    }
+  };
+  return (
+    <Box
+      fill={'horizontal'}
+      pad={{ left: 'xxsmall', top: 'xxsmall' }}
+      alignSelf={'start'}
+      alignContent={'start'}
+    >
+      <ThemeContext.Extend value={customTheme}>
+        <TabsItem content={content} onClickTab={onClickTab} />
+      </ThemeContext.Extend>
+    </Box>
+  );
+};
+
+export default InfantTabs;
