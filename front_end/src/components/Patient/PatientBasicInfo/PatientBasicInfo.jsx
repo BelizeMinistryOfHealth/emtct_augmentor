@@ -94,10 +94,12 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
             {ethnicity}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {hiv ? 'Yes' : 'No'}
+            {hiv ? 'Positive' : 'Negative'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {format(parseISO(hivDiagnosisDate), 'dd LLL yyyy')}
+            {hivDiagnosisDate
+              ? format(parseISO(hivDiagnosisDate), 'dd LLL yyyy')
+              : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {nextOfKin.name}

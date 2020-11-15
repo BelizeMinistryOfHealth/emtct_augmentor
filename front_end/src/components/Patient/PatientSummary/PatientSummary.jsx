@@ -21,7 +21,6 @@ const PatientSummary = (props) => {
       patient = contents;
       break;
     case 'hasError':
-      console.dir({ contents });
       return contents.message;
     case 'loading':
       return 'Loading....';

@@ -10,7 +10,9 @@ const Navbar = (props) => {
     isAuthenticated && (
       <Header background={'dark-1'} pad={'small'}>
         <Box direction={'row'} align={'center'} gap={'small'}>
-          <Anchor color={'white'}>EMTCT Project | {user.name}</Anchor>
+          <Anchor color={'white'} href={'/'}>
+            EMTCT Project | {user.name}
+          </Anchor>
         </Box>
         <Box direction={'row'} align={'end'} gap={'small'}>
           <LogoutButton />

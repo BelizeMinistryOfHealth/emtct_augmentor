@@ -28,13 +28,42 @@ func NewAcsisConnection(cnf *config.DbConf) (*AcsisDb, error) {
 	return &AcsisDb{db}, nil
 }
 
+func (d *AcsisDb) FindHivDiagnoses(patientId int) ([]models.Diagnosis, error) {
+	stmt := `SELECT aaed.encounter_diagnosis_id,
+       		e.patient_id,
+			aai10d.name, 
+			aaed.diagnosis_time 
+		FROM acsis_adt_encounters AS e
+		INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
+		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
+		WHERE e.patient_id=$1
+		AND  aaed.disease_id IN (473, 474, 475, 476, 477, 9921, 32590, 33195) -- the HIV Test
+		ORDER BY aaed.diagnosis_time DESC;`
+
+	var diagnoses []models.Diagnosis
+	rows, err := d.Query(stmt, patientId)
+	defer rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving the patient's hiv diagnoses from acsis: %+v", err)
+	}
+	for rows.Next() {
+		var d models.Diagnosis
+		err := rows.Scan(&d.Id, &d.PatientId, &d.Name, &d.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning patient's hiv diagnosis from acsis: %+v", err)
+		}
+		diagnoses = append(diagnoses, d)
+	}
+	return diagnoses, nil
+}
+
 // FindByPatientId searches for a patient who is currently pregnant and is HIV+.
 // A patient is considered pregnant if she has a record in the acsis_hc_pregnancies
 func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 	// we only want patients who are currently pregnant or how gave birth no later than 18 months ago.
 	//startDate := time.Now().AddDate(-1, -6, 0)
 	//dateLimit := startDate.Format(layoutISO)
-	stmt := `SELECT p.patient_id, ahp.pregnancy_id, ed.diagnosis_time,
+	stmt := `SELECT p.patient_id, ahp.pregnancy_id,
 		l.first_name, l.last_name, l.middle_name,
 		p.birth_date, p.ssi_number,p.birth_place, concat(l2.first_name, ' ', l2.last_name) as next_of_kin,
        	ac2.phone1 as next_of_kin_phone,
@@ -53,8 +82,8 @@ func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 		LEFT JOIN acsis_contacts ac2 ON l2.contact_id = ac2.contact_id
 		LEFT JOIN acsis_ethnicities ae on p.ethnicity_id = ae.ethnicity_id
 		LEFT JOIN acsis_hc_schooling_levels ahsl on p.schooling_level_id = ahsl.schooling_level_id
-		WHERE ed.disease_id IN (473, 474, 475, 476, 477, 9921, 32590, 33195) -- the HIV Test
-		AND p.patient_id = $1
+-- 		WHERE ed.disease_id IN (473, 474, 475, 476, 477, 9921, 32590, 33195) -- the HIV Test
+		WHERE p.patient_id = $1
 	    ORDER BY ed.diagnosis_time DESC
 		LIMIT 1;`
 
@@ -64,7 +93,6 @@ func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 	var nokPhone sql.NullString
 	err := row.Scan(&patient.Id,
 		&patient.PregnancyId,
-		&patient.HivDiagnosisDate,
 		&patient.FirstName,
 		&patient.LastName,
 		&patient.MiddleName,
@@ -81,7 +109,6 @@ func (d *AcsisDb) FindByPatientId(id int) (*models.Patient, error) {
 	case sql.ErrNoRows:
 		return nil, nil
 	case nil:
-		patient.Hiv = true
 		if nok.Valid {
 			patient.NextOfKin = nok.String
 		}

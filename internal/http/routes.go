@@ -52,6 +52,26 @@ func (a *App) RetrievePatient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	// We assume that the patient's HIV status is negative.
+	patient.Hiv = false
+
+	// Retrieve all the hiv diagnoses so we can get the
+	// patient's HIV status and first date of diagnoses.
+	hivDiagnoses, err := a.AcsisDb.FindHivDiagnoses(id)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"patientId": id,
+			"patient":   patient,
+			"handler":   "RetrievePatient",
+		}).WithError(err).Error("error retrieving patient hiv diagnoses: %+v", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	// If there are any diagnoses, we retrieve the first diagnosis and use its date as the diagnosis date.
+	if len(hivDiagnoses) > 0 {
+		patient.Hiv = true
+		patient.HivDiagnosisDate = &hivDiagnoses[0].Date
+	}
 
 	diagnoses, err := a.AcsisDb.FindDiagnosesBeforePregnancy(id)
 	if err != nil {
