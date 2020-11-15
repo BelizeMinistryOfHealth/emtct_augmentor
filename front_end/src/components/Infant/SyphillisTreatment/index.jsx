@@ -6,9 +6,11 @@ import AppCard from '../../AppCard/AppCard';
 import AppCardHeader from '../../AppCard/AppCardHeader';
 import Layout from '../../Layout/Layout';
 import Prescriptions from '../../Prescriptions';
+import Spinner from '../../Spinner';
+import InfantTabs from '../InfantTabs';
 
-const SyphilisTreatment = (props) => {
-  const { patientId } = useParams();
+const InfantSyphillisTreatment = (props) => {
+  const { patientId, infantId } = useParams();
   const { httpInstance } = useHttpApi();
   const [treatmentData, setTreatmentData] = React.useState({
     data: undefined,
@@ -20,7 +22,7 @@ const SyphilisTreatment = (props) => {
     const getTreatment = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/syphilisTreatments`
+          `/patient/${patientId}/infant/${infantId}/syphilisTreatments`
         );
         setTreatmentData({
           data: result.data,
@@ -36,7 +38,7 @@ const SyphilisTreatment = (props) => {
     if (treatmentData.loading) {
       getTreatment();
     }
-  }, [treatmentData, httpInstance, patientId]);
+  }, [infantId, patientId, treatmentData, httpInstance]);
 
   if (treatmentData.loading) {
     return (
@@ -49,11 +51,30 @@ const SyphilisTreatment = (props) => {
           align={'center'}
           fill
         >
-          <Text>Loading...</Text>
+          <Text>Loading....</Text>
+          <Spinner />
         </Box>
       </Layout>
     );
   }
+
+  if (treatmentData.error) {
+    return (
+      <Layout>
+        <Box
+          direction={'column'}
+          gap={'medium'}
+          pad={'medium'}
+          justify={'evenly'}
+          align={'center'}
+          fill
+        >
+          <Text>Ooops.. An error occurred.</Text>
+        </Box>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <Box
@@ -64,20 +85,22 @@ const SyphilisTreatment = (props) => {
         align={'center'}
         fill
       >
-        <AppCard fill={'horizontal'}>
-          <AppCardHeader
-            gap={'medium'}
-            pad={'medium'}
-            title={'Syphilis Treatments'}
-            patient={treatmentData.data.patient}
-          />
-          <CardBody gap={'medium'} pad={'medium'}>
-            <Prescriptions data={treatmentData.data}></Prescriptions>
-          </CardBody>
-        </AppCard>
+        <InfantTabs data={treatmentData.data.infant}>
+          <AppCard fill={'horizontal'}>
+            <AppCardHeader
+              gap={'medium'}
+              pad={'medium'}
+              title={'Syphilis Treatments'}
+              patient={treatmentData.data.infant.infant}
+            />
+            <CardBody gap={'medium'} pad={'medium'}>
+              <Prescriptions data={treatmentData.data} />
+            </CardBody>
+          </AppCard>
+        </InfantTabs>
       </Box>
     </Layout>
   );
 };
 
-export default SyphilisTreatment;
+export default InfantSyphillisTreatment;

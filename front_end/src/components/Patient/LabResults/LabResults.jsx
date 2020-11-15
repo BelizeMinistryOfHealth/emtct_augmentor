@@ -17,8 +17,8 @@ import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import { fetchPregnancyLabResults } from '../../../api/patient';
 import Layout from '../../Layout/Layout';
-import { InProgress } from 'grommet-icons';
 import AppCard from '../../AppCard/AppCard';
+import Spinner from '../../Spinner';
 
 const labResultsRow = (data) => {
   return (
@@ -121,19 +121,21 @@ const LabResults = (props) => {
 
   if (labData.loading) {
     return (
-      <Box
-        direction={'column'}
-        gap={'large'}
-        pad={'large'}
-        justify={'center'}
-        align={'center'}
-        fill
-      >
-        <Heading>
-          <Text>Loading </Text>
-          <InProgress />
-        </Heading>
-      </Box>
+      <Layout>
+        <Box
+          direction={'column'}
+          gap={'large'}
+          pad={'large'}
+          justify={'center'}
+          align={'center'}
+          fill
+        >
+          <Heading>
+            <Text>Loading </Text>
+            <Spinner />
+          </Heading>
+        </Box>
+      </Layout>
     );
   }
 

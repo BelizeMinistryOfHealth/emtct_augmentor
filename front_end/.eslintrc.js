@@ -3,6 +3,7 @@ module.exports = {
   ignorePatterns: ['node_modules/'],
   // parser: "@typescript-eslint/parser",
   plugins: ['react-hooks'],
+  parser: 'babel-eslint',
   extends: [
     'eslint:recommended',
     'plugin:prettier/recommended',

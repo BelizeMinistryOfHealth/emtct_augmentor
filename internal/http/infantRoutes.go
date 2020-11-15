@@ -33,6 +33,13 @@ func (a *App) InfantHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		if infant == nil {
+			log.WithFields(log.Fields{
+				"motherId": motherId,
+			}).Error("no infant exists for current pregnancy")
+			http.Error(w, "no infant exists for relevant pregnancy", http.StatusNotFound)
+			return
+		}
 		result, err := json.Marshal(infant)
 		if err != nil {
 			log.WithFields(log.Fields{

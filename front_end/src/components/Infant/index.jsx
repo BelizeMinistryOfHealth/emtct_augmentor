@@ -76,22 +76,35 @@ const Infant = () => {
   });
 
   React.useEffect(() => {
-    const getInfant = async () => {
-      try {
-        const result = await httpInstance.get(`/patient/${patientId}/infant`);
-        setInfantData({
-          data: result.data,
-          loading: false,
-          error: undefined,
+    const getInfant = () => {
+      httpInstance
+        .get(`/patient/${patientId}/infant`)
+        .then((result) => {
+          // eslint-disable-next-line no-undef
+          console.dir({ result });
+          setInfantData({
+            data: result.data,
+            loading: false,
+            error: undefined,
+          });
+        })
+        .catch((e) => {
+          if (e.response.status === 404) {
+            setInfantData({
+              data: undefined,
+              loading: false,
+              error: 'NOT_FOUND',
+            });
+          } else {
+            // eslint-disable-next-line no-undef
+            console.error({ error: e.toJSON(), status: e.response.status });
+            setInfantData({
+              data: undefined,
+              loading: false,
+              error: e,
+            });
+          }
         });
-      } catch (e) {
-        console.error(e);
-        setInfantData({
-          data: undefined,
-          loading: false,
-          error: e,
-        });
-      }
     };
 
     if (infantData.loading) {
@@ -119,21 +132,42 @@ const Infant = () => {
     );
   }
 
+  if (infantData.error && infantData.error === 'NOT_FOUND') {
+    return (
+      <Layout>
+        <Box
+          direction={'column'}
+          gap={'large'}
+          pad={'large'}
+          justify={'center'}
+          align={'center'}
+          fill
+        >
+          <Heading>
+            <Text>No infant found four current pregnancy.</Text>
+          </Heading>
+        </Box>
+      </Layout>
+    );
+  }
+
   if (infantData.error) {
-    <Layout>
-      <Box
-        direction={'column'}
-        gap={'large'}
-        pad={'large'}
-        justify={'center'}
-        align={'center'}
-        fill
-      >
-        <Heading>
-          <Text>Ooops. An error occurred while loading the data.</Text>
-        </Heading>
-      </Box>
-    </Layout>;
+    return (
+      <Layout>
+        <Box
+          direction={'column'}
+          gap={'large'}
+          pad={'large'}
+          justify={'center'}
+          align={'center'}
+          fill
+        >
+          <Heading>
+            <Text>Ooops. An error occurred while loading the data.</Text>
+          </Heading>
+        </Box>
+      </Layout>
+    );
   }
 
   return (

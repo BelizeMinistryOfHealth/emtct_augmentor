@@ -1,5 +1,4 @@
 import { Box, Heading, Text } from 'grommet';
-import { InProgress } from 'grommet-icons';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchCurrentPregnancy } from '../../../../api/patient';
@@ -10,6 +9,7 @@ import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import AppTabs from '../../Tabs/Tabs';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
+import Spinner from '../../../Spinner';
 
 const BasicInfoComponent = ({ currentPregnancy }) => {
   return (
@@ -78,6 +78,7 @@ const CurrentPregnancy = (props) => {
           error: undefined,
         });
       } catch (e) {
+        // eslint-disable-next-line no-undef
         console.error(e);
         setPregnancyData({ currentPregnancy: {}, loading: false, error: e });
       }
@@ -100,7 +101,7 @@ const CurrentPregnancy = (props) => {
         >
           <Heading>
             <Text>Loading </Text>
-            <InProgress />
+            <Spinner />
           </Heading>
         </Box>
       </Layout>

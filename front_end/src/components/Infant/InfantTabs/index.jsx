@@ -68,6 +68,11 @@ const InfantTabs = ({ data, children }) => {
           `/patient/${mother.patientId}/infant/${infant.patientId}/diagnoses`
         );
         break;
+      case 3:
+        history.push(
+          `/patient/${mother.patientId}/infant/${infant.patientId}/syphilisTreatment`
+        );
+        break;
     }
   };
   return (

@@ -1,31 +1,57 @@
-import { Box, Text } from 'grommet';
+import { Box, Heading, Text } from 'grommet';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useRecoilValueLoadable } from 'recoil';
-import { patientSelector } from '../../../state';
+import { fetchPatient } from '../../../api/patient';
+import { useHttpApi } from '../../../providers/HttpProvider';
 import ErrorBoundary from '../../ErrorBoundary';
 import Layout from '../../Layout/Layout';
 import DiagnosisHistory from '../Diagnoses/Diagnoses';
 import ObstetricHistory from '../ObstetricHistory/ObstetricHistory';
 import PatientBasicInfo from '../PatientBasicInfo/PatientBasicInfo';
+import Spinner from '../../Spinner';
 
 const PatientSummary = (props) => {
   const { patientId } = useParams();
+  const { httpInstance } = useHttpApi();
+  const [patient, setPatient] = React.useState();
+  const [loading, setLoading] = React.useState(true);
+  const [, setError] = React.useState(undefined);
+  React.useEffect(() => {
+    const getPatient = () => {
+      fetchPatient(patientId, httpInstance)
+        .then((response) => {
+          setPatient(response);
+          setLoading(false);
+        })
+        .catch((e) => {
+          setLoading(false);
+          setPatient(undefined);
+          setError(e.toJSON());
+        });
+    };
+    if (loading) {
+      getPatient();
+    }
+  }, [patientId, httpInstance, loading]);
 
-  const { state, contents } = useRecoilValueLoadable(
-    patientSelector(patientId)
-  );
-  let patient = {};
-  switch (state) {
-    case 'hasValue':
-      patient = contents;
-      break;
-    case 'hasError':
-      return contents.message;
-    case 'loading':
-      return 'Loading....';
-    default:
-      return '';
+  if (loading) {
+    return (
+      <Layout>
+        <Box
+          direction={'column'}
+          fill={'horizontal'}
+          gap={'large'}
+          pad={'large'}
+          justify={'center'}
+          align={'center'}
+        >
+          <Heading>
+            <Text>Loading </Text>
+            <Spinner />
+          </Heading>
+        </Box>
+      </Layout>
+    );
   }
 
   if (patient && patient.basicInfo) {

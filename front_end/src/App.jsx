@@ -22,24 +22,27 @@ import Infant from './components/Infant';
 import InfantHivScreenings from './components/Infant/HivScreenings';
 import InfantDiagnoses from './components/Infant/Diagnoses';
 import HivScreeningCreateForm from './components/Infant/HivScreenings/HivScreeningCreate';
+import InfantSyphillisTreatment from './components/Infant/SyphillisTreatment';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
   const [idToken, setIdToken] = React.useState();
+  // eslint-disable-next-line no-undef
   const { REACT_APP_API_URL } = process.env;
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      console.log('getting token');
       (async () => {
         try {
           const idToken = await getIdTokenClaims();
           setIdToken(idToken.__raw);
         } catch (e) {
+          // eslint-disable-next-line no-undef
           console.error('error fetching token: ', e);
         }
       })();
     } else {
+      // eslint-disable-next-line no-undef
       console.log('not authenticated');
     }
   }, [isAuthenticated, getIdTokenClaims, setIdToken]);
@@ -108,6 +111,12 @@ function App() {
                 <Route
                   path={'/patient/:patientId/infant/:infantId/diagnoses'}
                   component={InfantDiagnoses}
+                />
+                <Route
+                  path={
+                    '/patient/:patientId/infant/:infantId/syphilisTreatment'
+                  }
+                  component={InfantSyphillisTreatment}
                 />
                 <Route path={'/patient/:patientId/infant'} component={Infant} />
                 <Route
