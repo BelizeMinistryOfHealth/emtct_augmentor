@@ -84,8 +84,11 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	//Infant Syphilis Treatment
 	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisTreatments", authHandlers.Then(app.InfantSyphilisTreatmentHandler)).Methods(http.MethodGet, http.MethodOptions)
 
+	//Infant Syphilis Screening
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisScreenings", authHandlers.Then(app.InfantSyphilisTreatmentHandler)).Methods(http.MethodGet, http.MethodOptions)
+
 	// Infants
-	r.HandleFunc("/patient/{patientId}/infant", authHandlers.Then(app.InfantHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/{patientId}/infant", authHandlers.Then(app.InfantSyphilisScreeningHandler)).Methods(http.MethodOptions, http.MethodGet)
 
 	fs := http.FileServer(http.Dir("./front_end/build/"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
