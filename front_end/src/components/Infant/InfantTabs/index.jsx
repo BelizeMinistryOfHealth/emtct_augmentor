@@ -44,7 +44,7 @@ const TabsItem = ({ content, onClickTab }) => {
         <Tab title={'Info'}>{content}</Tab>
         <Tab title={'HIV Screenings'}></Tab>
         <Tab title={'Diagnoses'}></Tab>
-        <Tab title={'Syphilis Screening'}></Tab>
+        <Tab title={'Syphilis Treatments'}></Tab>
       </Tabs>
     </Box>
   );
