@@ -1,0 +1,2 @@
+DELETE FROM syphilis_treatment_partner;
+DROP TABLE syphilis_treatment_partner;
