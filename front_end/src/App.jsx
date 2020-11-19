@@ -23,6 +23,7 @@ import InfantHivScreenings from './components/Infant/HivScreenings';
 import InfantDiagnoses from './components/Infant/Diagnoses';
 import HivScreeningCreateForm from './components/Infant/HivScreenings/HivScreeningCreate';
 import InfantSyphillisTreatment from './components/Infant/SyphillisTreatment';
+import InfantSyphilisScreenings from './components/Infant/SyphilisScreenings';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -117,6 +118,12 @@ function App() {
                     '/patient/:patientId/infant/:infantId/syphilisTreatment'
                   }
                   component={InfantSyphillisTreatment}
+                />
+                <Route
+                  path={
+                    '/patient/:patientId/infant/:infantId/syphilisScreenings'
+                  }
+                  component={InfantSyphilisScreenings}
                 />
                 <Route path={'/patient/:patientId/infant'} component={Infant} />
                 <Route

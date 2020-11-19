@@ -45,6 +45,7 @@ const TabsItem = ({ content, onClickTab }) => {
         <Tab title={'HIV Screenings'}></Tab>
         <Tab title={'Diagnoses'}></Tab>
         <Tab title={'Syphilis Treatments'}></Tab>
+        <Tab title={'Syphilis Screenings'}></Tab>
       </Tabs>
     </Box>
   );
@@ -71,6 +72,11 @@ const InfantTabs = ({ data, children }) => {
       case 3:
         history.push(
           `/patient/${mother.patientId}/infant/${infant.patientId}/syphilisTreatment`
+        );
+        break;
+      case 4:
+        history.push(
+          `/patient/${mother.patientId}/infant/${infant.patientId}/syphilisScreenings`
         );
         break;
     }

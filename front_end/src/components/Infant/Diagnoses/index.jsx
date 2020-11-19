@@ -173,7 +173,7 @@ const InfantDiagnoses = () => {
                       |{' '}
                       {format(
                         parseISO(data.result.infant.infant.dob),
-                        'dd LLL yyy'
+                        'dd LLL yyyy'
                       )}
                     </Text>
                   </span>
