@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 
 	"moh.gov.bz/mch/emtct/internal/models"
@@ -41,6 +42,7 @@ ORDER BY date DESC;
 	var treatments []models.SyphilisTreatment
 	for rows.Next() {
 		var t models.SyphilisTreatment
+		var updatedBy sql.NullString
 		err := rows.Scan(
 			&t.Id,
 			&t.PatientId,
@@ -50,10 +52,13 @@ ORDER BY date DESC;
 			&t.Date,
 			&t.CreatedBy,
 			&t.CreatedAt,
-			&t.UpdatedBy,
+			&updatedBy,
 			&t.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning syphilis treatment for partner query results: %+v", err)
+		}
+		if updatedBy.Valid {
+			t.UpdatedBy = updatedBy.String
 		}
 		treatments = append(treatments, t)
 	}

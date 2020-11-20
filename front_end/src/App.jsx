@@ -25,6 +25,7 @@ import HivScreeningCreateForm from './components/Infant/HivScreenings/HivScreeni
 import InfantSyphillisTreatment from './components/Infant/SyphillisTreatment';
 import InfantSyphilisScreenings from './components/Infant/SyphilisScreenings';
 import PartnerSyphilisTreatments from './components/Partner/SyphilisTreatments/PartnerSyphilisTreatments';
+import PartnerSyphilisTreatmentCreate from './components/Partner/SyphilisTreatments/PartnerSyphilisTreatmentCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -125,6 +126,10 @@ function App() {
                     '/patient/:patientId/infant/:infantId/syphilisScreenings'
                   }
                   component={InfantSyphilisScreenings}
+                />
+                <Route
+                  path={'/patient/:patientId/partners/syphilisTreatments/new'}
+                  component={PartnerSyphilisTreatmentCreate}
                 />
                 <Route
                   path={'/patient/:patientId/partners/syphilisTreatments'}

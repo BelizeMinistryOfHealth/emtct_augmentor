@@ -1,6 +1,7 @@
 import { parseISO, format } from 'date-fns';
 import {
   Box,
+  Button,
   CardBody,
   CardHeader,
   Heading,
@@ -11,8 +12,9 @@ import {
   TableRow,
   Text,
 } from 'grommet';
+import { Add } from 'grommet-icons';
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import AppCard from '../../AppCard/AppCard';
 import Layout from '../../Layout/Layout';
@@ -89,6 +91,7 @@ const PartnerSyphilisTreatments = () => {
     loading: true,
     error: undefined,
   });
+  const history = useHistory();
 
   React.useEffect(() => {
     const getTreatments = () => {
@@ -155,19 +158,36 @@ const PartnerSyphilisTreatments = () => {
         fill
       >
         <PartnerTabs data={treatments.data.patient}>
-          <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
+          <AppCard overflow={'scroll'} pad={'small'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
-              <Box>
-                <span>
-                  <Text size={'xxlarge'} weight={'bold'}>
-                    Partner Syphilis Treatments
+              <Box direction={'row'} align={'start'} fill={'horizontal'}>
+                <Box fill={'horizontal'}>
+                  <span>
+                    <Text size={'xxlarge'} weight={'bold'}>
+                      Partner Syphilis Treatments
+                    </Text>
+                  </span>
+                  <Text size={'large'}>
+                    {' '}
+                    {treatments.data.patient.firstName}{' '}
+                    {treatments.data.patient.lastName}
                   </Text>
-                </span>
-                <Text size={'large'}>
-                  {' '}
-                  {treatments.data.patient.firstName}{' '}
-                  {treatments.data.patient.lastName}
-                </Text>
+                </Box>
+                <Box
+                  align={'start'}
+                  fill={'horizontal'}
+                  direction={'row-reverse'}
+                >
+                  <Button
+                    icon={<Add />}
+                    label={'add'}
+                    onClick={() =>
+                      history.push(
+                        `/patient/${patientId}/partners/syphilisTreatments/new`
+                      )
+                    }
+                  />
+                </Box>
               </Box>
             </CardHeader>
             <CardBody gap={'medium'} pad={'medium'}>

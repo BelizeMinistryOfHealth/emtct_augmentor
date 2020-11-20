@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
@@ -136,6 +138,14 @@ func (a *App) InfantSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+type newSyphilisTreatmentRequest struct {
+	PatientId  int       `json:"patientId"`
+	Medication string    `json:"medication"`
+	Dosage     string    `json:"dosage"`
+	Comments   string    `json:"comments"`
+	Date       time.Time `json:"date"`
+}
+
 func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "PartnerSyphilisTreatmentHandler"
 	switch r.Method {
@@ -185,6 +195,61 @@ func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Req
 				"user":     user,
 				"response": response,
 				"handler":  handlerName,
+			}).WithError(err).Error("error encoding response")
+		}
+	case http.MethodPost:
+		defer r.Body.Close()
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		vars := mux.Vars(r)
+		id := vars["patientId"]
+		patientId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"handler":   handlerName,
+				"patientId": id,
+			}).WithError(err).Error("patient id must be a valid number")
+			http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
+			return
+		}
+		var treatmentReq newSyphilisTreatmentRequest
+		if err := json.NewDecoder(r.Body).Decode(&treatmentReq); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"patientId": patientId,
+				"body":      r.Body,
+				"handler":   handlerName,
+			}).WithError(err).Error("error decoding request")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		treatment := models.SyphilisTreatment{
+			Id:         uuid.New().String(),
+			PatientId:  treatmentReq.PatientId,
+			Medication: treatmentReq.Medication,
+			Dosage:     treatmentReq.Dosage,
+			Comments:   treatmentReq.Comments,
+			Date:       treatmentReq.Date,
+			CreatedBy:  user,
+			CreatedAt:  time.Now(),
+		}
+		if err := a.Db.AddPartnerSyphilisTreatment(treatment); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"request":   treatmentReq,
+				"treatment": treatment,
+				"handler":   handlerName,
+			}).WithError(err).Error("error adding a partner's syphilis treatment")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(treatment); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"treatment": treatment,
+				"handler":   handlerName,
 			}).WithError(err).Error("error encoding response")
 		}
 	}
