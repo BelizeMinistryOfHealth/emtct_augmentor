@@ -165,7 +165,6 @@ const InfantSyphilisScreenings = () => {
     );
   }
 
-  console.dir({ screeningsData });
   return (
     <Layout>
       <Box

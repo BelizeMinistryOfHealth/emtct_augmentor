@@ -135,3 +135,57 @@ func (a *App) InfantSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Requ
 		fmt.Fprintf(w, string(result))
 	}
 }
+
+func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "PartnerSyphilisTreatmentHandler"
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		vars := mux.Vars(r)
+		id := vars["patientId"]
+		patientId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"patientId": id,
+			}).WithError(err).Error("patient id must be a number")
+			http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
+			return
+		}
+		treatments, err := a.Db.FindPartnerSyphilisTreatments(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"patientId": patientId,
+				"handler":   handlerName,
+			}).WithError(err).Error("error while finding partner's syphilis treatment")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		patient, err := a.AcsisDb.FindPatientBasicInfo(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"patientId": patientId,
+				"handler":   handlerName,
+			}).WithError(err).Error("error querying patient's basic info")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		response := map[string]interface{}{
+			"patient":    patient,
+			"treatments": treatments,
+		}
+		w.Header().Add("Content-type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.WithFields(log.Fields{
+				"user":     user,
+				"response": response,
+				"handler":  handlerName,
+			}).WithError(err).Error("error encoding response")
+		}
+	}
+}
