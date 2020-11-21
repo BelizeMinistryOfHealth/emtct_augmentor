@@ -252,5 +252,38 @@ func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Req
 				"handler":   handlerName,
 			}).WithError(err).Error("error encoding response")
 		}
+	case http.MethodPut:
+		defer r.Body.Close()
+		token := r.Context().Value("user").(JwtToken)
+		user := token.Email
+		var treatment models.SyphilisTreatment
+		if err := json.NewDecoder(r.Body).Decode(&treatment); err != nil {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"body":    r.Body,
+				"handler": handlerName,
+			}).WithError(err).Error("error decoding the request")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		treatment.UpdatedBy = user
+		today := time.Now()
+		treatment.UpdatedAt = &today
+		if err := a.Db.UpdatePartnerSyphilisTreatment(treatment); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"treatment": treatment,
+				"handler":   handlerName,
+			}).WithError(err).Error("failed to update treatment")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(treatment); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"treatment": treatment,
+				"handler":   handlerName,
+			}).WithError(err).Error("")
+		}
 	}
 }

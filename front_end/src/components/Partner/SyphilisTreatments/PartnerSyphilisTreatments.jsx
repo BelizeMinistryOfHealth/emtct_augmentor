@@ -5,6 +5,7 @@ import {
   CardBody,
   CardHeader,
   Heading,
+  Layer,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +13,7 @@ import {
   TableRow,
   Text,
 } from 'grommet';
-import { Add } from 'grommet-icons';
+import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
@@ -20,8 +21,9 @@ import AppCard from '../../AppCard/AppCard';
 import Layout from '../../Layout/Layout';
 import Spinner from '../../Spinner';
 import PartnerTabs from '../PartnerTabs/PartnerTabs';
+import PartnerSyphilisTreatmentEdit from './PartnerSyphilisTreatmentEdit';
 
-const treatmentRow = (data) => {
+const treatmentRow = (data, onClickEdit) => {
   return (
     <TableRow key={data.id}>
       <TableCell>
@@ -44,11 +46,14 @@ const treatmentRow = (data) => {
           {format(parseISO(data.date), 'dd LLL yyyy')}
         </Text>
       </TableCell>
+      <TableCell onClick={() => onClickEdit(data)}>
+        <Edit />
+      </TableCell>
     </TableRow>
   );
 };
 
-const TreatmentsTable = ({ children, data }) => {
+const TreatmentsTable = ({ children, data, onClickEdit }) => {
   if (!data) {
     return (
       <Box alignContent={'center'}>
@@ -77,7 +82,7 @@ const TreatmentsTable = ({ children, data }) => {
             </TableCell>
           </TableRow>
         </TableHeader>
-        <TableBody>{data.map((d) => treatmentRow(d))}</TableBody>
+        <TableBody>{data.map((d) => treatmentRow(d, onClickEdit))}</TableBody>
       </Table>
     </Box>
   );
@@ -91,6 +96,12 @@ const PartnerSyphilisTreatments = () => {
     loading: true,
     error: undefined,
   });
+  const [editingTreatment, setEditingTreatment] = React.useState(undefined);
+  const onClickEdit = (treatment) => setEditingTreatment(treatment);
+  const onCloseEditScreen = () => {
+    setEditingTreatment(undefined);
+    setTreatments({ data: undefined, loading: true, error: undefined });
+  };
   const history = useHistory();
 
   React.useEffect(() => {
@@ -191,7 +202,40 @@ const PartnerSyphilisTreatments = () => {
               </Box>
             </CardHeader>
             <CardBody gap={'medium'} pad={'medium'}>
-              <TreatmentsTable data={treatments.data.treatments} />
+              {editingTreatment && (
+                <Layer
+                  position={'right'}
+                  full={'vertical'}
+                  onClickOutside={onCloseEditScreen}
+                  modal
+                >
+                  <Box
+                    fill={'vertical'}
+                    overflow={'auto'}
+                    width={'medium'}
+                    pad={'medium'}
+                  >
+                    <Box
+                      flex={false}
+                      direction={'row-responsive'}
+                      justify={'between'}
+                    >
+                      <Heading level={2} margin={'none'}>
+                        Edit
+                      </Heading>
+                      <Button icon={<Close />} onClick={onCloseEditScreen} />
+                    </Box>
+                    <PartnerSyphilisTreatmentEdit
+                      treatment={editingTreatment}
+                      closeEditScreen={onCloseEditScreen}
+                    />
+                  </Box>
+                </Layer>
+              )}
+              <TreatmentsTable
+                data={treatments.data.treatments}
+                onClickEdit={onClickEdit}
+              />
             </CardBody>
           </AppCard>
         </PartnerTabs>

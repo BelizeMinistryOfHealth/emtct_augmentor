@@ -50,48 +50,84 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 
 	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods(http.MethodGet)
 	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods(http.MethodGet)
-	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).Methods(http.MethodOptions, http.MethodPost)
-	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).
+		Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).
+		Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).
+		Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/homeVisits", authHandlers.Then(app.PostHomeVisit)).
+		Methods(http.MethodOptions, http.MethodPost)
+	r.HandleFunc("/patient/{id}/homeVisits", authHandlers.Then(app.FindHomeVisitsByPatient)).
+		Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/homeVisit/{homeVisitId}", authHandlers.Then(app.HomeVisitApi)).
+		Methods(http.MethodGet, http.MethodOptions, http.MethodPut)
 
 	// Contraceptives
-	r.HandleFunc("/patient/{patientId}/contraceptivesUsed", authHandlers.Then(app.ContraceptivesByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
-	r.HandleFunc("/patient/contraceptivesUsed", authHandlers.Then(app.CreateContraceptiveUsedHandler)).Methods(http.MethodOptions, http.MethodPost)
-	r.HandleFunc("/patient/contraceptivesUsed/{contraceptiveId}", authHandlers.Then(app.ContraceptivesApiHandler)).Methods(http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{patientId}/contraceptivesUsed",
+		authHandlers.Then(app.ContraceptivesByPatientHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/contraceptivesUsed", authHandlers.Then(app.CreateContraceptiveUsedHandler)).
+		Methods(http.MethodOptions, http.MethodPost)
+	r.HandleFunc("/patient/contraceptivesUsed/{contraceptiveId}",
+		authHandlers.Then(app.ContraceptivesApiHandler)).
+		Methods(http.MethodOptions, http.MethodPut)
 	// Admissions
-	r.HandleFunc("/patient/{patientId}/hospitalAdmissions", authHandlers.Then(app.HospitalAdmissionsByPatientHandler)).Methods(http.MethodOptions, http.MethodGet)
-	r.HandleFunc("/patient/hospitalAdmissions", authHandlers.Then(app.CreateHospitalAdmissionHandler)).Methods(http.MethodOptions, http.MethodPost)
-	r.HandleFunc("/patient/hospitalAdmissions/{admissionId}", authHandlers.Then(app.HospitalAdmissionsApiHandler)).Methods(http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{patientId}/hospitalAdmissions",
+		authHandlers.Then(app.HospitalAdmissionsByPatientHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/hospitalAdmissions",
+		authHandlers.Then(app.CreateHospitalAdmissionHandler)).
+		Methods(http.MethodOptions, http.MethodPost)
+	r.HandleFunc("/patient/hospitalAdmissions/{admissionId}",
+		authHandlers.Then(app.HospitalAdmissionsApiHandler)).
+		Methods(http.MethodOptions, http.MethodPut)
 	// ARVS
-	r.HandleFunc("/patient/{patientId}/arvs", authHandlers.Then(app.ArvsHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/{patientId}/arvs",
+		authHandlers.Then(app.ArvsHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	// Obstetric History
-	r.HandleFunc("/patient/{patientId}/obstetricHistory", authHandlers.Then(app.ObstetricHistoryHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/{patientId}/obstetricHistory",
+		authHandlers.Then(app.ObstetricHistoryHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	//Syphilis Treatment
-	r.HandleFunc("/patient/{patientId}/syphilisTreatments", authHandlers.Then(app.SyphilisTreatmentHandler)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{patientId}/syphilisTreatments",
+		authHandlers.Then(app.SyphilisTreatmentHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
 
 	// Infant Diagnoses
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/diagnoses", authHandlers.Then(app.InfantDiagnosesHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/diagnoses",
+		authHandlers.Then(app.InfantDiagnosesHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	//Infant HIV Screenings
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings/{screeningId}", authHandlers.Then(app.HivScreeningApi)).Methods(http.MethodOptions, http.MethodPut)
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings", authHandlers.Then(app.HivScreeningsByPatientIdHandler)).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings/{screeningId}",
+		authHandlers.Then(app.HivScreeningApi)).
+		Methods(http.MethodOptions, http.MethodPut)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings",
+		authHandlers.Then(app.HivScreeningsByPatientIdHandler)).
+		Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 
 	//Infant Syphilis Treatment
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisTreatments", authHandlers.Then(app.InfantSyphilisTreatmentHandler)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisTreatments",
+		authHandlers.Then(app.InfantSyphilisTreatmentHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
 
 	//Infant Syphilis Screening
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisScreenings", authHandlers.Then(app.InfantSyphilisScreeningHandler)).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisScreenings",
+		authHandlers.Then(app.InfantSyphilisScreeningHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
 
 	// Infants
-	r.HandleFunc("/patient/{patientId}/infant", authHandlers.Then(app.InfantHandler)).Methods(http.MethodOptions, http.MethodGet)
+	r.HandleFunc("/patient/{patientId}/infant", authHandlers.Then(app.InfantHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	// Partners
-	r.HandleFunc("/patient/{patientId}/partners/syphilisTreatments", authHandlers.Then(app.PartnerSyphilisTreatmentHandler)).Methods(http.MethodOptions, http.MethodGet, http.MethodPost)
+	r.HandleFunc("/patient/{patientId}/partners/syphilisTreatments",
+		authHandlers.Then(app.PartnerSyphilisTreatmentHandler)).
+		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
 
 	fs := http.FileServer(http.Dir("./front_end/build/"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))

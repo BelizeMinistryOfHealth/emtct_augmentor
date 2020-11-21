@@ -64,3 +64,22 @@ ORDER BY date DESC;
 	}
 	return treatments, nil
 }
+
+func (d *EmtctDb) UpdatePartnerSyphilisTreatment(treatment models.SyphilisTreatment) error {
+	stmt := `
+UPDATE syphilis_treatment_partner SET medication_name=$1, dosage=$2, comments=$3, updated_by=$4, updated_at=$5, date=$6
+WHERE id=$7;
+`
+	_, err := d.Exec(stmt,
+		treatment.Medication,
+		treatment.Dosage,
+		treatment.Comments,
+		treatment.UpdatedBy,
+		treatment.UpdatedAt,
+		treatment.Date,
+		treatment.Id)
+	if err != nil {
+		return fmt.Errorf("error updating a partner's syphilis treatment in the database: %+v", err)
+	}
+	return nil
+}
