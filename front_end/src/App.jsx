@@ -26,6 +26,8 @@ import InfantSyphillisTreatment from './components/Infant/SyphillisTreatment';
 import InfantSyphilisScreenings from './components/Infant/SyphilisScreenings';
 import PartnerSyphilisTreatments from './components/Partner/SyphilisTreatments/PartnerSyphilisTreatments';
 import PartnerSyphilisTreatmentCreate from './components/Partner/SyphilisTreatments/PartnerSyphilisTreatmentCreate';
+import ContactTracing from './components/Partner/ContactTracing/ContactTracing';
+import CcontactTracingCreate from './components/Partner/ContactTracing/ContactTracingCreate';
 
 function App() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
@@ -134,6 +136,14 @@ function App() {
                 <Route
                   path={'/patient/:patientId/partners/syphilisTreatments'}
                   component={PartnerSyphilisTreatments}
+                />
+                <Route
+                  path={'/patient/:patientId/partners/contactTracing/new'}
+                  component={CcontactTracingCreate}
+                />
+                <Route
+                  path={'/patient/:patientId/partners/contactTracing'}
+                  component={ContactTracing}
                 />
                 <Route path={'/patient/:patientId/infant'} component={Infant} />
                 <Route

@@ -224,13 +224,14 @@ func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Req
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		location, _ := time.LoadLocation("Local")
 		treatment := models.SyphilisTreatment{
 			Id:         uuid.New().String(),
 			PatientId:  treatmentReq.PatientId,
 			Medication: treatmentReq.Medication,
 			Dosage:     treatmentReq.Dosage,
 			Comments:   treatmentReq.Comments,
-			Date:       treatmentReq.Date,
+			Date:       treatmentReq.Date.In(location),
 			CreatedBy:  user,
 			CreatedAt:  time.Now(),
 		}
@@ -269,6 +270,8 @@ func (a *App) PartnerSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Req
 		treatment.UpdatedBy = user
 		today := time.Now()
 		treatment.UpdatedAt = &today
+		location, _ := time.LoadLocation("Local")
+		treatment.Date = treatment.Date.In(location)
 		if err := a.Db.UpdatePartnerSyphilisTreatment(treatment); err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,

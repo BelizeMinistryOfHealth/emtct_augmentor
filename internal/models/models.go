@@ -249,6 +249,19 @@ type Infant struct {
 	Mother Person `json:"mother"`
 }
 
+type ContactTracing struct {
+	Id         string     `json:"id"`
+	PatientId  int        `json:"patientId"`
+	Test       string     `json:"test"`
+	TestResult string     `json:"testResult"`
+	Comments   string     `json:"comments"`
+	Date       time.Time  `json:"date"`
+	CreatedBy  string     `json:"createdBy"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	UpdatedBy  string     `json:"updatedBy"`
+	UpdatedAt  *time.Time `json:"updatedAt"`
+}
+
 // IsHivScreeningTimely indicates if an hiv screening was done in a timely manner.
 // The timeliness depends on the type of test and when the sample was taken:
 // PCR 1: sample must be taken 3 days or less after birth.

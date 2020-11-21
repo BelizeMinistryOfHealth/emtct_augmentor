@@ -12,48 +12,48 @@ import {
   TableRow,
   Text,
 } from 'grommet';
-import { Add, Close, Edit } from 'grommet-icons';
 import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { parseDate } from '../../../dates';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import AppCard from '../../AppCard/AppCard';
 import Layout from '../../Layout/Layout';
 import Spinner from '../../Spinner';
 import PartnerTabs from '../PartnerTabs/PartnerTabs';
-import PartnerSyphilisTreatmentEdit from './PartnerSyphilisTreatmentEdit';
+import { Add, Close, Edit } from 'grommet-icons';
+import ContactTracingEdit from './ContactTracingEdit';
+import { parseDate } from '../../../dates';
 
-const treatmentRow = (data, onClickEdit) => {
+const row = (data, onClickEdit) => {
   return (
     <TableRow key={data.id}>
-      <TableCell>
+      <TableCell align={'start'}>
         <Text size={'small'} align={'start'}>
-          {data.medication}
+          {data.test}
         </Text>
       </TableCell>
-      <TableCell>
+      <TableCell align={'start'}>
         <Text size={'small'} align={'start'}>
-          {data.dosage}
+          {data.testResult}
         </Text>
       </TableCell>
-      <TableCell>
+      <TableCell align={'start'}>
         <Text size={'small'} align={'start'}>
           {data.comments}
         </Text>
       </TableCell>
-      <TableCell>
+      <TableCell align={'start'}>
         <Text size={'small'} align={'start'}>
           {data.date ? parseDate(data.date, 'dd LLL yyyy') : 'N/A'}
         </Text>
       </TableCell>
-      <TableCell onClick={() => onClickEdit(data)}>
+      <TableCell align={'center'} onClick={() => onClickEdit(data)}>
         <Edit />
       </TableCell>
     </TableRow>
   );
 };
 
-const TreatmentsTable = ({ children, data, onClickEdit }) => {
+const ContactTracingTable = ({ children, data, onClickEdit }) => {
   if (!data) {
     return (
       <Box alignContent={'center'}>
@@ -69,10 +69,10 @@ const TreatmentsTable = ({ children, data, onClickEdit }) => {
         <TableHeader>
           <TableRow>
             <TableCell align={'start'}>
-              <Text align={'start'}>Medication</Text>
+              <Text align={'start'}>Test</Text>
             </TableCell>
             <TableCell align={'start'}>
-              <Text align={'start'}>Dosage</Text>
+              <Text align={'start'}>Result</Text>
             </TableCell>
             <TableCell align={'start'}>
               <Text align={'start'}>Comments</Text>
@@ -80,49 +80,54 @@ const TreatmentsTable = ({ children, data, onClickEdit }) => {
             <TableCell align={'start'}>
               <Text align={'start'}>Date</Text>
             </TableCell>
-            <TableCell></TableCell>
+            <TableCell align={'start'}></TableCell>
           </TableRow>
         </TableHeader>
-        <TableBody>{data.map((d) => treatmentRow(d, onClickEdit))}</TableBody>
+        <TableBody>{data.map((d) => row(d, onClickEdit))}</TableBody>
       </Table>
     </Box>
   );
 };
 
-const PartnerSyphilisTreatments = () => {
+const ContactTracing = () => {
   const { patientId } = useParams();
   const { httpInstance } = useHttpApi();
-  const [treatments, setTreatments] = React.useState({
+  const [tracings, setTracings] = React.useState({
     data: undefined,
     loading: true,
     error: undefined,
   });
-  const [editingTreatment, setEditingTreatment] = React.useState(undefined);
-  const onClickEdit = (treatment) => setEditingTreatment(treatment);
-  const onCloseEditScreen = () => {
-    setEditingTreatment(undefined);
-    setTreatments({ data: undefined, loading: true, error: undefined });
-  };
+  const [editingTracing, setEditingTracing] = React.useState(undefined);
   const history = useHistory();
 
+  const onClickEdit = (tracing) => setEditingTracing(tracing);
+  const onCloseEditScreen = () => {
+    setEditingTracing(undefined);
+    setTracings({ data: undefined, loading: true, error: undefined });
+  };
+
   React.useEffect(() => {
-    const getTreatments = () => {
+    const getTracings = () => {
       httpInstance
-        .get(`/patient/${patientId}/partners/syphilisTreatments`)
-        .then((r) => {
-          setTreatments({ data: r.data, loading: false, error: undefined });
+        .get(`/patient/${patientId}/partners/contactTracing`)
+        .then((resp) => {
+          setTracings({
+            data: resp.data,
+            loading: false,
+            error: undefined,
+          });
         })
         .catch((e) => {
           console.error(e);
-          setTreatments({ data: undefined, loading: false, error: e.toJSON() });
+          setTracings({ data: undefined, loading: false, error: e.toJSON() });
         });
     };
-    if (treatments.loading) {
-      getTreatments();
+    if (tracings.loading) {
+      getTracings();
     }
-  }, [patientId, treatments, httpInstance]);
+  }, [httpInstance, patientId, tracings]);
 
-  if (treatments.loading) {
+  if (tracings.loading) {
     return (
       <Layout>
         <Box
@@ -142,7 +147,7 @@ const PartnerSyphilisTreatments = () => {
     );
   }
 
-  if (treatments.error) {
+  if (tracings.error) {
     return (
       <Box
         direction={'colomn'}
@@ -169,20 +174,20 @@ const PartnerSyphilisTreatments = () => {
         align={'center'}
         fill
       >
-        <PartnerTabs data={treatments.data}>
+        <PartnerTabs data={tracings.data}>
           <AppCard overflow={'scroll'} pad={'small'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
               <Box direction={'row'} align={'start'} fill={'horizontal'}>
                 <Box fill={'horizontal'}>
                   <span>
                     <Text size={'xxlarge'} weight={'bold'}>
-                      Partner Syphilis Treatments
+                      Partner Contact Tracing
                     </Text>
                   </span>
                   <Text size={'large'}>
                     {' '}
-                    {treatments.data.patient.firstName}{' '}
-                    {treatments.data.patient.lastName}
+                    {tracings.data.patient.firstName}{' '}
+                    {tracings.data.patient.lastName}
                   </Text>
                 </Box>
                 <Box
@@ -192,18 +197,19 @@ const PartnerSyphilisTreatments = () => {
                 >
                   <Button
                     icon={<Add />}
-                    label={'add'}
+                    label={'Add'}
                     onClick={() =>
                       history.push(
-                        `/patient/${patientId}/partners/syphilisTreatments/new`
+                        `/patient/${patientId}/partners/contactTracing/new`
                       )
                     }
                   />
                 </Box>
               </Box>
             </CardHeader>
+
             <CardBody gap={'medium'} pad={'medium'}>
-              {editingTreatment && (
+              {editingTracing && (
                 <Layer
                   position={'right'}
                   full={'vertical'}
@@ -226,15 +232,15 @@ const PartnerSyphilisTreatments = () => {
                       </Heading>
                       <Button icon={<Close />} onClick={onCloseEditScreen} />
                     </Box>
-                    <PartnerSyphilisTreatmentEdit
-                      treatment={editingTreatment}
+                    <ContactTracingEdit
+                      contactTracing={editingTracing}
                       closeEditScreen={onCloseEditScreen}
                     />
                   </Box>
                 </Layer>
               )}
-              <TreatmentsTable
-                data={treatments.data.treatments}
+              <ContactTracingTable
+                data={tracings.data.contactTracing}
                 onClickEdit={onClickEdit}
               />
             </CardBody>
@@ -245,4 +251,4 @@ const PartnerSyphilisTreatments = () => {
   );
 };
 
-export default PartnerSyphilisTreatments;
+export default ContactTracing;
