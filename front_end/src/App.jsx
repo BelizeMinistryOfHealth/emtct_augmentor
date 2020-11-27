@@ -74,7 +74,10 @@ function App() {
                   path={'/patient/:patientId/home_visits'}
                   component={HomeVisitList}
                 />
-
+                <Route
+                  path={'/patient/:patientId/contraceptives/new'}
+                  component={ContraceptivesCreateForm}
+                />
                 <Route
                   path={'/patient/:patientId/contraceptives'}
                   component={ContraceptivesUsed}
@@ -109,10 +112,7 @@ function App() {
                   path={'/patient/:patientId/infant/:infantId/hivScreenings'}
                   component={InfantHivScreenings}
                 />
-                <Route
-                  path={'/patient/:patientId/contraceptives/new'}
-                  component={ContraceptivesCreateForm}
-                />
+
                 <Route
                   path={'/patient/:patientId/infant/:infantId/diagnoses'}
                   component={InfantDiagnoses}
