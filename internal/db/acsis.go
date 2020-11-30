@@ -470,13 +470,15 @@ LIMIT 1;
 	var careProvider string
 	var facility string
 	row := d.QueryRow(stmt, patientId, anc.Id)
+	var apgarFirst sql.NullInt32
+	var apgarFifth sql.NullInt32
 	err = row.Scan(
 		&careProvider,
 		&facility,
 		&vitals.DateOfBooking,
 		&vitals.BirthStatus,
-		&vitals.ApgarFifthMinute,
-		&vitals.ApgarFirstMinute,
+		&apgarFifth,
+		&apgarFirst,
 		&dob,
 	)
 	vitals.PrenatalCareProvider = fmt.Sprintf("%s - %s", careProvider, facility)
@@ -507,6 +509,12 @@ LIMIT 1;
 		if p != nil {
 			vitals.DiagnosisDate = &p.Date
 		}
+		if apgarFirst.Valid {
+			vitals.ApgarFirstMinute = int(apgarFirst.Int32)
+		}
+		if apgarFifth.Valid {
+			vitals.ApgarFifthMinute = int(apgarFifth.Int32)
+		}
 		vitals.GestationalAge = anc.GestationalAge
 
 		return &vitals, nil
@@ -536,7 +544,6 @@ func (d *AcsisDb) abortiveOutcome(v models.PregnancyVitals) (string, error) {
             INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
             INNER JOIN acsis_hc_pregnancies ahp on e.patient_id = ahp.patient_id
             WHERE e.patient_id = $1 
-            AND e.begin_time > '2020-01-01' AND e.begin_time < '2020-11-03'
             AND aaed.diagnosis_time < ahp.last_menstrual_period_date
             AND (aai10d.code ILIKE 'O06%' OR aai10d.code ILIKE 'O03%' OR aai10d.code ILIKE 'O05%'
             OR aai10d.code ILIKE 'O04%')
