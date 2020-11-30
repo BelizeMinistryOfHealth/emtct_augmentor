@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"moh.gov.bz/mch/emtct/internal/models"
 )
 
@@ -21,7 +23,7 @@ type testRequestItem struct {
 
 // findCurrentTestRequestItems finds all test requests in a given encounter. This is used when
 // searching for a pregnant woman's test results during pregnancy.
-func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int) ([]testRequestItem, error) {
+func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int, ancBeginDate *time.Time) ([]testRequestItem, error) {
 	stmt := `SELECT p.patient_id,
                     e.encounter_id,
                     tri.test_request_item_id,
@@ -30,13 +32,14 @@ func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int) ([]tes
        				tr.order_received_by_lab_time,
                     t.name
              FROM acsis_hc_patients p
-             INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id AND encounter_type='M'
+             INNER JOIN acsis_adt_encounters e ON p.patient_id=e.patient_id 
+                                                      --AND encounter_type IN ('M', 'B')
              INNER JOIN acsis_lab_test_requests tr ON tr.encounter_id=e.encounter_id
              INNER JOIN acsis_lab_test_request_items tri ON tr.test_request_id=tri.test_request_id
              INNER JOIN acsis_lab_tests t ON tri.test_id=t.test_id
-             WHERE p.patient_id=$1 AND e.encounter_id=$2`
+             WHERE p.patient_id=$1 AND e.encounter_id=$2 AND $3 < tr.order_received_by_lab_time`
 	var testRequests []testRequestItem
-	rows, err := d.Query(stmt, patientId, encounterId)
+	rows, err := d.Query(stmt, patientId, encounterId, ancBeginDate.Format(layoutISO))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving test request items from acsis: %+v", err)
 	}
@@ -83,7 +86,8 @@ func (d *AcsisDb) findTestResults(ri testRequestItem) ([]testResult, error) {
 		a.label
 	FROM acsis_hc_patients p
 		INNER JOIN acsis_adt_encounters AS e ON e.patient_id = p.patient_id
-		INNER JOIN acsis_lab_test_requests altr on e.encounter_id = altr.encounter_id AND encounter_type='M'
+		INNER JOIN acsis_lab_test_requests altr on e.encounter_id = altr.encounter_id 
+-- 		                                               AND encounter_type='M'
 		INNER JOIN acsis_lab_test_request_items altri on altr.test_request_id = altri.test_request_id
 		INNER JOIN acsis_lab_tests alt on altri.test_id = alt.test_id
 		INNER JOIN acsis_lab_test_request_results_collected altrrc on altri.test_request_item_id = altrrc.test_request_item_id
@@ -198,11 +202,11 @@ func (d *AcsisDb) FindLabTestsDuringPregnancy(patientId int) ([]models.LabResult
 		return nil, fmt.Errorf("rerror retrieving antenatal encounter when retrieving lab tests during pregnancy: %+v", err)
 	}
 	encounterId := anc.Id
-
-	testItems, err := d.findCurrentTestRequestItems(patientId, encounterId)
+	testItems, err := d.findCurrentTestRequestItems(patientId, encounterId, anc.BeginDate)
 	if err != nil {
 		return nil, fmt.Errorf("error finding current test request items from acsis when retrieving lab tests during pregnancy: %+v", err)
 	}
+	log.WithFields(log.Fields{"testItems": testItems}).Info("test reuqest Items")
 	var labResults []models.LabResult
 	for _, t := range testItems {
 		testResults, err := d.findTestResults(t)
