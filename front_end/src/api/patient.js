@@ -69,8 +69,8 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
       }
       if (interval < 0 && obstetricHistory[1]) {
         interval = differenceInCalendarDays(
-          parseISO(obstetricHistory[0]),
-          parseISO(obstetricHistory[1])
+          parseISO(obstetricHistory[0].date),
+          parseISO(obstetricHistory[1].date)
         );
       }
     }
