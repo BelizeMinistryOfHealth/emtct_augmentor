@@ -552,10 +552,15 @@ func (d *AcsisDb) abortiveOutcome(v models.PregnancyVitals) (string, error) {
 	var diagnosis string
 	row := d.QueryRow(stmt, v.PatientId)
 	err := row.Scan(&diagnosis)
-	if err != nil {
+	switch err {
+	case sql.ErrNoRows:
+		return "", nil
+	case nil:
+		return "Abortion", nil
+	default:
 		return "", fmt.Errorf("error querying acsis for abortion diagnosis when determining abortive outcome: %+v", err)
 	}
-	return "Abortion", nil
+
 }
 
 func (d *AcsisDb) FindInfantSyphilisTreatment(patientId int) ([]models.Prescription, error) {
