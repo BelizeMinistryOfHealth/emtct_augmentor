@@ -454,13 +454,14 @@ func TestApp_CreateHivScreening(t *testing.T) {
 	r.HandleFunc("/patient/hivHomeScreening", app.CreateHivScreeningHandler)
 
 	// Create Request
+	dateShipped := time.Date(2020, time.September, 30, 0, 0, 0, 0, time.UTC)
 	request := NewHivScreeningRequest{
 		PatientId:              1111120,
 		TestName:               "PCR 1",
 		ScreeningDate:          time.Date(2020, time.September, 21, 10, 20, 00, 00, time.UTC),
 		DateSampleReceivedAtHq: nil,
 		SampleCode:             "CODE_PCR_1234",
-		DateSampleShipped:      time.Date(2020, time.September, 30, 0, 0, 0, 0, time.UTC),
+		DateSampleShipped:      &dateShipped,
 		Destination:            "Honduras",
 		DateResultReceived:     nil,
 		Result:                 "",

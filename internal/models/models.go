@@ -81,11 +81,46 @@ type LabResult struct {
 	PatientId              int        `json:"patientId"`
 	TestResult             string     `json:"testResult"`
 	TestName               string     `json:"testName"`
+	TestRequestId          int        `json:"testRequestId"`
 	TestRequestItemId      int        `json:"testRequestItemId"`
 	DateSampleTaken        *time.Time `json:"dateSampleTaken"`
 	ResultDate             *time.Time `json:"resultDate"`
 	ReleasedTime           *time.Time `json:"releasedTime"`
 	DateOrderReceivedByLab *time.Time `json:"dateOrderReceivedByLab"`
+}
+
+type LabTest struct {
+	Id                     string     `json:"id"`
+	PatientId              int        `json:"patientId"`
+	TestResult             string     `json:"testResult"`
+	TestName               string     `json:"testName"`
+	TestRequestId          int        `json:"testRequestId"`
+	TestRequestItemId      int        `json:"testRequestItemId"`
+	DateSampleTaken        *time.Time `json:"dateSampleTaken"`
+	ResultDate             *time.Time `json:"resultDate"`
+	ReleasedTime           *time.Time `json:"releasedTime"`
+	DateOrderReceivedByLab *time.Time `json:"dateOrderReceivedByLab"`
+}
+
+type Pregnancy struct {
+	PatientId   int
+	PregnancyId int
+	Lmp         *time.Time
+	Edd         *time.Time
+	EndTime     *time.Time
+}
+
+func (p *Pregnancy) Index(vs []Pregnancy) int {
+	for i, v := range vs {
+		if v.PregnancyId == p.PregnancyId {
+			return i
+		}
+	}
+	return -1
+}
+
+func (p *Pregnancy) Include(vs []Pregnancy) bool {
+	return p.Index(vs) >= 0
 }
 
 // FindLabResultsBetweenDates finds lab results between a range of two dates.

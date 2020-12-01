@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"moh.gov.bz/mch/emtct/internal/config"
@@ -156,50 +155,6 @@ func (d *EmtctDb) CreateDiagnosis(di models.Diagnosis) error {
 	return nil
 }
 
-// FindCurrentPregnancy returns the current pregnancy for the specified patient.
-// The pregnancy is deemed current if the EDD is in the future.
-func (d *EmtctDb) FindCurrentPregnancy(patientId string) (*models.PregnancyVitals, error) {
-	stmt := `SELECT id, patient_id, gestational_age, para, cs, COALESCE(abortive_outcome, '') AS a_outcome, diagnosis_date, planned,
-age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks FROM pregnancies WHERE patient_id=$1`
-	var pregnancies []models.PregnancyVitals
-	id, err := strconv.Atoi(patientId)
-	if err != nil {
-		return nil, fmt.Errorf("error: patient id is not a number: %+v", err)
-	}
-	rows, err := d.DB.Query(stmt, id)
-	if err != nil {
-		return nil, fmt.Errorf("error executing query for extracting the current pregnancy: %+v", err)
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var p models.PregnancyVitals
-		err := rows.Scan(
-			&p.Id,
-			&p.PatientId,
-			&p.GestationalAge,
-			&p.Para,
-			&p.Cs,
-			&p.PregnancyOutcome,
-			&p.DiagnosisDate,
-			&p.Planned,
-			&p.AgeAtLmp,
-			&p.Lmp,
-			&p.Edd,
-			&p.DateOfBooking,
-			&p.PrenatalCareProvider,
-			&p.TotalChecks)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan pregnancy for patient(%s): %+v", patientId, err)
-		}
-		pregnancies = append(pregnancies, p)
-	}
-
-	p := models.FindCurrentPregnancy(pregnancies)
-	return p, nil
-}
-
 func (d *EmtctDb) CreatePregnancy(p models.PregnancyVitals) error {
 	stmt := `INSERT INTO pregnancies 
 (id, patient_id, gestational_age, para, cs, abortive_outcome, diagnosis_date, planned, age_at_lmp, lmp, edd, date_of_booking, prenatal_care_provider, total_checks)
@@ -226,72 +181,6 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
 	return nil
 }
 
-func (d *EmtctDb) FindPregnancyDiagnoses(patientId string) ([]models.Diagnosis, error) {
-	pregnancy, err := d.FindCurrentPregnancy(patientId)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching the current pregnancy when retrieving the diagnoses: %+v", err)
-	}
-	if pregnancy == nil {
-		return []models.Diagnosis{}, nil
-	}
-	edd := pregnancy.Edd
-
-	diagnoses, err := d.FindDiagnoses(patientId)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching diagnoses for the current pregnancy: %+v", err)
-	}
-
-	var pregnancyDiagnoses []models.Diagnosis
-	for _, v := range diagnoses {
-		if v.Date.Before(edd) && v.Date.After(edd.Add(-time.Hour*24*30*9)) {
-			pregnancyDiagnoses = append(pregnancyDiagnoses, v)
-		}
-	}
-
-	return pregnancyDiagnoses, nil
-}
-
-func (d *EmtctDb) FindPregnancyLabResults(patientId string) ([]models.LabResult, error) {
-	pregnancy, err := d.FindCurrentPregnancy(patientId)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching the current pregnancy")
-	}
-	if pregnancy == nil {
-		return []models.LabResult{}, nil
-	}
-	lmp := pregnancy.Lmp
-
-	stmt := `SELECT id, patient_id, test_result, test_name, date_sample_taken, result_date FROM lab_results WHERE patient_id=$1 AND result_date IS NOT NULL`
-	var labResults []models.LabResult
-	id, _ := strconv.Atoi(patientId)
-	rows, err := d.DB.Query(stmt, id)
-	if err != nil {
-		return nil, fmt.Errorf("error querying database for lab results: %+v", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var labResult models.LabResult
-		err := rows.Scan(
-			&labResult.Id,
-			&labResult.PatientId,
-			&labResult.TestResult,
-			&labResult.TestName,
-			&labResult.DateSampleTaken,
-			&labResult.ResultDate,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error scanning columns for the lab results: %+v", err)
-		}
-		labResults = append(labResults, labResult)
-	}
-
-	if lmp == nil {
-		return []models.LabResult{}, nil
-	}
-	return models.FindLabResultsBetweenDates(labResults, *lmp), nil
-}
-
 func (d *EmtctDb) CreateLabResult(l models.LabResult) error {
 	stmt := `INSERT INTO lab_results (id, patient_id, test_result, test_name, date_sample_taken, result_date)
 VALUES($1, $2, $3, $4, $5, $6)`
@@ -306,4 +195,64 @@ VALUES($1, $2, $3, $4, $5, $6)`
 		return fmt.Errorf("error inserting lab result: %+v", err)
 	}
 	return nil
+}
+
+func (d *EmtctDb) SaveLabTest(l models.LabTest) error {
+	stmt := `
+	INSERT INTO lab_tests (id, patient_id, test_result, test_name, test_request_id,
+	                       test_request_item_id, date_sample_taken, result_date, 
+	                       released_time, date_order_received_by_lab)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)  
+`
+	_, err := d.Exec(stmt,
+		l.Id,
+		l.PatientId,
+		l.TestResult,
+		l.TestName,
+		l.TestRequestId,
+		l.TestRequestItemId,
+		l.DateSampleTaken,
+		l.ResultDate,
+		l.ReleasedTime,
+		l.DateOrderReceivedByLab)
+	if err != nil {
+		return fmt.Errorf("error inserting new lab test into emtct: %w", err)
+	}
+	return nil
+}
+
+func (d *EmtctDb) ListLabTests(patientId int, lmp time.Time) ([]models.LabTest, error) {
+	stmt := `
+SELECT 
+	id, patient_id, test_result, test_name, test_request_id, test_request_item_id,
+	date_sample_taken, result_date, released_time, date_order_received_by_lab
+FROM lab_tests
+WHERE patient_id=$1 AND date_order_received_by_lab BETWEEN $2 AND $3
+`
+	endDate := lmp.Add(time.Hour * 24 * 7 * 52)
+	rows, err := d.Query(stmt, patientId, lmp.Format(layoutISO), endDate.Format(layoutISO))
+	defer rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving lab tests from etmtct: %w", err)
+	}
+	var tests []models.LabTest
+	for rows.Next() {
+		var t models.LabTest
+		err := rows.Scan(
+			&t.Id,
+			&t.PatientId,
+			&t.TestResult,
+			&t.TestName,
+			&t.TestRequestId,
+			&t.TestRequestItemId,
+			&t.DateSampleTaken,
+			&t.ResultDate,
+			&t.ReleasedTime,
+			&t.DateOrderReceivedByLab)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning test result from etmct: %w", err)
+		}
+		tests = append(tests, t)
+	}
+	return tests, nil
 }

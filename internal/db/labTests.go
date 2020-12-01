@@ -23,7 +23,12 @@ type testRequestItem struct {
 
 // findCurrentTestRequestItems finds all test requests in a given encounter. This is used when
 // searching for a pregnant woman's test results during pregnancy.
-func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int, ancBeginDate *time.Time) ([]testRequestItem, error) {
+func (d *AcsisDb) findCurrentTestRequestItems(patientId int, lmp *time.Time) ([]testRequestItem, error) {
+	if lmp == nil {
+		return []testRequestItem{}, nil
+	}
+	//Extend the search range to a year after lmp, to make sure we also capture lab tests during labor
+	endDate := lmp.Add(time.Hour * 24 * 7 * 52)
 	stmt := `SELECT p.patient_id,
                     e.encounter_id,
                     tri.test_request_item_id,
@@ -37,9 +42,9 @@ func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int, ancBeg
              INNER JOIN acsis_lab_test_requests tr ON tr.encounter_id=e.encounter_id
              INNER JOIN acsis_lab_test_request_items tri ON tr.test_request_id=tri.test_request_id
              INNER JOIN acsis_lab_tests t ON tri.test_id=t.test_id
-             WHERE p.patient_id=$1 AND e.encounter_id=$2 AND $3 < tr.order_received_by_lab_time`
+             WHERE p.patient_id=$1 AND tr.order_received_by_lab_time BETWEEN $2 AND $3`
 	var testRequests []testRequestItem
-	rows, err := d.Query(stmt, patientId, encounterId, ancBeginDate.Format(layoutISO))
+	rows, err := d.Query(stmt, patientId, lmp.Format(layoutISO), endDate.Format(layoutISO))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving test request items from acsis: %+v", err)
 	}
@@ -64,22 +69,26 @@ func (d *AcsisDb) findCurrentTestRequestItems(patientId, encounterId int, ancBeg
 }
 
 type testResult struct {
-	Id                int
-	PatientId         int
-	TestRequestId     int
-	TestRequestItemId int
-	EncounterId       int
-	TestName          string
-	TestResult        string
-	TestLabel         string
+	Id                     int
+	PatientId              int
+	TestRequestId          int
+	TestRequestItemId      int
+	ReleasedTime           *time.Time
+	DateOrderReceivedByLab *time.Time
+	EncounterId            int
+	TestName               string
+	TestResult             string
+	TestLabel              string
 }
 
-func (d *AcsisDb) findTestResults(ri testRequestItem) ([]testResult, error) {
+func (d *AcsisDb) findTestResults(patientId int, ri []int) ([]testResult, error) {
 	stmt := `
 	SELECT 
 	    a.test_result_id,
 		altr.test_request_id,
 		altri.test_request_item_id,
+	    altri.released_time,
+	    altr.order_received_by_lab_time,
 		e.encounter_id,
 		alt.name as test,
 		aludli.name as result,
@@ -99,7 +108,7 @@ func (d *AcsisDb) findTestResults(ri testRequestItem) ([]testResult, error) {
 	ORDER BY altr.last_modified_time DESC;
 `
 	var results []testResult
-	rows, err := d.Query(stmt, ri.PatientId, ri.TestRequestId)
+	rows, err := d.Query(stmt, patientId, ri)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving test results for a test request items from acsis: %+v", err)
 	}
@@ -110,6 +119,8 @@ func (d *AcsisDb) findTestResults(ri testRequestItem) ([]testResult, error) {
 			&r.Id,
 			&r.TestRequestId,
 			&r.TestRequestItemId,
+			&r.ReleasedTime,
+			&r.DateOrderReceivedByLab,
 			&r.EncounterId,
 			&r.TestName,
 			&r.TestResult,
@@ -197,36 +208,34 @@ func (d *AcsisDb) FindLabTestsDuringPregnancy(patientId int) ([]models.LabResult
 	if err != nil {
 		return nil, fmt.Errorf("error while retrieving lab tests during pregnancy details from acsis: %+v", err)
 	}
-	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
-	if err != nil {
-		return nil, fmt.Errorf("rerror retrieving antenatal encounter when retrieving lab tests during pregnancy: %+v", err)
-	}
-	encounterId := anc.Id
-	testItems, err := d.findCurrentTestRequestItems(patientId, encounterId, anc.BeginDate)
+
+	testItems, err := d.findCurrentTestRequestItems(patientId, v.Lmp)
 	if err != nil {
 		return nil, fmt.Errorf("error finding current test request items from acsis when retrieving lab tests during pregnancy: %+v", err)
 	}
 	log.WithFields(log.Fields{"testItems": testItems}).Info("test reuqest Items")
 	var labResults []models.LabResult
-	for _, t := range testItems {
-		testResults, err := d.findTestResults(t)
-		if err != nil {
-			return nil, fmt.Errorf("error finding test results for a test request item when retrieving lab tests during pregnancy from acsis: %+v", err)
+	var testRequestItemIds []int
+	for _, ti := range testItems {
+		testRequestItemIds = append(testRequestItemIds, ti.TestRequestItemId)
+	}
+	testResults, err := d.findTestResults(patientId, testRequestItemIds)
+	for _, r := range testResults {
+
+		result := models.LabResult{
+			Id:                     r.Id,
+			PatientId:              patientId,
+			TestName:               fmt.Sprintf("%s - %s", r.TestName, r.TestLabel),
+			TestResult:             r.TestResult,
+			TestRequestId:          r.TestRequestId,
+			TestRequestItemId:      r.TestRequestItemId,
+			ReleasedTime:           r.ReleasedTime,
+			DateOrderReceivedByLab: r.DateOrderReceivedByLab,
+			DateSampleTaken:        nil,
+			ResultDate:             nil,
 		}
-		for _, r := range testResults {
-			result := models.LabResult{
-				Id:                     r.Id,
-				PatientId:              patientId,
-				TestName:               fmt.Sprintf("%s - %s", r.TestName, r.TestLabel),
-				TestResult:             r.TestResult,
-				TestRequestItemId:      r.TestRequestItemId,
-				ReleasedTime:           t.ReleasedTime,
-				DateOrderReceivedByLab: t.DateOrderReceivedByLab,
-				DateSampleTaken:        nil,
-				ResultDate:             nil,
-			}
-			labResults = append(labResults, result)
-		}
+		labResults = append(labResults, result)
+
 	}
 	var testSamples []testSample
 	for _, t := range testItems {
@@ -277,26 +286,26 @@ WHERE t.test_id=1 AND p.patient_id=$1
 		testRequests = append(testRequests, t)
 	}
 	var labResults []models.LabResult
-	for t := range testRequests {
-		testResults, err := d.findTestResults(testRequests[t])
-		if err != nil {
-			return nil, fmt.Errorf("")
-		}
-		for _, i := range testResults {
-			result := models.LabResult{
-				Id:                     i.Id,
-				PatientId:              infantId,
-				TestResult:             i.TestResult,
-				TestName:               fmt.Sprintf("%s - %s", i.TestName, i.TestLabel),
-				TestRequestItemId:      i.TestRequestItemId,
-				DateSampleTaken:        nil,
-				ResultDate:             nil,
-				ReleasedTime:           testRequests[t].ReleasedTime,
-				DateOrderReceivedByLab: testRequests[t].DateOrderReceivedByLab,
-			}
-			labResults = append(labResults, result)
-		}
-	}
+	//for t := range testRequests {
+	//	testResults, err := d.findTestResults(testRequests[t])
+	//	if err != nil {
+	//		return nil, fmt.Errorf("")
+	//	}
+	//	for _, i := range testResults {
+	//		result := models.LabResult{
+	//			Id:                     i.Id,
+	//			PatientId:              infantId,
+	//			TestResult:             i.TestResult,
+	//			TestName:               fmt.Sprintf("%s - %s", i.TestName, i.TestLabel),
+	//			TestRequestItemId:      i.TestRequestItemId,
+	//			DateSampleTaken:        nil,
+	//			ResultDate:             nil,
+	//			ReleasedTime:           testRequests[t].ReleasedTime,
+	//			DateOrderReceivedByLab: testRequests[t].DateOrderReceivedByLab,
+	//		}
+	//		labResults = append(labResults, result)
+	//	}
+	//}
 
 	var testSamples []testSample
 	for _, t := range testRequests {
