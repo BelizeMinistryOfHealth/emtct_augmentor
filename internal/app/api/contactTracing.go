@@ -1,4 +1,4 @@
-package http
+package api
 
 import (
 	"encoding/json"
@@ -10,8 +10,15 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/models"
+	"moh.gov.bz/mch/emtct/internal/app"
+	"moh.gov.bz/mch/emtct/internal/business/data/contactTracing"
+	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
+
+type ContactTracingRoutes struct {
+	ContactTracings contactTracing.ContactTracings
+	Patient         patient.Patients
+}
 
 type contactTracingRequest struct {
 	PatientId  int       `json:"patientId"`
@@ -21,15 +28,15 @@ type contactTracingRequest struct {
 	Date       time.Time `json:"date"`
 }
 
-func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
+func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "ContactTracingHandler"
 	defer r.Body.Close()
+	token := r.Context().Value("user").(app.JwtToken)
+	user := token.Email
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
-		token := r.Context().Value("user").(JwtToken)
-		user := token.Email
 		var request contactTracingRequest
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			log.WithFields(log.Fields{
@@ -41,7 +48,7 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		location, _ := time.LoadLocation("Local")
-		contactTracing := models.ContactTracing{
+		contactTracing := contactTracing.ContactTracing{
 			Id:         uuid.New().String(),
 			PatientId:  request.PatientId,
 			Test:       request.Test,
@@ -51,7 +58,7 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			CreatedBy:  user,
 			CreatedAt:  time.Now(),
 		}
-		if err := a.Db.AddContactTracing(contactTracing); err != nil {
+		if err := a.ContactTracings.Create(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,
 				"contactTracing": contactTracing,
@@ -71,8 +78,6 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case http.MethodGet:
-		token := r.Context().Value("user").(JwtToken)
-		user := token.Email
 		vars := mux.Vars(r)
 		id := vars["patientId"]
 		patientId, err := strconv.Atoi(id)
@@ -85,7 +90,7 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "patient id must be a valid number", http.StatusInternalServerError)
 			return
 		}
-		contacts, err := a.Db.FindContactTracing(patientId)
+		contacts, err := a.ContactTracings.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
@@ -95,7 +100,7 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.AcsisDb.FindPatientBasicInfo(patientId)
+		patient, err := a.Patient.FindBasicInfo(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
@@ -120,10 +125,8 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(JwtToken)
-		user := token.Email
 		today := time.Now()
-		var contactTracing models.ContactTracing
+		var contactTracing contactTracing.ContactTracing
 		if err := json.NewDecoder(r.Body).Decode(&contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
@@ -137,7 +140,7 @@ func (a *App) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 		contactTracing.UpdatedAt = &today
 		location, _ := time.LoadLocation("Local")
 		contactTracing.Date = contactTracing.Date.In(location)
-		if err := a.Db.UpdateContactTracing(contactTracing); err != nil {
+		if err := a.ContactTracings.Edit(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,
 				"contactTracing": contactTracing,

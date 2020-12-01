@@ -10,6 +10,7 @@ import (
 
 	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/admissions"
+	"moh.gov.bz/mch/emtct/internal/business/data/contactTracing"
 	"moh.gov.bz/mch/emtct/internal/business/data/contraceptives"
 	"moh.gov.bz/mch/emtct/internal/business/data/homeVisits"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
@@ -88,6 +89,20 @@ func API(app app.App) *mux.Router {
 	contraceptiveRouter.HandleFunc("/", authMid.Then(contraceptiveRoutes.ContraceptivesHandler)).
 		Methods(http.MethodPost, http.MethodPut, http.MethodOptions)
 	patientRouter.HandleFunc("/{patientId}/contraceptivesUsed", authMid.Then(contraceptiveRoutes.ContraceptivesByPatientHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
+
+	// Partners Router
+	partnersRouter := r.PathPrefix("/api/partners").Subrouter()
+
+	// Contact Tracing
+	tracing := contactTracing.New(app.EmtctDb.DB)
+	tracingRoutes := ContactTracingRoutes{
+		ContactTracings: tracing,
+		Patient:         patients,
+	}
+	partnersRouter.HandleFunc("/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
+		Methods(http.MethodOptions, http.MethodPost, http.MethodPut)
+	partnersRouter.HandleFunc("/{patientId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
 	return r
