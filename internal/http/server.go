@@ -53,11 +53,6 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 		authHandlers.Then(app.ArvsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
-	// Obstetric History
-	r.HandleFunc("/patient/{patientId}/obstetricHistory",
-		authHandlers.Then(app.ObstetricHistoryHandler)).
-		Methods(http.MethodOptions, http.MethodGet)
-
 	//Syphilis Treatment
 	r.HandleFunc("/patient/{patientId}/syphilisTreatments",
 		authHandlers.Then(app.SyphilisTreatmentHandler)).

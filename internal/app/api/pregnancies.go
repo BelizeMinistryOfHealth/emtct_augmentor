@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/hiv"
 	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
@@ -140,6 +141,73 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 			log.WithFields(log.Fields{"labResults": labResults, "patientId": patientId}).
 				WithError(err).
 				Error("error marshalling lab results for a pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type obstetricHistoryResponse struct {
+	ObstetricHistory []pregnancy.ObstetricHistory `json:"obstetricHistory"`
+	Patient          patient.BasicInfo            `json:"patient"`
+}
+
+func (a *pregnancyRoutes) ObstetricHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		id := vars["patientId"]
+		patientId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{"patientId": id}).Error("patientId is not a number")
+			http.Error(w, "patientId must be a number", http.StatusBadRequest)
+			return
+		}
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
+		obstetricHistory, err := a.Pregnancies.FindObstetricHistory(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": patientId,
+				"user":      user,
+				"handler":   "ObstetricHistoryHandler",
+			}).WithError(err).Error("error retrieving obstetric history")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		patientInfo, err := a.Patient.FindBasicInfo(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": patientId,
+				"user":      user,
+				"handler":   "ObstetricHistoryHandler",
+			}).
+				WithError(err).
+				Error("error retrieving patient basic info")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		// Return an empty array if no results are found
+		if obstetricHistory == nil {
+			obstetricHistory = []pregnancy.ObstetricHistory{}
+		}
+		response := obstetricHistoryResponse{
+			ObstetricHistory: obstetricHistory,
+			Patient:          *patientInfo,
+		}
+		w.Header().Add("Content-Type", "application/json")
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.WithFields(log.Fields{
+				"patientId": patientId,
+				"response":  response,
+				"user":      user,
+				"handler":   "ObstetricHistoryHandler",
+			}).
+				WithError(err).
+				Error("error marshalling obstetric history response")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
