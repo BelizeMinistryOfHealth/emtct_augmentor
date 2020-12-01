@@ -58,14 +58,6 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 		authHandlers.Then(app.SyphilisTreatmentHandler)).
 		Methods(http.MethodGet, http.MethodOptions)
 
-	//Infant HIV Screenings
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings/{screeningId}",
-		authHandlers.Then(app.HivScreeningApi)).
-		Methods(http.MethodOptions, http.MethodPut)
-	r.HandleFunc("/patient/{motherId}/infant/{infantId}/hivScreenings",
-		authHandlers.Then(app.HivScreeningsByPatientIdHandler)).
-		Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
-
 	//Infant Syphilis Treatment
 	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisTreatments",
 		authHandlers.Then(app.InfantSyphilisTreatmentHandler)).

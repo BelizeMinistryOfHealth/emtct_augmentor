@@ -156,3 +156,43 @@ func (d *Infants) FindHivScreeningById(id string) (*HivScreening, error) {
 		return nil, fmt.Errorf("error retrieving hiv screening from database: %+v", err)
 	}
 }
+
+// IsHivScreeningTimely indicates if an hiv screening was done in a timely manner.
+// The timeliness depends on the type of test and when the sample was taken:
+// PCR 1: sample must be taken 3 days or less after birth.
+// PCR 2: sample must be taken no later than 6 weeks after birth
+// PCR 3: sample must be taken no later than 90 days after birth
+// ELISA: sample must be taken no longer than 18 months after birth
+func (d *Infants) IsHivScreeningTimely(birthDate time.Time, testName string, dateSampleTaken time.Time) bool {
+	diff := dateSampleTaken.Sub(birthDate).Hours() / 24
+	switch testName {
+	case "PCR 1":
+		return diff < 4
+	case "PCR 2":
+		return diff < (6 * 7)
+	case "PCR 3":
+		return diff < 91
+	case "ELISA":
+		return diff <= (18 * 7 * 4)
+	default:
+		return false
+	}
+}
+
+// HivScreeningDueDate calculates the due date for taking a sample for an HIV screening.
+// PCR 1: sample must be taken 3 days or less after birth.
+// PCR 2: sample must be taken no later than 6 weeks after birth
+// PCR 3: sample must be taken no later than 90 days after birth
+// ELISA: sample must be taken no longer than 18 months after birth
+func (d *Infants) HivScreeningDueDate(testName string, birthDate time.Time) time.Time {
+	switch testName {
+	case "PCR 1":
+		return birthDate.AddDate(0, 0, 3)
+	case "PCR 2":
+		return birthDate.AddDate(0, 0, 42)
+	case "PCR 3":
+		return birthDate.AddDate(0, 0, 90)
+	default:
+		return birthDate.AddDate(0, 18, 0)
+	}
+}
