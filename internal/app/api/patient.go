@@ -9,8 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
+	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
 )
 
 type patientResponse struct {
@@ -115,5 +117,104 @@ func (a *pregnancyRoutes) RetrievePatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+type arvsResponse struct {
+	Arvs    []prescription.Prescription `json:"arvs"`
+	Patient patient.BasicInfo           `json:"patient"`
+}
+
+func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "ArvsHandler"
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		method := "Get"
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
+		vars := mux.Vars(r)
+		id := vars["patientId"]
+		patientId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).
+				WithError(err).
+				Error("patient id is not a valid number")
+			http.Error(w, "patientId is not a valid number", http.StatusBadRequest)
+			return
+		}
+		// Find the pregnancy and the lmp so we can get the date bounds
+		pregs, err := a.Pregnancies.FindCurrentPregnancy(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).
+				WithError(err).
+				Error("error retrieving patient's current pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if pregs == nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).
+				WithError(err).
+				Error("patient does not have a current pregnancy")
+			http.Error(w, "patient does not have a current pregnancy", http.StatusNotFound)
+			return
+		}
+		lmp := pregs.Lmp
+		nextDate := lmp.Add(time.Hour * 24 * 7 * 54)
+		arvs, err := a.Patient.FindArvsByPatient(patientId, *lmp, nextDate)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).
+				WithError(err).
+				Error("patient does not have a current pregnancy")
+			http.Error(w, "patient does not have a current pregnancy", http.StatusNotFound)
+			return
+		}
+		patientInfo, err := a.Patient.FindBasicInfo(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).
+				WithError(err).
+				Error("error retrieving patient's basic info")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		arvsResponse := arvsResponse{
+			Arvs:    arvs,
+			Patient: *patientInfo,
+		}
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(arvsResponse); err != nil {
+			log.WithFields(log.Fields{"patientId": patientId, "user": user}).
+				WithError(err).
+				Error("marshalling arvs response failed")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 	}
 }

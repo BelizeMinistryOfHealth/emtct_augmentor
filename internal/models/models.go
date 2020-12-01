@@ -140,28 +140,6 @@ type HomeVisit struct {
 	UpdatedBy      *string    `json:"updatedBy"`
 }
 
-type HivScreening struct {
-	Id                     string     `json:"id"`
-	PatientId              int        `json:"patientId"`
-	MotherId               int        `json:"motherId"`
-	TestName               string     `json:"testName"`
-	ScreeningDate          time.Time  `json:"screeningDate"`
-	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty"`
-	SampleCode             string     `json:"sampleCode"`
-	DateSampleShipped      *time.Time `json:"dateSampleShipped"`
-	Destination            string     `json:"destination"`
-	DateResultReceived     *time.Time `json:"dateResultReceived,omitEmpty"`
-	DateSampleTaken        *time.Time `json:"dateSampleTaken,omitEmpty"`
-	DueDate                *time.Time `json:"dueDate,omitEmpty"`
-	Result                 string     `json:"result"`
-	DateResultShared       *time.Time `json:"dateResultShared,omitEmpty"`
-	Timely                 bool       `json:"timely"`
-	CreatedAt              time.Time  `json:"createdAt"`
-	UpdatedAt              *time.Time `json:"updatedAt"`
-	CreatedBy              string     `json:"createdBy"`
-	UpdatedBy              *string    `json:"updatedBy"`
-}
-
 type SampleTimeliness string
 
 const (
