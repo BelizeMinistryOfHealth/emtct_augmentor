@@ -52,8 +52,7 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods(http.MethodGet)
 	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).
 		Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/patient/{id}/currentPregnancy", authHandlers.Then(app.FindCurrentPregnancy)).
-		Methods(http.MethodGet, http.MethodOptions)
+
 	r.HandleFunc("/patient/{id}/currentPregnancy/labResults", authHandlers.Then(app.FindPregnancyLabResults)).
 		Methods(http.MethodGet, http.MethodOptions)
 

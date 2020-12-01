@@ -105,5 +105,11 @@ func API(app app.App) *mux.Router {
 	partnersRouter.HandleFunc("/{patientId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
+	// Pregnancies
+	preg := pregnancy.New(app.EmtctDb, app.AcsisDb)
+	pregRoutes := pregnancyRoutes{Pregnancies: preg}
+	patientRouter.HandleFunc("/{patientId}/currentPregnancy",
+		authMid.Then(pregRoutes.FindCurrentPregnancy)).Methods(http.MethodOptions, http.MethodGet)
+
 	return r
 }
