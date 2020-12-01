@@ -14,6 +14,7 @@ import (
 	"moh.gov.bz/mch/emtct/internal/business/data/contraceptives"
 	"moh.gov.bz/mch/emtct/internal/business/data/homeVisits"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
+	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
@@ -29,7 +30,7 @@ func API(app app.App) *mux.Router {
 	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
 
 	pregnancies := pregnancy.New(app.EmtctDb, app.AcsisDb)
-
+	lab := labs.New(app.AcsisDb)
 	// ETL
 	etl := Etl{
 		Pregnancies: pregnancies,
@@ -107,9 +108,11 @@ func API(app app.App) *mux.Router {
 
 	// Pregnancies
 	preg := pregnancy.New(app.EmtctDb, app.AcsisDb)
-	pregRoutes := pregnancyRoutes{Pregnancies: preg}
+	pregRoutes := pregnancyRoutes{Pregnancies: preg, Patient: patients, Lab: lab}
 	patientRouter.HandleFunc("/{patientId}/currentPregnancy",
 		authMid.Then(pregRoutes.FindCurrentPregnancy)).Methods(http.MethodOptions, http.MethodGet)
+	patientRouter.HandleFunc("/{patientId}/currentPregnancy/labResults",
+		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
 
 	return r
 }

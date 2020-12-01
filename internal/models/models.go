@@ -67,15 +67,6 @@ type PregnancyVitals struct {
 	BirthStatus          string     `json:"birthStatus"`
 }
 
-func FindCurrentPregnancy(ps []PregnancyVitals) *PregnancyVitals {
-	for _, v := range ps {
-		if v.Edd.After(time.Now()) {
-			return &v
-		}
-	}
-	return nil
-}
-
 type LabResult struct {
 	Id                     int        `json:"id"`
 	PatientId              int        `json:"patientId"`
