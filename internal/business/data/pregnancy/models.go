@@ -1,6 +1,22 @@
 package pregnancy
 
-import "time"
+import (
+	"time"
+
+	"moh.gov.bz/mch/emtct/internal/db"
+)
+
+type Pregnancies struct {
+	EmtctDb *db.EmtctDb
+	AcsisDb *db.AcsisDb
+}
+
+func New(emtctdb *db.EmtctDb, acsisdb *db.AcsisDb) Pregnancies {
+	return Pregnancies{
+		EmtctDb: emtctdb,
+		AcsisDb: acsisdb,
+	}
+}
 
 type Pregnancy struct {
 	PatientId   int

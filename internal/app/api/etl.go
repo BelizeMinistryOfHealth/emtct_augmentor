@@ -6,13 +6,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/db"
-	"moh.gov.bz/mch/emtct/internal/models"
+	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
 
 type Etl struct {
-	AcsisDb db.AcsisDb
-	EmtctDb db.EmtctDb
+	Pregnancies pregnancy.Pregnancies
 }
 
 type pregnancyEtlRequest struct {
@@ -39,7 +37,7 @@ func (e Etl) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		yr := req.Year
-		existingPregnancies, err := e.EmtctDb.FindExistingPregnanciesByYear(yr)
+		existingPregnancies, err := e.Pregnancies.FindExistingPregnanciesByYear(yr)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":    yr,
@@ -50,7 +48,7 @@ func (e Etl) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		acsisPregnancies, err := e.AcsisDb.FindPregnanciesByYear(yr)
+		acsisPregnancies, err := e.Pregnancies.FindPregnanciesInBhisByYear(yr)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":    yr,
@@ -60,13 +58,13 @@ func (e Etl) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		var pregs []models.Pregnancy
+		var pregs []pregnancy.Pregnancy
 		for _, p := range acsisPregnancies {
 			if !p.Include(existingPregnancies) {
 				pregs = append(pregs, p)
 			}
 		}
-		err = e.EmtctDb.InsertPregnancies(r.Context(), pregs)
+		err = e.Pregnancies.Create(r.Context(), pregs)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":        yr,

@@ -28,17 +28,17 @@ func API(app app.App) *mux.Router {
 	// Middleware that verifies JWT token and also enables CORS.
 	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
 
+	pregnancies := pregnancy.New(app.EmtctDb, app.AcsisDb)
+
 	// ETL
 	etl := Etl{
-		AcsisDb: *app.AcsisDb,
-		EmtctDb: *app.EmtctDb,
+		Pregnancies: pregnancies,
 	}
 	eltRouter := r.PathPrefix("/api/etl").Subrouter()
 	eltRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
 		Methods(http.MethodOptions, http.MethodPost)
 
 	// Infants
-	pregnancies := pregnancy.Pregnancies{EmtctDb: app.EmtctDb}
 	inf := infant.New(app.AcsisDb.DB)
 	infantRoutes := InfantRoutes{
 		Infant:      infant.Infants{Acsis: inf.Acsis},
