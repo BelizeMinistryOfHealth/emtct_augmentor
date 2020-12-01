@@ -9,7 +9,9 @@ import (
 	"github.com/uris77/auth0"
 
 	"moh.gov.bz/mch/emtct/internal/app"
+	"moh.gov.bz/mch/emtct/internal/business/data/homeVisits"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
+	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
 
@@ -34,7 +36,7 @@ func API(app app.App) *mux.Router {
 
 	// Infants
 	pregnancies := pregnancy.Pregnancies{EmtctDb: app.EmtctDb}
-	inf := infant.Infants{Acsis: app.AcsisDb.DB}
+	inf := infant.New(app.AcsisDb.DB)
 	infantRoutes := InfantRoutes{
 		Infant:      infant.Infants{Acsis: inf.Acsis},
 		AcsisDb:     *app.AcsisDb,
@@ -45,6 +47,22 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodGet)
 	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
 		Methods(http.MethodOptions, http.MethodGet)
+
+	// Patients
+	patients := patient.New(app.AcsisDb.DB)
+	patientRouter := r.PathPrefix("/api/patients").Subrouter()
+
+	// HomeVisits
+	visits := homeVisits.New(app.EmtctDb.DB)
+	homeVisitRoutes := HomeVisitRoutes{
+		HomeVisits: visits,
+		Patients:   patients,
+	}
+	homeVisitsRouter := r.PathPrefix("/api/homeVisits").Subrouter()
+	homeVisitsRouter.HandleFunc("/{homeVisitId}", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
+		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
+	patientRouter.HandleFunc("/{id}/homeVisits", authMid.Then(homeVisitRoutes.FindByPatientHandler)).
+		Methods(http.MethodPost, http.MethodGet)
 
 	return r
 }
