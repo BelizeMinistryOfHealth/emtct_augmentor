@@ -9,6 +9,8 @@ import (
 	"github.com/uris77/auth0"
 
 	"moh.gov.bz/mch/emtct/internal/app"
+	"moh.gov.bz/mch/emtct/internal/business/data/infant"
+	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
 
 func API(app app.App) *mux.Router {
@@ -20,14 +22,29 @@ func API(app app.App) *mux.Router {
 
 	// Middleware that verifies JWT token and also enables CORS.
 	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
+
+	// ETL
 	etl := Etl{
 		AcsisDb: *app.AcsisDb,
 		EmtctDb: *app.EmtctDb,
 	}
-
 	eltRouter := r.PathPrefix("/api/etl").Subrouter()
 	eltRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
 		Methods(http.MethodOptions, http.MethodPost)
+
+	// Infants
+	pregnancies := pregnancy.Pregnancies{EmtctDb: app.EmtctDb}
+	inf := infant.Infants{Acsis: app.AcsisDb.DB}
+	infantRoutes := InfantRoutes{
+		Infant:      infant.Infants{Acsis: inf.Acsis},
+		AcsisDb:     *app.AcsisDb,
+		Pregnancies: pregnancies,
+	}
+	infantRouter := r.PathPrefix("/api/infants").Subrouter()
+	infantRouter.HandleFunc("/diagnoses/{infantId}", authMid.Then(infantRoutes.InfantDiagnosesHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
+	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	return r
 }
