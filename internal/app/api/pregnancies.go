@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	"moh.gov.bz/mch/emtct/internal/business/data/hiv"
 	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
@@ -17,6 +18,7 @@ import (
 type pregnancyRoutes struct {
 	Pregnancies pregnancy.Pregnancies
 	Patient     patient.Patients
+	Hiv         hiv.HIV
 	Lab         labs.Labs
 }
 

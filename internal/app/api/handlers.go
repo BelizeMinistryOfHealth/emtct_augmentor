@@ -12,6 +12,7 @@ import (
 	"moh.gov.bz/mch/emtct/internal/business/data/admissions"
 	"moh.gov.bz/mch/emtct/internal/business/data/contactTracing"
 	"moh.gov.bz/mch/emtct/internal/business/data/contraceptives"
+	"moh.gov.bz/mch/emtct/internal/business/data/hiv"
 	"moh.gov.bz/mch/emtct/internal/business/data/homeVisits"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
 	"moh.gov.bz/mch/emtct/internal/business/data/labs"
@@ -108,11 +109,15 @@ func API(app app.App) *mux.Router {
 
 	// Pregnancies
 	preg := pregnancy.New(app.EmtctDb, app.AcsisDb)
-	pregRoutes := pregnancyRoutes{Pregnancies: preg, Patient: patients, Lab: lab}
+	Hiv := hiv.New(app.AcsisDb)
+	pregRoutes := pregnancyRoutes{Pregnancies: preg, Patient: patients, Lab: lab, Hiv: Hiv}
 	patientRouter.HandleFunc("/{patientId}/currentPregnancy",
 		authMid.Then(pregRoutes.FindCurrentPregnancy)).Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/currentPregnancy/labResults",
 		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
+
+	patientRouter.HandleFunc("/{id}", authMid.Then(pregRoutes.RetrievePatientHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	return r
 }

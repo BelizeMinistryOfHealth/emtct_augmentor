@@ -455,3 +455,78 @@ func (d *Pregnancies) FindDiagnosesDuringPregnancy(patientId int) ([]Diagnosis, 
 	}
 	return diagnoses, nil
 }
+
+// FindDiagnosesBeforePregnancy returns all diagnoses before the current pregnancy.
+// It retrieves the obstetric details as a separate query so it can use the pregnancy id to filter diagnoses
+// where the diagnosis time is before the lmp.
+func (d *Pregnancies) FindDiagnosesBeforePregnancy(patientId int) ([]Diagnosis, error) {
+	// Retrieve the obstetric details so we can use the current pregnancy's id.
+	obs, err := d.AcsisDb.FindObstetricDetails(patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving diagnoses outside pregnancy from acsis: %+v", err)
+	}
+
+	if obs == nil {
+		return nil, fmt.Errorf("error: no obstetric details found for current pregnancy in acsis")
+	}
+	stmt := `SELECT aaed.encounter_diagnosis_id,
+       		e.patient_id,
+			aai10d.name, 
+			aaed.diagnosis_time 
+		FROM acsis_adt_encounters AS e
+		INNER JOIN acsis_adt_encounter_diagnoses aaed on e.encounter_id = aaed.encounter_id
+		INNER JOIN acsis_adt_icd10_diseases aai10d on aaed.disease_id = aai10d.disease_id
+		WHERE e.patient_id=$1
+		AND aaed.diagnosis_time < (SELECT ahp.last_menstrual_period_date
+		      FROM acsis_hc_pregnancies ahp WHERE ahp.pregnancy_id = $2 LIMIT 1)  
+		ORDER BY aaed.diagnosis_time DESC`
+	var diagnoses []Diagnosis
+	rows, err := d.AcsisDb.Query(stmt, patientId, obs.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error querying diagnoses before pregnancy from acsis: %+v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var diagnosis Diagnosis
+		err := rows.Scan(
+			&diagnosis.Id,
+			&diagnosis.PatientId,
+			&diagnosis.Name,
+			&diagnosis.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning diagnosis for patient(%d) %+v", patientId, err)
+		}
+		diagnoses = append(diagnoses, diagnosis)
+	}
+	return diagnoses, nil
+}
+
+func (d *Pregnancies) FindObstetricHistory(patientId int) ([]ObstetricHistory, error) {
+	stmt := `SELECT
+				b.birth_id,
+				b.mother_id,
+				ahbs.name, 
+				b.last_modified_time
+			FROM acsis_hc_births b
+			INNER JOIN acsis_hc_birth_statuses ahbs on b.birth_status_id = ahbs.birth_status_id
+			WHERE mother_id=$1`
+	var obstetricHistory []ObstetricHistory
+	rows, err := d.AcsisDb.Query(stmt, patientId)
+	if err != nil {
+		return nil, fmt.Errorf("error querying acsis for obstetric history: %+v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var history ObstetricHistory
+		err := rows.Scan(&history.Id,
+			&history.PatientId,
+			&history.ObstetricEvent,
+			&history.Date)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning patient's obstetric history: %+v", err)
+		}
+		obstetricHistory = append(obstetricHistory, history)
+	}
+	return obstetricHistory, nil
+}

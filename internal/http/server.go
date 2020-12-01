@@ -48,11 +48,6 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r := mux.NewRouter()
 	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))
 
-	r.HandleFunc("/health", NewChain(EnableCors()).Then(HealthCheck)).Methods(http.MethodGet)
-	r.HandleFunc("/test", authHandlers.Then(TestAuth)).Methods(http.MethodGet)
-	r.HandleFunc("/patient/{id}", authHandlers.Then(app.RetrievePatient)).
-		Methods(http.MethodGet, http.MethodOptions)
-
 	// ARVS
 	r.HandleFunc("/patient/{patientId}/arvs",
 		authHandlers.Then(app.ArvsHandler)).
