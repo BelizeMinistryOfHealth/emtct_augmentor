@@ -66,16 +66,7 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r.HandleFunc("/patient/contraceptivesUsed/{contraceptiveId}",
 		authHandlers.Then(app.ContraceptivesApiHandler)).
 		Methods(http.MethodOptions, http.MethodPut)
-	// Admissions
-	r.HandleFunc("/patient/{patientId}/hospitalAdmissions",
-		authHandlers.Then(app.HospitalAdmissionsByPatientHandler)).
-		Methods(http.MethodOptions, http.MethodGet)
-	r.HandleFunc("/patient/hospitalAdmissions",
-		authHandlers.Then(app.CreateHospitalAdmissionHandler)).
-		Methods(http.MethodOptions, http.MethodPost)
-	r.HandleFunc("/patient/hospitalAdmissions/{admissionId}",
-		authHandlers.Then(app.HospitalAdmissionsApiHandler)).
-		Methods(http.MethodOptions, http.MethodPut)
+
 	// ARVS
 	r.HandleFunc("/patient/{patientId}/arvs",
 		authHandlers.Then(app.ArvsHandler)).

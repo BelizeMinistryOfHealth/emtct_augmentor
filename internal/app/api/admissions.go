@@ -1,8 +1,7 @@
-package http
+package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,75 +10,23 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/models"
+	"moh.gov.bz/mch/emtct/internal/app"
+	"moh.gov.bz/mch/emtct/internal/business/data/admissions"
+	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
 
-type NewHospitalAdmissionRequest struct {
-	PatientId      int       `json:"patientId"`
-	DateAdmitted   time.Time `json:"dateAdmitted"`
-	Facility       string    `json:"facility"`
-	Reason         string    `json:"reason"`
-	MchEncounterId int       `json:"mchEncounterId"`
+type AdmissionRoutes struct {
+	Admissions admissions.Admissions
+	Patients   patient.Patients
 }
 
-func (a *App) CreateHospitalAdmissionHandler(w http.ResponseWriter, r *http.Request) {
-	switch method := r.Method; method {
-	case http.MethodOptions:
-		return
-	case http.MethodPost:
-		token := r.Context().Value("user").(JwtToken)
-		user := token.Email
-		var req NewHospitalAdmissionRequest
-		err := parseBody(r.Body, &req)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"user": user,
-			}).WithError(err).Error("error parsing request body when creating a new hospital admission")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		admission := models.HospitalAdmission{
-			Id:             uuid.New().String(),
-			PatientId:      req.PatientId,
-			MchEncounterId: req.MchEncounterId,
-			DateAdmitted:   req.DateAdmitted,
-			Facility:       req.Facility,
-			Reason:         req.Reason,
-			CreatedAt:      time.Now(),
-			UpdatedAt:      nil,
-			CreatedBy:      user,
-			UpdatedBy:      nil,
-		}
-		err = a.Db.CreateHospitalAdmission(admission)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"user":      user,
-				"admission": admission,
-			}).WithError(err).Error("error when posting a request to create a hospital admission")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		resp, err := json.Marshal(admission)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"user":      user,
-				"admission": admission,
-			}).WithError(err).Error("error marshalling response of newly created hospital admission")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, string(resp))
-	}
+type admissionsResponse struct {
+	HospitalAdmissions []admissions.HospitalAdmission `json:"hospitalAdmissions"`
+	Patient            patient.BasicInfo              `json:"patient"`
 }
 
-type HospitalAdmissionsResponse struct {
-	HospitalAdmissions []models.HospitalAdmission `json:"hospitalAdmissions"`
-	Patient            models.PatientBasicInfo    `json:"patient"`
-}
-
-func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.Request) {
-	switch method := r.Method; method {
+func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
@@ -93,7 +40,7 @@ func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		admissions, err := a.Db.HospitalAdmissionsByPatientId(id)
+		admissions, err := a.Admissions.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
@@ -101,7 +48,7 @@ func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.AcsisDb.FindPatientBasicInfo(id)
+		patient, err := a.Patients.FindBasicInfo(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId":  id,
@@ -111,34 +58,85 @@ func (a *App) HospitalAdmissionsByPatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		response := HospitalAdmissionsResponse{
+		response := admissionsResponse{
 			HospitalAdmissions: admissions,
 			Patient:            *patient,
 		}
-		results, err := json.Marshal(response)
-		if err != nil {
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{
 				"patientId":  patientId,
 				"admissions": admissions,
 			}).WithError(err).Error("failed to marshal admissions response")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, string(results))
 	default:
 		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 	}
 }
 
-func (a *App) HospitalAdmissionsApiHandler(w http.ResponseWriter, r *http.Request) {
-	switch method := r.Method; method {
+type newAdmissionRequest struct {
+	PatientId      int       `json:"patientId"`
+	DateAdmitted   time.Time `json:"dateAdmitted"`
+	Facility       string    `json:"facility"`
+	Reason         string    `json:"reason"`
+	MchEncounterId int       `json:"mchEncounterId"`
+}
+
+func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	switch r.Method {
 	case http.MethodOptions:
 		return
+	case http.MethodPost:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
+		var req newAdmissionRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			log.WithFields(log.Fields{
+				"user": user,
+			}).WithError(err).Error("error parsing request body when creating a new hospital admission")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		admission := admissions.HospitalAdmission{
+			Id:             uuid.New().String(),
+			PatientId:      req.PatientId,
+			MchEncounterId: req.MchEncounterId,
+			DateAdmitted:   req.DateAdmitted,
+			Facility:       req.Facility,
+			Reason:         req.Reason,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      nil,
+			CreatedBy:      user,
+			UpdatedBy:      nil,
+		}
+		err := a.Admissions.Create(admission)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"admission": admission,
+			}).WithError(err).Error("error when posting a request to create a hospital admission")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(admission); err != nil {
+			log.WithFields(log.Fields{
+				"user":      user,
+				"admission": admission,
+			}).WithError(err).Error("error marshalling response of newly created hospital admission")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	case http.MethodPut:
 		vars := mux.Vars(r)
 		admissionId := vars["admissionId"]
-		token := r.Context().Value("user").(JwtToken)
+		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
-		h, err := a.Db.FindHospitalAdmissionById(admissionId)
+		h, err := a.Admissions.FindById(admissionId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
@@ -155,9 +153,8 @@ func (a *App) HospitalAdmissionsApiHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		var req models.HospitalAdmission
-		err = parseBody(r.Body, &req)
-		if err != nil {
+		var req admissions.HospitalAdmission
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
 				"admissionId": admissionId,
@@ -177,7 +174,7 @@ func (a *App) HospitalAdmissionsApiHandler(w http.ResponseWriter, r *http.Reques
 		now := time.Now()
 		req.UpdatedBy = &user
 		req.UpdatedAt = &now
-		err = a.Db.EditHospitalAdmission(req)
+		err = a.Admissions.Edit(req)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
@@ -187,8 +184,8 @@ func (a *App) HospitalAdmissionsApiHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		result, err := json.Marshal(req)
-		if err != nil {
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(req); err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
 				"admissionId": admissionId,
@@ -197,9 +194,5 @@ func (a *App) HospitalAdmissionsApiHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, string(result))
-	default:
-		http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 	}
 }
