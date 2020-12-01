@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"moh.gov.bz/mch/emtct/internal/config"
-	"moh.gov.bz/mch/emtct/internal/http"
+	"moh.gov.bz/mch/emtct/internal/server"
 )
 
 func main() {
@@ -35,5 +35,5 @@ func main() {
 	if err != nil {
 		fmt.Print("could not parse the configuration file")
 	}
-	http.NewServer(*cnf)
+	server.NewServer(*cnf)
 }

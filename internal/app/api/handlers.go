@@ -3,6 +3,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/uris77/auth0"
 
@@ -17,8 +19,15 @@ func API(app app.App) *mux.Router {
 	auth0Client := auth0.NewAuth0(60, 518400)
 
 	// Middleware that verifies JWT token and also enables CORS.
-	//authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
+	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
+	etl := Etl{
+		AcsisDb: *app.AcsisDb,
+		EmtctDb: *app.EmtctDb,
+	}
+
+	eltRouter := r.PathPrefix("/api/etl").Subrouter()
+	eltRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
+		Methods(http.MethodOptions, http.MethodPost)
 
 	return r
-
 }

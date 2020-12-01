@@ -1,4 +1,4 @@
-package http
+package api
 
 import (
 	"encoding/json"
@@ -6,14 +6,20 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"moh.gov.bz/mch/emtct/internal/db"
 	"moh.gov.bz/mch/emtct/internal/models"
 )
+
+type Etl struct {
+	AcsisDb db.AcsisDb
+	EmtctDb db.EmtctDb
+}
 
 type pregnancyEtlRequest struct {
 	Year int `json:"year"`
 }
 
-func (a *App) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
+func (e Etl) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	handlerName := "PregnancyEtlHandler"
 	switch r.Method {
@@ -33,7 +39,7 @@ func (a *App) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		yr := req.Year
-		existingPregnancies, err := a.Db.FindExistingPregnanciesByYear(yr)
+		existingPregnancies, err := e.EmtctDb.FindExistingPregnanciesByYear(yr)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":    yr,
@@ -44,7 +50,7 @@ func (a *App) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		acsisPregnancies, err := a.AcsisDb.FindPregnanciesByYear(yr)
+		acsisPregnancies, err := e.AcsisDb.FindPregnanciesByYear(yr)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":    yr,
@@ -60,7 +66,7 @@ func (a *App) PregnancyEtlHandler(w http.ResponseWriter, r *http.Request) {
 				pregs = append(pregs, p)
 			}
 		}
-		err = a.Db.InsertPregnancies(r.Context(), pregs)
+		err = e.EmtctDb.InsertPregnancies(r.Context(), pregs)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"year":        yr,

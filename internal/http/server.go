@@ -131,9 +131,6 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r.HandleFunc("/patient/{patientId}/partners/contactTracing", authHandlers.Then(app.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
 
-	// ETL
-	r.HandleFunc("/etl/pregnancies", NewChain(EnableCors()).Then(app.PregnancyEtlHandler)).Methods(http.MethodOptions, http.MethodPost)
-
 	fs := http.FileServer(http.Dir("./front_end/build/"))
 	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
 	staticFs := http.FileServer(http.Dir("./front_end/build/static/"))
