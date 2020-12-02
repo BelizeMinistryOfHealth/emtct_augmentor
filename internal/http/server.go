@@ -48,11 +48,6 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	r := mux.NewRouter()
 	authHandlers := NewChain(EnableCors(), VerifyToken(jwkUrl, aud, iss, auth0Client))
 
-	//Syphilis Treatment
-	r.HandleFunc("/patient/{patientId}/syphilisTreatments",
-		authHandlers.Then(app.SyphilisTreatmentHandler)).
-		Methods(http.MethodGet, http.MethodOptions)
-
 	//Infant Syphilis Treatment
 	r.HandleFunc("/patient/{motherId}/infant/{infantId}/syphilisTreatments",
 		authHandlers.Then(app.InfantSyphilisTreatmentHandler)).

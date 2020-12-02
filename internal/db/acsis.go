@@ -471,69 +471,6 @@ func (d *AcsisDb) FindPatientSyphilisTreatment(patientId int) ([]models.Prescrip
 	return prescriptions, nil
 }
 
-// FindArvsByPatient finds all ARVs prescribed to a patient during pregnancy.
-// It finds the current antenatal encounter, so that it can filter all prescriptions for only that encounter.
-func (d *AcsisDb) FindArvsByPatient(patientId int) ([]models.Prescription, error) {
-	v, err := d.FindObstetricDetails(patientId)
-	if err != nil {
-		return nil, fmt.Errorf("error while retrieving arvs treatment from acsis: %+v", err)
-	}
-	anc, err := d.FindLatestAntenatalEncounter(patientId, v.Lmp)
-	if err != nil {
-		return nil, fmt.Errorf("could not find an antenatal encounter while retrieving arvs from acsis: %+v", err)
-	}
-	stmt := `
-		SELECT
-		    adep.encounter_pharmaceutical_id,
-			adep.total_doses,
-		   	aap.name as prescription,
-		   	acfu.name as frequency, 
-			aap.strength || ' ' || aapu.name as strength,
-		   	adep.prescribing_physician_special_instructions || ' ' || adep.notes AS comments,
-		   	adep.prescribed_time
-		FROM acsis_hc_patients p
-			INNER JOIN acsis_adt_encounters e ON p.patient_id = e.patient_id
-			INNER JOIN acsis_adt_encounter_pharmaceuticals adep ON adep.encounter_id=e.encounter_id
-			INNER JOIN acsis_adt_pharmaceuticals aap ON adep.pharmaceutical_id=aap.pharmaceutical_id
-			INNER JOIN acsis_coe_frequency_units acfu ON acfu.frequency_unit_id =adep.frequency_unit_id
-			INNER JOIN acsis_adt_pharmaceutical_units aapu ON aapu.pharmaceutical_unit_id=aap.strength_unit_id
-		WHERE p.patient_id=$1 AND adep.prescribed_time>=$2
-			AND (aap.name ILIKE '%Lamivudine%'
-			OR aap.name ILIKE '%Zidovudine%'
-			OR aap.name ILIKE '%Nevirapine%')
-		ORDER BY adep.prescribed_time DESC;
-`
-	ancDate := anc.BeginDate.Format(layoutISO)
-	rows, err := d.Query(stmt, patientId, ancDate)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving arvs from acsis: %+v", err)
-	}
-	defer rows.Close()
-	var arvs []models.Prescription
-	var totalDoses sql.NullInt64
-	for rows.Next() {
-		var arv models.Prescription
-		err := rows.Scan(&arv.Id,
-			&totalDoses,
-			&arv.Pharmaceutical,
-			&arv.Frequency,
-			&arv.Strength,
-			&arv.Comments,
-			&arv.PrescribedTime)
-		if err != nil {
-			return arvs, fmt.Errorf("error scanning arv prescription from acsis: %+v", err)
-		}
-		arv.PatientId = patientId
-		if totalDoses.Valid {
-			arv.TotalDoses = int(totalDoses.Int64)
-		}
-
-		arvs = append(arvs, arv)
-	}
-
-	return arvs, nil
-}
-
 func (d *AcsisDb) FindPatientBasicInfo(patientId int) (*models.PatientBasicInfo, error) {
 	stmt := `
 		SELECT

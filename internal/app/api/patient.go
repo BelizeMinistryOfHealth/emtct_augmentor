@@ -218,3 +218,85 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
+
+type treatmentResponse struct {
+	Prescriptions []prescription.Prescription `json:"prescriptions"`
+	Patient       patient.BasicInfo           `json:"patient"`
+}
+
+func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "PatientSyphilisTreatmentHandler"
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		method := "GET"
+		vars := mux.Vars(r)
+		id := vars["patientId"]
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
+		patientId, err := strconv.Atoi(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"user":      user,
+				"handler":   handlerName,
+				"method":    method,
+			}).WithError(err).Error("patient id is not a valid number")
+			http.Error(w, "patient id is not a valid number", http.StatusBadRequest)
+			return
+		}
+		basicInfo, err := a.Patient.FindBasicInfo(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"handler":   handlerName,
+				"method":    method,
+			}).WithError(err).Error("failed to retrieve patient basic info")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		preg, err := a.Pregnancies.FindLatest(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"handler":   handlerName,
+				"method":    method,
+			}).WithError(err).Error("failed to retrieve patient latest pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		lmp := preg.Lmp
+		endDate := lmp.Add(time.Hour * 24 * 7 * 52)
+		treatments, err := a.Patient.FindSyphilisTreatment(patientId, lmp, &endDate)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"handler":   handlerName,
+				"method":    method,
+				"lmp":       lmp,
+				"endDate":   endDate,
+			}).WithError(err).Error("failed to retrieve patient syphilis treatment")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		response := treatmentResponse{
+			Prescriptions: treatments,
+			Patient:       *basicInfo,
+		}
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.WithFields(log.Fields{
+				"patientId": id,
+				"handler":   handlerName,
+				"method":    method,
+				"lmp":       lmp,
+				"endDate":   endDate,
+				"response":  response,
+			}).WithError(err).Error("failed to encode syphilis treatment")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+	}
+}
