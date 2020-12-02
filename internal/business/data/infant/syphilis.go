@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	"moh.gov.bz/mch/emtct/internal/models"
+	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
 )
 
-func (d *Infants) FindInfantSyphilisTreatment(patientId int) ([]models.Prescription, error) {
+func (d *Infants) FindInfantSyphilisTreatment(patientId int) ([]prescription.Prescription, error) {
 	stmt := `
 SELECT
 		    adep.encounter_pharmaceutical_id,
@@ -32,9 +32,9 @@ SELECT
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving syphilis treatment for infant from acsis: %+v", err)
 	}
-	var prescriptions []models.Prescription
+	var prescriptions []prescription.Prescription
 	for rows.Next() {
-		var p models.Prescription
+		var p prescription.Prescription
 		var totalDoses sql.NullInt64
 		err := rows.Scan(&p.Id, &totalDoses, &p.Pharmaceutical, &p.Frequency, &p.Strength, &p.Comments, &p.PrescribedTime)
 		if err != nil {

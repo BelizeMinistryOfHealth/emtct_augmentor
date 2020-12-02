@@ -45,12 +45,13 @@ func API(app app.App) *mux.Router {
 	inf := infant.New(app.AcsisDb.DB)
 	infantRoutes := InfantRoutes{
 		Infant:      infant.Infants{Acsis: inf.Acsis},
-		AcsisDb:     *app.AcsisDb,
 		Pregnancies: pregnancies,
 	}
 	infantRouter := r.PathPrefix("/api/infants").Subrouter()
 	infantRouter.HandleFunc("/diagnoses/{infantId}", authMid.Then(infantRoutes.InfantDiagnosesHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
+	infantRouter.HandleFunc("/{infantId}/syphilisTreatments", authMid.Then(infantRoutes.InfantSyphilisTreatmentHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
 	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
 		Methods(http.MethodOptions, http.MethodGet)
 
