@@ -13,6 +13,7 @@ import (
 
 	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
+	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
 )
@@ -20,6 +21,7 @@ import (
 type InfantRoutes struct {
 	Infant      infant.Infants
 	Pregnancies pregnancy.Pregnancies
+	Labs        labs.Labs
 }
 
 func (i InfantRoutes) InfantHandlers(w http.ResponseWriter, r *http.Request) {
@@ -424,6 +426,71 @@ func (i InfantRoutes) InfantSyphilisTreatmentHandler(w http.ResponseWriter, r *h
 				"patientId": infantId,
 				"handler":   "SyphilisTreatmentHandler",
 			}).WithError(err).Error("error marshaling syphilis treatment response")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type infantSyphilisScreeningResponse struct {
+	Infant     infant.Infant            `json:"infant"`
+	Screenings []labs.SyphilisScreening `json:"screenings"`
+}
+
+func (i InfantRoutes) InfantSyphilisScreeninngHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		infantId := vars["infantId"]
+		id, err := strconv.Atoi(infantId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"infantId": infantId,
+				"handler":  "InfantSyphilisScreeningHandler",
+			}).WithError(err).Error("infantId is not a valid number: %+v", err)
+			http.Error(w, "infantId is not a valid number", http.StatusBadRequest)
+			return
+		}
+		infantInfo, err := i.Infant.FindInfant(id)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"infantId": id,
+				"handler":  "InfantSyphilisScreeningHandler",
+			}).WithError(err).Error("error retrieving infant information")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if infantInfo == nil {
+			log.WithFields(log.Fields{
+				"infantId": id,
+				"handler":  "InfantSyphilisScreeningHandler",
+			}).Error("no infant exists with given id")
+			http.Error(w, fmt.Sprintf("infant with id %d does not exist", id), http.StatusNotFound)
+			return
+		}
+		screenings, err := i.Labs.FindInfantSyphilisScreenings(id, *infantInfo.Infant.Dob)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"infantId":   id,
+				"handler":    "InfantSyphilisScreeningHandler",
+				"infantInfo": infantInfo,
+			}).WithError(err).Error("error retrieving syphilis screenings for infant")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		response := infantSyphilisScreeningResponse{
+			Infant:     *infantInfo,
+			Screenings: screenings,
+		}
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.WithFields(log.Fields{
+				"infantId":   id,
+				"screenings": screenings,
+				"handler":    "InfantSyphilisScreeningHandler",
+			}).WithError(err).Error("error marshalling screening data")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

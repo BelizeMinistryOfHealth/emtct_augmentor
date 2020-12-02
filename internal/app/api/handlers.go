@@ -46,12 +46,15 @@ func API(app app.App) *mux.Router {
 	infantRoutes := InfantRoutes{
 		Infant:      infant.Infants{Acsis: inf.Acsis},
 		Pregnancies: pregnancies,
+		Labs:        lab,
 	}
 	infantRouter := r.PathPrefix("/api/infants").Subrouter()
 	infantRouter.HandleFunc("/diagnoses/{infantId}", authMid.Then(infantRoutes.InfantDiagnosesHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 	infantRouter.HandleFunc("/{infantId}/syphilisTreatments", authMid.Then(infantRoutes.InfantSyphilisTreatmentHandler)).
 		Methods(http.MethodGet, http.MethodOptions)
+	infantRouter.HandleFunc("/{infantId}/syphilisScreenings", authMid.Then(infantRoutes.InfantSyphilisScreeninngHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
 	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
 		Methods(http.MethodOptions, http.MethodGet)
 
@@ -134,6 +137,11 @@ func API(app app.App) *mux.Router {
 
 	patientRouter.HandleFunc("/{id}", authMid.Then(pregRoutes.RetrievePatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
+
+	fs := http.FileServer(http.Dir("./front_end/build/"))
+	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
+	staticFs := http.FileServer(http.Dir("./front_end/build/static/"))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFs))
 
 	return r
 }
