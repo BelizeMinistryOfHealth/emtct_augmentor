@@ -36,9 +36,9 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 	router := api.API(app)
 	log.Infof("Initiated App: %+v", app)
 	//apiRouter := r.PathPrefix("/api").Subrouter()
-	fs := http.FileServer(http.Dir("/var/lib/hecopab-www"))
+	fs := http.FileServer(http.Dir("/var/lib/emtct-www"))
 	router.PathPrefix("/").Handler(http.StripPrefix("/", fs))
-	staticFs := http.FileServer(http.Dir("/var/lib/hecopab-www"))
+	staticFs := http.FileServer(http.Dir("/var/lib/emtct-www"))
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFs))
 
 	return router

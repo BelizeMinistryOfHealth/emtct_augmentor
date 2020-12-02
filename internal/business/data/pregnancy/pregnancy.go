@@ -461,7 +461,7 @@ func (d *Pregnancies) FindDiagnosesDuringPregnancy(patientId int) ([]Diagnosis, 
 // where the diagnosis time is before the lmp.
 func (d *Pregnancies) FindDiagnosesBeforePregnancy(patientId int) ([]Diagnosis, error) {
 	// Retrieve the obstetric details so we can use the current pregnancy's id.
-	obs, err := d.AcsisDb.FindObstetricDetails(patientId)
+	obs, err := d.FindObstetricDetails(patientId)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving diagnoses outside pregnancy from acsis: %+v", err)
 	}

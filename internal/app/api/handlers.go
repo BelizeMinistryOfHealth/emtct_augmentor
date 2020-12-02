@@ -138,10 +138,5 @@ func API(app app.App) *mux.Router {
 	patientRouter.HandleFunc("/{id}", authMid.Then(pregRoutes.RetrievePatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
-	fs := http.FileServer(http.Dir("./front_end/build/"))
-	r.PathPrefix("/").Handler(http.StripPrefix("/", fs))
-	staticFs := http.FileServer(http.Dir("./front_end/build/static/"))
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFs))
-
 	return r
 }
