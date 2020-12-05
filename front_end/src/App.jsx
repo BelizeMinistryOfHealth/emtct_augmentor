@@ -41,6 +41,7 @@ function App() {
         try {
           const idToken = await getIdTokenClaims();
           setIdToken(idToken.__raw);
+          console.dir({ idToken: idToken.__raw });
         } catch (e) {
           // eslint-disable-next-line no-undef
           console.error('error fetching token: ', e);

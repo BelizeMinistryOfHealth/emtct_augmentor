@@ -78,7 +78,7 @@ const Infant = () => {
   React.useEffect(() => {
     const getInfant = () => {
       httpInstance
-        .get(`/patient/${patientId}/infant`)
+        .get(`/infants/${patientId}`)
         .then((result) => {
           // eslint-disable-next-line no-undef
           console.dir({ result });

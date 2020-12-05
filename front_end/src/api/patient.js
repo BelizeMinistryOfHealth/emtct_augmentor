@@ -4,7 +4,7 @@ import React from 'react';
 import { useHttpApi } from './http';
 
 export const fetchPatient = async (patientId, httpInstance) => {
-  const result = await httpInstance.get(`/patient/${patientId}`);
+  const result = await httpInstance.get(`/patients/${patientId}`);
   const data = result.data;
 
   if (!data.patient) {
@@ -29,7 +29,7 @@ export const fetchPatient = async (patientId, httpInstance) => {
 };
 
 export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
-  const patientsData = await httpInstance.get(`/patient/${patientId}`);
+  const patientsData = await httpInstance.get(`/patients/${patientId}`);
   if (!patientsData.data) {
     return null;
   }
@@ -45,7 +45,7 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
   console.dir({ obstetricHistory });
 
   const pregnancyData = await httpInstance.get(
-    `/patient/${patientId}/currentPregnancy`
+    `/patients/${patientId}/currentPregnancy`
   );
   if (!pregnancyData.data) {
     return null;

@@ -37,7 +37,7 @@ func (a *pregnancyRoutes) FindCurrentPregnancy(w http.ResponseWriter, r *http.Re
 		return
 	case http.MethodGet:
 		vars := mux.Vars(r)
-		patientId := vars["id"]
+		patientId := vars["patientId"]
 		id, err := strconv.Atoi(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{"patientId": patientId}).WithError(err).Error("patient id is not a number")

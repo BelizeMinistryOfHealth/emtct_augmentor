@@ -49,6 +49,7 @@ func (i InfantRoutes) InfantHandlers(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "could not retrieve the mother's latest pregnancy", http.StatusInternalServerError)
 			return
 		}
+		log.WithFields(log.Fields{"pregnancy": preg}).Info("pregnancy for infant")
 		infant, err := i.Infant.FindPregnancyInfant(*preg)
 		if err != nil {
 			log.WithFields(log.Fields{
