@@ -206,7 +206,7 @@ func assignSamplesToResults(results []LabResult, samples []testSample) []LabResu
 // 3. Find the samples for each test request item
 // 4. Create the response that will merge the data from all these queries.
 func (d *Labs) FindLabTestsDuringPregnancy(patientId int, lmp *time.Time) ([]LabResult, error) {
-	if lmp != nil {
+	if lmp == nil {
 		return nil, fmt.Errorf("error while retrieving lab tests during pregnancy details from acsis")
 	}
 

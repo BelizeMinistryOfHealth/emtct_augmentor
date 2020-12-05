@@ -178,7 +178,7 @@ export const fetchArvsTreatment = (patientId, encounterId) => {
 
 export const fetchPregnancyLabResults = async (patientId, httpInstance) => {
   const labResultsResponse = await httpInstance.get(
-    `/patient/${patientId}/currentPregnancy/labResults`
+    `/patients/${patientId}/currentPregnancy/labResults`
   );
 
   return labResultsResponse.data;

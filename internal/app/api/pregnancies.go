@@ -98,7 +98,7 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 	case http.MethodGet:
 		method := "GET"
 		vars := mux.Vars(r)
-		patientId := vars["id"]
+		patientId := vars["patientId"]
 		id, err := strconv.Atoi(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{"patientId": patientId}).
