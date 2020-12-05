@@ -108,7 +108,7 @@ const PartnerSyphilisTreatments = () => {
   React.useEffect(() => {
     const getTreatments = () => {
       httpInstance
-        .get(`/patient/${patientId}/partners/syphilisTreatments`)
+        .get(`/partners/${patientId}/syphilisTreatments`)
         .then((r) => {
           setTreatments({ data: r.data, loading: false, error: undefined });
         })

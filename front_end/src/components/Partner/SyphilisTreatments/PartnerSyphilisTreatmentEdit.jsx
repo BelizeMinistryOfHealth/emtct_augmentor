@@ -38,7 +38,7 @@ const PartnerSyphilisTreatmentEdit = ({ treatment, closeEditScreen }) => {
     const submit = () => {
       httpInstance
         .put(
-          `/patient/${treatmentData.patientId}/partners/syphilisTreatments`,
+          `/partners/${treatmentData.patientId}/syphilisTreatments`,
           treatmentData
         )
         .then(() => {

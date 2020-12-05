@@ -115,7 +115,7 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodPost, http.MethodPut)
 	partnersRouter.HandleFunc("/{patientId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
-	partnersRouter.HandleFunc("/{patientId}/partners/syphilisTreatments", authMid.Then(partnerRoutes.SyphilisTreatmentHandler)).
+	partnersRouter.HandleFunc("/{patientId}/syphilisTreatments", authMid.Then(partnerRoutes.SyphilisTreatmentHandler)).
 		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
 
 	// Pregnancies

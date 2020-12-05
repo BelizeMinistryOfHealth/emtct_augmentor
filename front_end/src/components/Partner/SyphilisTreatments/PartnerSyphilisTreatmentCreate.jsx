@@ -37,7 +37,7 @@ const PartnerSyphilisTreatmentCreate = () => {
   React.useEffect(() => {
     const fetchPatient = () => {
       httpInstance
-        .get(`/patient/${patientId}`)
+        .get(`/patients/${patientId}`)
         .then((response) => {
           setPatientData({
             data: response.data,
@@ -62,7 +62,7 @@ const PartnerSyphilisTreatmentCreate = () => {
   React.useEffect(() => {
     const post = () => {
       httpInstance
-        .post(`/patient/${patientId}/partners/syphilisTreatments`, treatment)
+        .post(`/partners/${patientId}/syphilisTreatments`, treatment)
         .then(() => {
           setStatus('SUCCESS');
         })

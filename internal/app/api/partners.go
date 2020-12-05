@@ -32,13 +32,13 @@ type newSyphilisTreatmentRequest struct {
 func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "SyphilisTreatmentHandler"
 	defer r.Body.Close()
-	token := r.Context().Value("user").(app.JwtToken)
-	user := token.Email
 	vars := mux.Vars(r)
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		id := vars["patientId"]
 		patientId, err := strconv.Atoi(id)
 		if err != nil {
@@ -82,6 +82,8 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPost:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		id := vars["patientId"]
 		patientId, err := strconv.Atoi(id)
 		if err != nil {
@@ -134,6 +136,8 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPut:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		var treatment prescription.SyphilisTreatment
 		if err := json.NewDecoder(r.Body).Decode(&treatment); err != nil {
 			log.WithFields(log.Fields{
