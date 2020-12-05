@@ -132,54 +132,26 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 			return
 		}
 	case http.MethodPut:
-		vars := mux.Vars(r)
-		admissionId := vars["admissionId"]
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
-		h, err := a.Admissions.FindById(admissionId)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"user":        user,
-				"admissionId": admissionId,
-			}).WithError(err).Error("error while editing hospital admission")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		if h == nil {
-			log.WithFields(log.Fields{
-				"user":        user,
-				"admissionId": admissionId,
-			}).WithError(err).Error("tried to edit a non-existent hospital admission")
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
+
 		var req admissions.HospitalAdmission
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithFields(log.Fields{
-				"user":        user,
-				"admissionId": admissionId,
+				"user": user,
 			}).WithError(err).Error("error while parsing body for editing a hospital admission")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if req.Id != admissionId {
-			log.WithFields(log.Fields{
-				"user":        user,
-				"admissionId": admissionId,
-				"request":     req,
-			}).WithError(err).Error("the request's id must match the admission id in the resource url")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
+
 		now := time.Now()
 		req.UpdatedBy = &user
 		req.UpdatedAt = &now
-		err = a.Admissions.Edit(req)
+		err := a.Admissions.Edit(req)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
 				"requestBody": req,
-				"admissionId": admissionId,
 			}).WithError(err).Error("failed to edit hospital admission")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -188,7 +160,6 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 		if err := json.NewEncoder(w).Encode(req); err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
-				"admissionId": admissionId,
 				"requestBody": req,
 			}).WithError(err).Error("error marshalling response for edited admission")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

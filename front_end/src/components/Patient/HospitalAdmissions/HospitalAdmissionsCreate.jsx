@@ -36,7 +36,7 @@ const HospitalAdmissionCreateForm = () => {
   React.useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const result = await httpInstance.get(`/patient/${patientId}`);
+        const result = await httpInstance.get(`/patients/${patientId}`);
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -51,7 +51,7 @@ const HospitalAdmissionCreateForm = () => {
   React.useEffect(() => {
     const post = async (admission) => {
       try {
-        await httpInstance.post(`/patient/hospitalAdmissions`, {
+        await httpInstance.post(`/hospitalAdmissions`, {
           ...admission,
           mchEncounterId: patientData.data.antenatalEncounter.id,
         });

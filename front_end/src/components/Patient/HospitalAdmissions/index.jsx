@@ -104,7 +104,7 @@ const HospitalAdmissions = (props) => {
       try {
         setData({ admissions: [], loading: true, error: undefined });
         const result = await httpInstance.get(
-          `/patient/${patientId}/hospitalAdmissions`
+          `/patients/${patientId}/hospitalAdmissions`
         );
         setData({
           admissionsData: result.data,

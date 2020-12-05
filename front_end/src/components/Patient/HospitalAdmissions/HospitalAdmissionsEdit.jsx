@@ -37,7 +37,7 @@ const EditForm = ({ admission, closeForm }) => {
   React.useEffect(() => {
     const submit = async (body) => {
       try {
-        await httpInstance.put(`/patient/hospitalAdmissions/${body.id}`, body);
+        await httpInstance.put(`/hospitalAdmissions`, body);
         setStatus('SUCCESS');
       } catch (e) {
         console.error(e);
