@@ -109,7 +109,7 @@ const ContactTracing = () => {
   React.useEffect(() => {
     const getTracings = () => {
       httpInstance
-        .get(`/patient/${patientId}/partners/contactTracing`)
+        .get(`/partners/${patientId}/contactTracing`)
         .then((resp) => {
           setTracings({
             data: resp.data,

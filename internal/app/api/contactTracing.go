@@ -31,12 +31,13 @@ type contactTracingRequest struct {
 func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "ContactTracingHandler"
 	defer r.Body.Close()
-	token := r.Context().Value("user").(app.JwtToken)
-	user := token.Email
+
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		var request contactTracingRequest
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			log.WithFields(log.Fields{
@@ -78,6 +79,8 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			return
 		}
 	case http.MethodGet:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		vars := mux.Vars(r)
 		id := vars["patientId"]
 		patientId, err := strconv.Atoi(id)
@@ -125,6 +128,8 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			return
 		}
 	case http.MethodPut:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
 		today := time.Now()
 		var contactTracing contactTracing.ContactTracing
 		if err := json.NewDecoder(r.Body).Decode(&contactTracing); err != nil {

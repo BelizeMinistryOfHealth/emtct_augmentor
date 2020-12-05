@@ -38,7 +38,7 @@ const CcontactTracingCreate = () => {
   React.useEffect(() => {
     const fetchPatient = () => {
       httpInstance
-        .get(`/patient/${patientId}`)
+        .get(`/patients/${patientId}`)
         .then((response) => {
           setPatientData({
             data: response.data,
@@ -63,7 +63,7 @@ const CcontactTracingCreate = () => {
   React.useEffect(() => {
     const post = () => {
       httpInstance
-        .post(`/patient/${patientId}/partners/contactTracing`, contactTracing)
+        .post(`/partners/contactTracing`, contactTracing)
         .then(() => {
           setStatus('SUCCESS');
         })

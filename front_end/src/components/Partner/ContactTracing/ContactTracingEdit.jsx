@@ -37,10 +37,7 @@ const ContactTracingEdit = ({ contactTracing, closeEditScreen }) => {
   React.useEffect(() => {
     const submit = () => {
       httpInstance
-        .put(
-          `/patient/${contactTracingData.patientId}/partners/contactTracing`,
-          contactTracingData
-        )
+        .put('/partners/contactTracing', contactTracingData)
         .then(() => {
           setStatus('SUCCESS');
         })
