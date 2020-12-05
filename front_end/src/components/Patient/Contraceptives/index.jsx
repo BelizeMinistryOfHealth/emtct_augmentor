@@ -105,7 +105,7 @@ const ContraceptivesUsed = (props) => {
     const fetchContraceptives = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/contraceptivesUsed`
+          `/patients/${patientId}/contraceptivesUsed`
         );
         setData({ result: result.data, loading: false, error: undefined });
       } catch (e) {

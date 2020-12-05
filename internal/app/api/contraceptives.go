@@ -132,5 +132,45 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+	case http.MethodPut:
+		token := r.Context().Value("user").(app.JwtToken)
+		user := token.Email
+		var req contraceptives.ContraceptiveUsed
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			log.WithError(err).Error("failed to parse the body for creating a contraceptive")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		updated := time.Now()
+		contraceptive := contraceptives.ContraceptiveUsed{
+			Id:             req.Id,
+			PatientId:      req.PatientId,
+			MchEncounterId: req.MchEncounterId,
+			Contraceptive:  req.Contraceptive,
+			Comments:       req.Comments,
+			DateUsed:       req.DateUsed,
+			UpdatedAt:      &updated,
+			UpdatedBy:      &user,
+		}
+
+		if err := a.Contraceptives.Edit(contraceptive); err != nil {
+			log.WithFields(log.Fields{
+				"user":          user,
+				"request":       req,
+				"contraceptive": contraceptive,
+			}).WithError(err).Error("failed to create new contraceptive used")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(contraceptive); err != nil {
+			log.WithFields(log.Fields{
+				"user":          user,
+				"contraceptive": contraceptive,
+			}).WithError(err).Error("failed to marshal new contraceptive created")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	}
 }

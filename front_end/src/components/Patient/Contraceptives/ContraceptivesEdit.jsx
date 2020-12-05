@@ -36,7 +36,7 @@ const EditForm = ({ contraceptive, onCloseForm }) => {
   React.useEffect(() => {
     const submit = async (body) => {
       try {
-        await httpInstance.put(`/patient/contraceptivesUsed/${body.id}`, body);
+        await httpInstance.put(`/contraceptivesUsed`, body);
         setStatus('SUCCESS');
         onCloseForm();
       } catch (e) {

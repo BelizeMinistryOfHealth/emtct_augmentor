@@ -36,7 +36,7 @@ const ContraceptivesCreateForm = () => {
   React.useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const result = await httpInstance.get(`/patient/${patientId}`);
+        const result = await httpInstance.get(`/patients/${patientId}`);
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -51,7 +51,7 @@ const ContraceptivesCreateForm = () => {
   React.useEffect(() => {
     const post = async (contraceptive) => {
       try {
-        await httpInstance.post(`/patient/contraceptivesUsed`, {
+        await httpInstance.post(`/contraceptivesUsed`, {
           ...contraceptive,
           mchEncounterId: patientData.data.antenatalEncounter.id,
         });

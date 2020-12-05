@@ -93,7 +93,7 @@ func API(app app.App) *mux.Router {
 		Patients:       patients,
 	}
 	contraceptiveRouter := r.PathPrefix("/api/contraceptivesUsed").Subrouter()
-	contraceptiveRouter.HandleFunc("/", authMid.Then(contraceptiveRoutes.ContraceptivesHandler)).
+	contraceptiveRouter.HandleFunc("", authMid.Then(contraceptiveRoutes.ContraceptivesHandler)).
 		Methods(http.MethodPost, http.MethodPut, http.MethodOptions)
 	patientRouter.HandleFunc("/{patientId}/contraceptivesUsed", authMid.Then(contraceptiveRoutes.ContraceptivesByPatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
