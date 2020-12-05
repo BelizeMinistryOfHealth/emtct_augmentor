@@ -44,7 +44,7 @@ const HomeVisitCreateForm = () => {
   React.useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const result = await httpInstance.get(`/patient/${patientId}`);
+        const result = await httpInstance.get(`/patients/${patientId}`);
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -67,7 +67,7 @@ const HomeVisitCreateForm = () => {
       };
 
       httpInstance
-        .post('/patient/homeVisits', body)
+        .post('/homeVisits', body)
         .then((response) => {
           setHomeVisit(response.data);
           setStatus('SUCCESS');

@@ -75,6 +75,7 @@ func (h HomeVisitRoutes) FindByPatientHandler(w http.ResponseWriter, r *http.Req
 }
 
 type homeVisitRequest struct {
+	ID          string    `json:"id"`
 	Reason      string    `json:"reason"`
 	Comments    string    `json:"comments"`
 	DateOfVisit time.Time `json:"dateOfVisit"`
@@ -115,22 +116,21 @@ func (h HomeVisitRoutes) HomeVisitsHandler(w http.ResponseWriter, r *http.Reques
 	case http.MethodPut:
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
-		vars := mux.Vars(r)
-		id := vars["homeVisitId"]
 		var req homeVisitRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithFields(log.Fields{
-				"homeVisitId": id,
-				"user":        user,
-			}).WithError(err).Error("parsing body failed")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				"user":    user,
+				"handler": "HomeVisitsHandler",
+				"Method":  "PUT",
+			}).WithError(err).Error("failed to decode the home visit request")
+			http.Error(w, "could not decode your request", http.StatusInternalServerError)
 			return
 		}
-		visit, err := h.editHomeVisit(id, user, req)
+		visit, err := h.editHomeVisit(user, req)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":        user,
-				"homeVisitId": id,
+				"user":      user,
+				"homeVisit": req,
 			}).WithError(err).Error("error editing home visit")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -138,9 +138,8 @@ func (h HomeVisitRoutes) HomeVisitsHandler(w http.ResponseWriter, r *http.Reques
 		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(visit); err != nil {
 			log.WithFields(log.Fields{
-				"user":        user,
-				"homeVisitId": id,
-				"homeVisit":   visit,
+				"user":      user,
+				"homeVisit": visit,
 			}).
 				WithError(err).
 				Error("error marshalling home visit into json")
@@ -178,15 +177,9 @@ func (h HomeVisitRoutes) HomeVisitsHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h HomeVisitRoutes) editHomeVisit(id, user string, r homeVisitRequest) (*homeVisits.HomeVisit, error) {
-	if len(id) == 0 {
-		return nil, fmt.Errorf("the home visit id can not be empty")
-	}
+func (h HomeVisitRoutes) editHomeVisit(user string, r homeVisitRequest) (*homeVisits.HomeVisit, error) {
 
-	if len(user) == 0 {
-		return nil, fmt.Errorf("must provide the email of the user making the update")
-	}
-	v, err := h.HomeVisits.FindById(id)
+	v, err := h.HomeVisits.FindById(r.ID)
 	if err != nil {
 		return nil, fmt.Errorf("home visit with given id does not exist: %+v", err)
 	}

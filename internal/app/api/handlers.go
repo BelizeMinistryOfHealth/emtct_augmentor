@@ -70,7 +70,9 @@ func API(app app.App) *mux.Router {
 	}
 	homeVisitsRouter := r.PathPrefix("/api/homeVisits").Subrouter()
 	homeVisitsRouter.HandleFunc("/{homeVisitId}", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
-		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
+		Methods(http.MethodOptions, http.MethodGet)
+	homeVisitsRouter.HandleFunc("", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
+		Methods(http.MethodOptions, http.MethodPost, http.MethodPut)
 	patientRouter.HandleFunc("/{id}/homeVisits", authMid.Then(homeVisitRoutes.FindByPatientHandler)).
 		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 

@@ -25,7 +25,7 @@ const EditForm = ({ visit, closeForm }) => {
   React.useEffect(() => {
     const edit = async () => {
       try {
-        await httpInstance.put(`/patient/homeVisit/${homeVisit.id}`, homeVisit);
+        await httpInstance.put(`/homeVisits`, homeVisit);
         setSubmitting(false);
         setEditStatus('Successfully edited');
         closeForm();

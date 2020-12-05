@@ -110,7 +110,7 @@ export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
 };
 
 export const fetchHomeVisits = async (patientId, httpInstance) => {
-  const result = await httpInstance.get(`/patient/${patientId}/homeVisits`);
+  const result = await httpInstance.get(`/patients/${patientId}/homeVisits`);
   if (!result.data) {
     return [];
   }
