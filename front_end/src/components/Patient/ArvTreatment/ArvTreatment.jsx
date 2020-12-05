@@ -22,16 +22,18 @@ const row = (data) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{data.pharmaceutical}</Text>
+        <Text size={'small'}>{data.pharmaceutical}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.strength}</Text>
+        <Text size={'small'}>{data.strength}</Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.prescribedTime), 'dd LLL yyy')}</Text>
+        <Text size={'small'}>
+          {format(parseISO(data.prescribedTime), 'dd LLL yyy')}
+        </Text>
       </TableCell>
       <TableCell align={'start'}>
-        <Text>{data.comments}</Text>
+        <Text size={'small'}>{data.comments}</Text>
       </TableCell>
     </TableRow>
   );
@@ -101,7 +103,7 @@ const ArvTreatment = (props) => {
   React.useEffect(() => {
     const getArvs = async () => {
       try {
-        const result = await httpInstance.get(`/patient/${patientId}/arvs`);
+        const result = await httpInstance.get(`/patients/${patientId}/arvs`);
         setArvData({ arvs: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);

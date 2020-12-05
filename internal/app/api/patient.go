@@ -266,6 +266,14 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		if preg == nil {
+			log.WithFields(log.Fields{
+				"patientId": patientId,
+				"user":      user,
+			}).Error("patient has no pregnancy")
+			http.Error(w, "patient has no pregnancy", http.StatusNoContent)
+			return
+		}
 		lmp := preg.Lmp
 		endDate := lmp.Add(time.Hour * 24 * 7 * 52)
 		treatments, err := a.Patient.FindSyphilisTreatment(patientId, lmp, &endDate)

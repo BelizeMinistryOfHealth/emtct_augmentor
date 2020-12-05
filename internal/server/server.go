@@ -49,7 +49,7 @@ func NewServer(cnf config.AppConf) {
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
 		// Good practice to set timeouts to avoid Slowloris attacks.
-		WriteTimeout: time.Second * 15,
+		WriteTimeout: time.Second * 60,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
 		Handler:      r, // Pass our instance of gorilla/mux in.

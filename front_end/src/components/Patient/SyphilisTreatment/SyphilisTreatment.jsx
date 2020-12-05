@@ -1,4 +1,4 @@
-import { Box, CardBody, Text } from 'grommet';
+import { Box, CardBody, Heading, Text } from 'grommet';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
@@ -20,13 +20,21 @@ const SyphilisTreatment = (props) => {
     const getTreatment = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/syphilisTreatments`
+          `/patients/${patientId}/syphilisTreatments`
         );
-        setTreatmentData({
-          data: result.data,
-          loading: false,
-          error: undefined,
-        });
+        if (result.status === 204) {
+          setTreatmentData({
+            data: undefined,
+            loading: false,
+            error: new Error('no data found'),
+          });
+        } else {
+          setTreatmentData({
+            data: result.data,
+            loading: false,
+            error: undefined,
+          });
+        }
       } catch (e) {
         // eslint-disable-next-line no-undef
         console.error(e);
@@ -54,6 +62,24 @@ const SyphilisTreatment = (props) => {
       </Layout>
     );
   }
+
+  if (treatmentData.error) {
+    return (
+      <Layout props={props}>
+        <Box
+          direction={'column'}
+          gap={'medium'}
+          pad={'medium'}
+          justify={'evenly'}
+          align={'center'}
+          fill
+        >
+          <Heading level={2}>No Data Found</Heading>
+        </Box>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <Box
