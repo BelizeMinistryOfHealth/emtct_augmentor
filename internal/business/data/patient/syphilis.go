@@ -34,7 +34,7 @@ SELECT
 		args = append(args, endDate.Format(layoutISO))
 	}
 	stmt = fmt.Sprintf("%s ORDER BY adep.prescribed_time DESC", stmt)
-	rows, err := p.Acsis.Query(stmt, args...)
+	rows, err := p.acsis.Query(stmt, args...)
 	defer rows.Close()
 
 	if err != nil {

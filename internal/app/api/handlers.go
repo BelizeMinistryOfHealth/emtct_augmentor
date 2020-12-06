@@ -31,14 +31,23 @@ func API(app app.App) *mux.Router {
 	// Middleware that verifies JWT token and also enables CORS.
 	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
 
+	// Patients
+	patients := patient.New(app.AcsisDb.DB, app.EmtctDb.DB)
+	patientRouter := r.PathPrefix("/api/patients").Subrouter()
+
+	// Pregnancies
 	pregnancies := pregnancy.New(app.EmtctDb, app.AcsisDb)
 	lab := labs.New(app.AcsisDb)
+
 	// ETL
 	etl := Etl{
 		Pregnancies: pregnancies,
+		patients:    patients,
 	}
-	eltRouter := r.PathPrefix("/api/etl").Subrouter()
-	eltRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
+	etlRouter := r.PathPrefix("/api/etl").Subrouter()
+	etlRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
+		Methods(http.MethodOptions, http.MethodPost)
+	etlRouter.HandleFunc("/patients", authMid.Then(etl.PatientEtlHandler)).
 		Methods(http.MethodOptions, http.MethodPost)
 
 	// Infants
@@ -57,10 +66,6 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodGet)
 	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
 		Methods(http.MethodOptions, http.MethodGet)
-
-	// Patients
-	patients := patient.New(app.AcsisDb.DB)
-	patientRouter := r.PathPrefix("/api/patients").Subrouter()
 
 	// HomeVisits
 	visits := homeVisits.New(app.EmtctDb.DB)

@@ -4,7 +4,7 @@ CREATE TABLE patients(
   middle_name TEXT,
   last_name TEXT NOT NULL,
   dob DATE NOT NULL,
-  ssn TEXT UNIQUE,
+  ssn TEXT,
   country_of_birth TEXT,
   district_address TEXT,
   community_address TEXT,

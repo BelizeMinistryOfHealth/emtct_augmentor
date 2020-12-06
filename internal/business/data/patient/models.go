@@ -6,11 +6,12 @@ import (
 )
 
 type Patients struct {
-	Acsis *sql.DB
+	acsis   *sql.DB
+	emtctDb *sql.DB
 }
 
-func New(db *sql.DB) Patients {
-	return Patients{db}
+func New(acsisDb, emtctDb *sql.DB) Patients {
+	return Patients{acsis: acsisDb, emtctDb: emtctDb}
 }
 
 type Patient struct {
@@ -31,6 +32,19 @@ type Patient struct {
 	HivDiagnosisDate *time.Time `json:"hivDiagnosisDate"`
 	NextOfKin        string     `json:"nextOfKin"`
 	NextOfKinPhone   string     `json:"nextOfKinPhone"`
+}
+
+func (p *Patient) Index(vs []Patient) int {
+	for i, v := range vs {
+		if v.Id == p.Id {
+			return i
+		}
+	}
+	return -1
+}
+
+func (p *Patient) Include(vs []Patient) bool {
+	return p.Index(vs) >= 0
 }
 
 type BasicInfo struct {

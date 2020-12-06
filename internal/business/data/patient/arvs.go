@@ -34,7 +34,7 @@ func (p *Patients) FindArvsByPatient(patientId int, beginDate, endDate time.Time
 			OR aap.name ILIKE '%Nevirapine%')
 		ORDER BY adep.prescribed_time DESC;
 `
-	rows, err := p.Acsis.Query(stmt,
+	rows, err := p.acsis.Query(stmt,
 		patientId,
 		beginDate.Format(layoutISO),
 		endDate.Format(layoutISO))

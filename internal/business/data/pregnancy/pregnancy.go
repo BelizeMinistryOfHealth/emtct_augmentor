@@ -97,7 +97,7 @@ func (p Pregnancies) FindExistingPregnanciesByYear(year int) ([]Pregnancy, error
 }
 
 func (p Pregnancies) Create(ctx context.Context, ps []Pregnancy) error {
-	// Being transaction
+	// Begin transaction
 	tx, err := p.EmtctDb.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to start transaction for inserting pregnancies: %w", err)
@@ -108,7 +108,7 @@ func (p Pregnancies) Create(ctx context.Context, ps []Pregnancy) error {
 		_, err := tx.ExecContext(ctx, stmt, p.PregnancyId, p.PatientId, p.Lmp, p.Edd, p.EndTime)
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("")
+			return fmt.Errorf("error inserting a pregnancy into emtct db: %w", err)
 		}
 	}
 
