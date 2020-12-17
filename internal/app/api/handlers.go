@@ -39,17 +39,6 @@ func API(app app.App) *mux.Router {
 	pregnancies := pregnancy.New(app.EmtctDb, app.AcsisDb)
 	lab := labs.New(app.AcsisDb)
 
-	// ETL
-	etl := Etl{
-		Pregnancies: pregnancies,
-		patients:    patients,
-	}
-	etlRouter := r.PathPrefix("/api/etl").Subrouter()
-	etlRouter.HandleFunc("/pregnancies", authMid.Then(etl.PregnancyEtlHandler)).
-		Methods(http.MethodOptions, http.MethodPost)
-	etlRouter.HandleFunc("/patients", authMid.Then(etl.PatientEtlHandler)).
-		Methods(http.MethodOptions, http.MethodPost)
-
 	// Infants
 	inf := infant.New(app.AcsisDb.DB)
 	infantRoutes := InfantRoutes{

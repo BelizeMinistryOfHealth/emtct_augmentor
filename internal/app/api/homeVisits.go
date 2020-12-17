@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,7 +24,7 @@ type HomeVisitRoutes struct {
 
 type homeVisitResponse struct {
 	HomeVisits []homeVisits.HomeVisit `json:"homeVisits"`
-	Patient    patient.BasicInfo      `json:"patient"`
+	Patient    models.Patient         `json:"patient"`
 }
 
 func (h HomeVisitRoutes) FindByPatientHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,7 @@ func (h HomeVisitRoutes) FindByPatientHandler(w http.ResponseWriter, r *http.Req
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := h.Patients.FindBasicInfo(patientId)
+		patient, err := h.Patients.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patient,

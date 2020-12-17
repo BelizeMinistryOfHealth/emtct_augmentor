@@ -1,17 +1,25 @@
 package patient
 
 import (
+	"context"
 	"database/sql"
+	"moh.gov.bz/mch/emtct/internal/db"
 	"time"
 )
 
 type Patients struct {
-	acsis   *sql.DB
-	emtctDb *sql.DB
+	acsis      *sql.DB
+	emtctDb    *sql.DB
+	firestore  *db.FirestoreClient
+	collection string
 }
 
 func New(acsisDb, emtctDb *sql.DB) Patients {
 	return Patients{acsis: acsisDb, emtctDb: emtctDb}
+}
+
+func (p *Patients) ctx() context.Context {
+	return p.firestore.Ctx
 }
 
 type Patient struct {

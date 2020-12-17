@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 
@@ -86,8 +87,8 @@ func (a *pregnancyRoutes) FindCurrentPregnancy(w http.ResponseWriter, r *http.Re
 }
 
 type pregnancyLabResultsResponse struct {
-	LabResults []labs.LabResult  `json:"labResults"`
-	Patient    patient.BasicInfo `json:"patient"`
+	LabResults []labs.LabResult `json:"labResults"`
+	Patient    models.Patient   `json:"patient"`
 }
 
 func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +125,7 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.Patient.FindBasicInfo(id)
+		patient, err := a.Patient.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -149,7 +150,7 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 
 type obstetricHistoryResponse struct {
 	ObstetricHistory []pregnancy.ObstetricHistory `json:"obstetricHistory"`
-	Patient          patient.BasicInfo            `json:"patient"`
+	Patient          models.Patient               `json:"patient"`
 }
 
 func (a *pregnancyRoutes) ObstetricHistoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +178,7 @@ func (a *pregnancyRoutes) ObstetricHistoryHandler(w http.ResponseWriter, r *http
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patientInfo, err := a.Patient.FindBasicInfo(patientId)
+		patientInfo, err := a.Patient.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,

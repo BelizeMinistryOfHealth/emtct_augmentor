@@ -59,7 +59,7 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := p.Patient.FindBasicInfo(patientId)
+		patient, err := p.Patient.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,

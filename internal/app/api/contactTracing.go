@@ -103,7 +103,7 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.Patient.FindBasicInfo(patientId)
+		patient, err := a.Patient.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,7 +23,7 @@ type AdmissionRoutes struct {
 
 type admissionsResponse struct {
 	HospitalAdmissions []admissions.HospitalAdmission `json:"hospitalAdmissions"`
-	Patient            patient.BasicInfo              `json:"patient"`
+	Patient            models.Patient                 `json:"patient"`
 }
 
 func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +49,7 @@ func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.Patients.FindBasicInfo(id)
+		patient, err := a.Patients.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId":  id,

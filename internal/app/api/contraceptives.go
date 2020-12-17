@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -30,7 +31,7 @@ type newContraceptivesRequest struct {
 
 type contraceptivesResponse struct {
 	Contraceptives []contraceptives.ContraceptiveUsed `json:"contraceptives"`
-	Patient        patient.BasicInfo                  `json:"patient"`
+	Patient        models.Patient                     `json:"patient"`
 }
 
 func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,7 @@ func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWri
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		patient, err := a.Patients.FindBasicInfo(id)
+		patient, err := a.Patients.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId":      id,

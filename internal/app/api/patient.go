@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,13 +11,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"moh.gov.bz/mch/emtct/internal/app"
-	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
-	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
 )
 
 type patientResponse struct {
-	Patient          *patient.Patient              `json:"patient"`
+	Patient          *models.Patient               `json:"patient"`
 	ObstetricHistory []pregnancy.ObstetricHistory  `json:"obstetricHistory"`
 	Diagnoses        []pregnancy.Diagnosis         `json:"diagnoses"`
 	AncEncounter     *pregnancy.AntenatalEncounter `json:"antenatalEncounter"`
@@ -38,7 +37,7 @@ func (a *pregnancyRoutes) RetrievePatientHandler(w http.ResponseWriter, r *http.
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		patient, err := a.Patient.FindByPatientId(id)
+		patient, err := a.Patient.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(
 				log.Fields{"request": r}).WithError(err).Error("could not find patient with specified id")
@@ -121,8 +120,8 @@ func (a *pregnancyRoutes) RetrievePatientHandler(w http.ResponseWriter, r *http.
 }
 
 type arvsResponse struct {
-	Arvs    []prescription.Prescription `json:"arvs"`
-	Patient patient.BasicInfo           `json:"patient"`
+	Arvs    []models.Prescription `json:"arvs"`
+	Patient models.Patient        `json:"patient"`
 }
 
 func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +176,7 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		lmp := pregs.Lmp
 		nextDate := lmp.Add(time.Hour * 24 * 7 * 54)
-		arvs, err := a.Patient.FindArvsByPatient(patientId, *lmp, nextDate)
+		arvs, err := a.Patient.FindArvsByPatient(id, *lmp, nextDate)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -190,7 +189,7 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "patient does not have a current pregnancy", http.StatusNotFound)
 			return
 		}
-		patientInfo, err := a.Patient.FindBasicInfo(patientId)
+		patientInfo, err := a.Patient.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -220,8 +219,8 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type treatmentResponse struct {
-	Prescriptions []prescription.Prescription `json:"prescriptions"`
-	Patient       patient.BasicInfo           `json:"patient"`
+	Prescriptions []models.Prescription `json:"prescriptions"`
+	Patient       models.Patient        `json:"patient"`
 }
 
 func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +245,7 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 			http.Error(w, "patient id is not a valid number", http.StatusBadRequest)
 			return
 		}
-		basicInfo, err := a.Patient.FindBasicInfo(patientId)
+		patientInfo, err := a.Patient.FindByPatientId(id)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -276,7 +275,7 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 		}
 		lmp := preg.Lmp
 		endDate := lmp.Add(time.Hour * 24 * 7 * 52)
-		treatments, err := a.Patient.FindSyphilisTreatment(patientId, lmp, &endDate)
+		treatments, err := a.Patient.FindSyphilisTreatment(id, lmp, &endDate)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -290,7 +289,7 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 		}
 		response := treatmentResponse{
 			Prescriptions: treatments,
-			Patient:       *basicInfo,
+			Patient:       *patientInfo,
 		}
 		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
