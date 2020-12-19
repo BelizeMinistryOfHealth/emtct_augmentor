@@ -17,9 +17,14 @@ type AuthConf struct {
 }
 
 type AppConf struct {
-	EmtctDb DbConf
-	Auth    AuthConf
-	AcsisDb DbConf
+	EmtctDb   DbConf
+	Auth      AuthConf
+	AcsisDb   DbConf
+	ProjectId string
+}
+
+type Firebase struct {
+	ProjectId string
 }
 
 // ReadConf reads a yaml file and unmarshalls its content.
@@ -54,10 +59,17 @@ func ReadConf(fileName string) (*AppConf, error) {
 		return nil, err
 	}
 
+	var firebase Firebase
+	err = viper.Sub("firebase").Unmarshal(&firebase)
+	if err != nil {
+		return nil, err
+	}
+
 	appConf := AppConf{
-		EmtctDb: c,
-		Auth:    a,
-		AcsisDb: acsisConf,
+		EmtctDb:   c,
+		Auth:      a,
+		AcsisDb:   acsisConf,
+		ProjectId: firebase.ProjectId,
 	}
 
 	return &appConf, nil

@@ -12,7 +12,7 @@ const (
 )
 
 func (p *Patients) FindArvsByPatient(patientId string, beginDate, endDate time.Time) ([]models.Prescription, error) {
-	colRef := p.firestore.Client.Collection("arvs")
+	colRef := p.firestore.Client.Collection(p.collections.Arvs)
 	iter := colRef.
 		Where("patientId", "==", patientId).
 		Where("prescribedTime", ">=", beginDate).

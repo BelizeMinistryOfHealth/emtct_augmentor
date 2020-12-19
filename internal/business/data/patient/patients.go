@@ -1,7 +1,9 @@
 package patient
 
 import (
+	"cloud.google.com/go/firestore"
 	"fmt"
+	"google.golang.org/api/iterator"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"moh.gov.bz/mch/emtct/nums"
 )
@@ -10,7 +12,7 @@ import (
 // A patient is considered pregnant if she has a record in the acsis_hc_pregnancies
 func (p *Patients) FindByPatientId(id string) (*models.Patient, error) {
 
-	ref := p.firestore.Client.Collection(p.collection)
+	ref := p.firestore.Client.Collection(p.collections.Patient)
 	snap, err := ref.Doc(id).Get(p.ctx())
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve patient data: %w", err)
@@ -51,7 +53,7 @@ func (p *Patients) Create(patients []models.Patient) error {
 
 func (p *Patients) saveBatch(patients []models.Patient) error {
 	batch := p.firestore.Client.Batch()
-	coll := p.firestore.Client.Collection("patients")
+	coll := p.firestore.Client.Collection(p.collections.Patient)
 	for _, v := range patients {
 		ref := coll.Doc(v.ID)
 		//dsnap, _ := ref.Get(p.ctx())
@@ -68,4 +70,25 @@ func (p *Patients) saveBatch(patients []models.Patient) error {
 	}
 	_, err := batch.Commit(p.ctx())
 	return err
+}
+
+func (p *Patients) GetPregnancies(patientId string) ([]models.Pregnancy, error) {
+	ref := p.firestore.Client.Collection(p.collections.Pregnancies)
+	iter := ref.Where("patientId", "==", patientId).OrderBy("lmp", firestore.Desc).Documents(p.ctx())
+	var pregs []models.Pregnancy
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		var pr models.Pregnancy
+		if err := doc.DataTo(&pr); err != nil {
+			return nil, fmt.Errorf("error converting pregnancy result: %w", err)
+		}
+		pregs = append(pregs, pr)
+	}
+	return pregs, nil
 }

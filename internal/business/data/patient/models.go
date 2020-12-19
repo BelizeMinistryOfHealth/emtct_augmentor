@@ -7,15 +7,27 @@ import (
 	"time"
 )
 
-type Patients struct {
-	acsis      *sql.DB
-	emtctDb    *sql.DB
-	firestore  *db.FirestoreClient
-	collection string
+type DbCollections struct {
+	Patient       string
+	Arvs          string
+	Prescriptions string
+	Pregnancies   string
 }
 
-func New(acsisDb, emtctDb *sql.DB) Patients {
-	return Patients{acsis: acsisDb, emtctDb: emtctDb}
+type Patients struct {
+	acsis       *sql.DB
+	emtctDb     *sql.DB
+	firestore   *db.FirestoreClient
+	collections DbCollections
+}
+
+func New(acsisDb, emtctDb *sql.DB, firestore *db.FirestoreClient) Patients {
+	collections := DbCollections{
+		Patient:       "patients",
+		Arvs:          "arvs",
+		Prescriptions: "prescriptions",
+		Pregnancies:   "pregnancies"}
+	return Patients{acsis: acsisDb, emtctDb: emtctDb, collections: collections, firestore: firestore}
 }
 
 func (p *Patients) ctx() context.Context {

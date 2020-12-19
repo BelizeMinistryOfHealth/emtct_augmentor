@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/uris77/auth0"
-
 	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/admissions"
 	"moh.gov.bz/mch/emtct/internal/business/data/contactTracing"
@@ -26,13 +24,13 @@ func API(app app.App) *mux.Router {
 
 	// Instantiate an aut0 client with a Cache with a key capacity of
 	// 60 tokens and a ttl of 24 hours.
-	auth0Client := auth0.NewAuth0(60, 518400)
+	//auth0Client := auth0.NewAuth0(60, 518400)
 
 	// Middleware that verifies JWT token and also enables CORS.
-	authMid := NewChain(EnableCors(), VerifyToken(app.Auth.JwkUrl, app.Auth.Aud, app.Auth.Iss, auth0Client))
+	authMid := NewChain(EnableCors(), VerifyToken(app.Firestore))
 
 	// Patients
-	patients := patient.New(app.AcsisDb.DB, app.EmtctDb.DB)
+	patients := patient.New(app.AcsisDb.DB, app.EmtctDb.DB, app.Firestore)
 	patientRouter := r.PathPrefix("/api/patients").Subrouter()
 
 	// Pregnancies

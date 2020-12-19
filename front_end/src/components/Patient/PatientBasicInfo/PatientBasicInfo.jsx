@@ -5,7 +5,7 @@ import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 import AppCard from '../../AppCard/AppCard';
 
-const Identifier = ({ children, basicInfo, nextOfKin }) => {
+const Identifier = ({ children, basicInfo }) => {
   const {
     firstName,
     lastName,
@@ -19,6 +19,7 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
     hiv,
     hivDiagnosisDate,
   } = basicInfo;
+  console.dir({ basicInfo });
   return (
     <Box gap='medium' align='center' fill={'horizontal'}>
       {children}
@@ -102,10 +103,10 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
               : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {nextOfKin.name}
+            {basicInfo.nextOfKin}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {nextOfKin.phoneNumber}
+            {basicInfo.nextOfKinPhone}
           </Text>
         </Box>
       </Box>
@@ -114,12 +115,12 @@ const Identifier = ({ children, basicInfo, nextOfKin }) => {
 };
 
 const PatientBasicInfo = (props) => {
-  const { basicInfo, nextOfKin } = props;
+  const { patient } = props;
 
   return (
     <AppCard fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>
-        <Identifier basicInfo={basicInfo} nextOfKin={nextOfKin}>
+        <Identifier basicInfo={patient}>
           <User size={'large'} />
         </Identifier>
       </CardBody>

@@ -17,17 +17,23 @@ import (
 	"moh.gov.bz/mch/emtct/internal/db"
 )
 
-func RegisterHandlers(cnf config.AppConf) *mux.Router {
+func RegisterHandlers(ctx context.Context, cnf config.AppConf) *mux.Router {
 	acsisStore, err := db.NewAcsisConnection(&cnf.AcsisDb)
 	if err != nil {
 		log.Errorf("could not establish connection to the database: %+v", err)
 		os.Exit(1)
 	}
 	emtctStore, err := db.NewConnection(&cnf.EmtctDb)
+	firestoreDb, err := db.NewFirestore(ctx, cnf.ProjectId)
+	if err != nil {
+		log.WithError(err).Error("firestore connection failed")
+		os.Exit(-1)
+	}
 
 	app := app.App{
-		AcsisDb: acsisStore,
-		EmtctDb: emtctStore,
+		AcsisDb:   acsisStore,
+		EmtctDb:   emtctStore,
+		Firestore: firestoreDb,
 		Auth: app.Auth{
 			JwkUrl: cnf.Auth.JwkUrl,
 			Iss:    cnf.Auth.Issuer,
@@ -45,7 +51,8 @@ func RegisterHandlers(cnf config.AppConf) *mux.Router {
 }
 
 func NewServer(cnf config.AppConf) {
-	r := RegisterHandlers(cnf)
+	firestoreContext := context.Background()
+	r := RegisterHandlers(firestoreContext, cnf)
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
 		// Good practice to set timeouts to avoid Slowloris attacks.
@@ -70,10 +77,9 @@ func NewServer(cnf config.AppConf) {
 
 	// Block until we receive our signal.
 	<-c
-
 	wait := time.Duration(30)
-	// Create a deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	// Create a deadline to wait for.
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
