@@ -41,7 +41,7 @@ const Layout = ({ children }) => {
           },
           {
             label: 'Syphilis Treatment',
-            link: `/patient/${patientId}/syphilisTreatment`,
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/syphilisTreatment`,
           },
           {
             label: 'Hospital/Clinic Admissions',

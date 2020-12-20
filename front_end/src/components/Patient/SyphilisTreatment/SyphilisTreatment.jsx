@@ -8,7 +8,7 @@ import Layout from '../../Layout/Layout';
 import Prescriptions from '../../Prescriptions';
 
 const SyphilisTreatment = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [treatmentData, setTreatmentData] = React.useState({
     data: undefined,
@@ -20,7 +20,7 @@ const SyphilisTreatment = (props) => {
     const getTreatment = async () => {
       try {
         const result = await httpInstance.get(
-          `/patients/${patientId}/syphilisTreatments`
+          `/patients/${patientId}/pregnancy/${pregnancyId}/syphilisTreatments`
         );
         if (result.status === 204) {
           setTreatmentData({
@@ -44,7 +44,7 @@ const SyphilisTreatment = (props) => {
     if (treatmentData.loading) {
       getTreatment();
     }
-  }, [treatmentData, httpInstance, patientId]);
+  }, [treatmentData, httpInstance, patientId, pregnancyId]);
 
   if (treatmentData.loading) {
     return (
