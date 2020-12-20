@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import { fetchCurrentPregnancy } from '../../../../api/patient';
 import { useHttpApi } from '../../../../providers/HttpProvider';
 import Layout from '../../../Layout/Layout';
-import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
 import AppTabs from '../../Tabs/Tabs';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
@@ -12,6 +11,7 @@ import PreNatalCare from '../PreNatalCare/PreNatalCare';
 import Spinner from '../../../Spinner';
 
 const BasicInfoComponent = ({ currentPregnancy }) => {
+  console.dir({ currentPregnancy });
   return (
     <Box
       direction={'column'}
@@ -28,39 +28,39 @@ const BasicInfoComponent = ({ currentPregnancy }) => {
         align={'start'}
         fill={'horizontal'}
       >
-        <PatientBasicInfo
-          basicInfo={currentPregnancy.basicInfo}
-          nextOfKin={currentPregnancy.nextOfKin}
+        <PatientBasicInfo patient={currentPregnancy.patient} />
+        <PregnancyVitals
+          vitals={currentPregnancy.pregnancy}
+          fill={'horizontal'}
         />
-        <PregnancyVitals vitals={currentPregnancy.vitals} fill={'horizontal'} />
       </Box>
       <Box>
-        <PreNatalCare info={currentPregnancy.prenatalCareInfo} />
+        <PreNatalCare info={currentPregnancy.pregnancy} />
       </Box>
     </Box>
   );
 };
 
-const PregnancyDiagnoses = ({ currentPregnancy }) => {
-  return (
-    <Box
-      justify={'center'}
-      align={'center'}
-      fill={'horizontal'}
-      gap={'large'}
-      pad={'medium'}
-    >
-      <DiagnosisHistory
-        diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
-        caption={'Illnesses during Pregnancy'}
-      />
-    </Box>
-  );
-};
+// const PregnancyDiagnoses = ({ currentPregnancy }) => {
+//   return (
+//     <Box
+//       justify={'center'}
+//       align={'center'}
+//       fill={'horizontal'}
+//       gap={'large'}
+//       pad={'medium'}
+//     >
+//       <DiagnosisHistory
+//         diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
+//         caption={'Illnesses during Pregnancy'}
+//       />
+//     </Box>
+//   );
+// };
 
 const CurrentPregnancy = (props) => {
   const { location } = props;
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [pregnancyData, setPregnancyData] = React.useState({
     currentPregnancy: {},
@@ -71,7 +71,11 @@ const CurrentPregnancy = (props) => {
   React.useEffect(() => {
     const getCurrentPregnancy = async () => {
       try {
-        const result = await fetchCurrentPregnancy(patientId, httpInstance);
+        const result = await fetchCurrentPregnancy(
+          patientId,
+          pregnancyId,
+          httpInstance
+        );
         setPregnancyData({
           currentPregnancy: result,
           loading: false,
@@ -86,7 +90,7 @@ const CurrentPregnancy = (props) => {
     if (pregnancyData.loading) {
       getCurrentPregnancy();
     }
-  }, [httpInstance, pregnancyData, patientId, setPregnancyData]);
+  }, [httpInstance, pregnancyData, patientId, pregnancyId]);
 
   if (pregnancyData.loading) {
     return (
@@ -127,27 +131,13 @@ const CurrentPregnancy = (props) => {
 
   return (
     <Layout location={location} props={props}>
-      <Box
-        direction={'column'}
-        gap={'medium'}
-        pad={'medium'}
-        justify={'evenly'}
-        align={'start'}
-        fill={'horizontal'}
-      >
-        <AppTabs
-          basicInfo={
-            <BasicInfoComponent
-              currentPregnancy={pregnancyData.currentPregnancy}
-            />
-          }
-          diagnoses={
-            <PregnancyDiagnoses
-              currentPregnancy={pregnancyData.currentPregnancy}
-            />
-          }
-        />
-      </Box>
+      <AppTabs
+        basicInfo={
+          <BasicInfoComponent
+            currentPregnancy={pregnancyData.currentPregnancy}
+          />
+        }
+      />
     </Layout>
   );
 };

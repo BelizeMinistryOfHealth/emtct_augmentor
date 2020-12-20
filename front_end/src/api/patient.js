@@ -1,4 +1,3 @@
-import { differenceInCalendarDays, parseISO } from 'date-fns';
 import _ from 'lodash';
 import React from 'react';
 import { useHttpApi } from './http';
@@ -28,84 +27,47 @@ export const fetchPatient = async (patientId, httpInstance) => {
   };
 };
 
-export const fetchCurrentPregnancy = async (patientId, httpInstance) => {
-  const patientsData = await httpInstance.get(`/patients/${patientId}`);
-  if (!patientsData.data) {
-    return null;
-  }
-  const patient = patientsData.data;
-  const basicInfo = patient.patient;
-  const nextOfKin = {
-    name: basicInfo.nextOfKin,
-    phoneNumber: basicInfo.nextOfKinPhone,
-  };
-  const obstetricHistory = _.reverse(
-    _.sortBy(patient.obstetricHistory, 'date')
-  );
-  console.dir({ obstetricHistory });
-
+export const fetchCurrentPregnancy = async (
+  patientId,
+  pregnancyId,
+  httpInstance
+) => {
   const pregnancyData = await httpInstance.get(
-    `/patients/${patientId}/currentPregnancy`
+    `/patients/${patientId}/pregnancy/${pregnancyId}`
   );
-  if (!pregnancyData.data) {
-    return null;
+  const data = pregnancyData.data;
+  const pregnancy = data.pregnancy;
+  const interval = data.interval;
+  pregnancy.interval = interval;
+
+  const pregnancyOutcome = pregnancy.obstetricDetails.pregnancyOutcome;
+  if (!pregnancyOutcome || _.isEmpty(pregnancyOutcome.trim())) {
+    pregnancy.obstetricDetails.pregnancyOutcome = pregnancyOutcome;
   }
 
-  const vitals = pregnancyData.data.vitals;
-  if (!vitals.abortiveOutcome || _.isEmpty(vitals.abortiveOutcome.trim())) {
-    vitals.abortiveOutcome = 'N/A';
-  }
-
-  // Calculate the interval between pregnancies.
-  let interval = 0;
-  if (obstetricHistory.length > 0) {
-    const lastPregnancy = obstetricHistory[0].date;
-    if (vitals.lmp) {
-      if (lastPregnancy) {
-        interval = differenceInCalendarDays(
-          parseISO(vitals.lmp),
-          parseISO(lastPregnancy)
-        );
-      }
-      if (interval < 0 && obstetricHistory[1]) {
-        interval = differenceInCalendarDays(
-          parseISO(obstetricHistory[0].date),
-          parseISO(obstetricHistory[1].date)
-        );
-      }
-    }
-
-    if (interval < 0) {
-      interval = 0;
-    }
-  }
-  vitals.interval = interval;
   let gestationalAge = 'N/A';
-  if (vitals.gestationalAge > 7) {
-    gestationalAge = `${Math.ceil(vitals.gestationalAge / 7)} weeks`;
+  if (pregnancy.anc.gestationalAge > 7) {
+    gestationalAge = `${Math.ceil(pregnancy.anc.gestationalAge / 7)} weeks`;
   }
 
-  if (vitals.gestationalAge < 7) {
-    gestationalAge = `${vitals.gestationalAge} days`;
+  if (pregnancy.anc.gestationalAge < 7) {
+    gestationalAge = `${pregnancy.anc.gestationalAge} days`;
   }
-  vitals.gestationalAge = gestationalAge;
+  pregnancy.anc.gestationalAge = gestationalAge;
 
-  const prenatalCareInfo = {
-    dateOfBooking: vitals.dateOfBooking,
-    gestationAge: gestationalAge,
-    prenatalCareProvider: vitals.prenatalCareProvider,
-    totalChecks: vitals.totalChecks,
-  };
+  // const prenatalCareInfo = {
+  //   dateOfBooking: vitals.dateOfBooking,
+  //   gestationAge: gestationalAge,
+  //   prenatalCareProvider: vitals.prenatalCareProvider,
+  //   totalChecks: vitals.totalChecks,
+  // };
 
   const pregnancyDiagnoses = pregnancyData.data.diagnoses ?? [];
 
   return {
-    vitals,
-    basicInfo,
-    nextOfKin,
-    prenatalCareInfo,
+    pregnancy,
     pregnancyDiagnoses,
-    obstetricHistory,
+    patient: data.patient,
   };
 };
 

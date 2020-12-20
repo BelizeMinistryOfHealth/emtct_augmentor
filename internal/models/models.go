@@ -49,12 +49,56 @@ type Diagnosis struct {
 	Comments  string    `json:"comments" firestore:"comments"`
 }
 
+type ObstetricDetails struct {
+	Id               int        `json:"id" firestore:"id"`
+	GestationalAge   int        `json:"gestationalAge" firestore:"gestationalAge"`
+	Para             int        `json:"para" firestore:"para"`
+	Cs               int        `json:"cs" firestore:"cs"`
+	PregnancyOutcome string     `json:"pregnancyOutcome" firestore:"pregnancyOutcome"`
+	DiagnosisDate    *time.Time `json:"diagnosisDate" firestore:"diagnosisDate"`
+	Planned          bool       `json:"planned" firestore:"planned"`
+	AgeAtLmp         int        `json:"ageAtLmp" firestore:"ageAtLmp"`
+	Lmp              *time.Time `json:"lmp" firestore:"lmp"`
+	Edd              time.Time  `json:"edd" firestore:"edd"`
+	DateOfBooking    *time.Time `json:"dateOfBooking" firestore:"dateOfBooking"`
+	ApgarFirstMinute int        `json:"apgarFirstMinute" firestore:"apgarFirstMinute"`
+	ApgarFifthMinute int        `json:"apgarFifthMinute" firestore:"apgarFifthMinute"`
+	BirthStatus      string     `json:"birthStatus" firestore:"birthStatus"`
+}
+
+type AntenatalEncounter struct {
+	Id                    int        `json:"id" firestore:"id"`
+	PatientId             string     `json:"patientId" firestore:"patientId"`
+	MchEncounterDetailsId int        `json:"mchEncounterDetailsId" firestore:"mchEncounterDetailsId"`
+	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate" firestore:"estimatedDeliveryDate"`
+	DateOfBooking         *time.Time `json:"dateOfBooking" firestore:"dateOfBooking"`
+	GestationalAge        int        `json:"gestationalAge" firestore:"gestationalAge"`
+	NumberAntenatalVisits int        `json:"numberAntenatalVisits" firestore:"numberAntenatalVisits"`
+	CareProvider          string     `json:"careProvider" firestore:"careProvider"`
+	Facility              string     `json:"facility" firestore:"facility"`
+	BirthStatus           string     `json:"birthStatus" firestore:"birthStatus"`
+	ApgarFirstMinute      int        `json:"apgarFirstMinute" firestore:"apgarFirstMinute"`
+	ApgarFifthMinute      int        `json:"apgarFifthMinute" firestore:"apgarFifthMinute"`
+	DeliveryDate          *time.Time `json:"deliveryDate" firestore:"deliveryDate"`
+}
+
 type Pregnancy struct {
-	PatientId   string     `json:"patientId" firestore:"patientId"`
-	PregnancyId int        `json:"id" firestore:"id"`
-	Lmp         *time.Time `json:"lmp" firestore:"lmp"`
-	Edd         *time.Time `json:"edd" firestore:"edd"`
-	EndTime     *time.Time `json:"endTime" firestore:"endTime"`
+	PatientId        string             `json:"patientId" firestore:"patientId"`
+	PregnancyId      int                `json:"id" firestore:"id"`
+	Lmp              *time.Time         `json:"lmp" firestore:"lmp"`
+	Edd              *time.Time         `json:"edd" firestore:"edd"`
+	EndTime          *time.Time         `json:"endTime" firestore:"endTime"`
+	ObstetricDetails ObstetricDetails   `json:"obstetricDetails" firestore:"obstetricDetails"`
+	Anc              AntenatalEncounter `json:"anc" firestore:"anc"`
+}
+
+func PregnancyIndex(vs []Pregnancy, id int) int {
+	for i, v := range vs {
+		if v.PregnancyId == id {
+			return i
+		}
+	}
+	return -1
 }
 
 type LabResult struct {

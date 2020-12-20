@@ -15,11 +15,10 @@ RichTabTitle.propTypes = {
   label: PropTypes.string.isRequired,
 };
 
-const AppTabs = ({ basicInfo, diagnoses }) => {
+const AppTabs = ({ basicInfo }) => {
   return (
     <Tabs justify={'start'} flex={'grow'}>
       <Tab title={<RichTabTitle label={'Basic Info'} />}>{basicInfo}</Tab>
-      <Tab title={<RichTabTitle label={'Diagnoses'} />}>{diagnoses}</Tab>
     </Tabs>
   );
 };

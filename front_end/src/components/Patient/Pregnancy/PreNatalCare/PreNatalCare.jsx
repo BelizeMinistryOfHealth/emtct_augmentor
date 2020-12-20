@@ -5,6 +5,7 @@ import format from 'date-fns/format';
 import AppCard from '../../../AppCard/AppCard';
 
 const CareInfo = ({ children, info, ...rest }) => {
+  const { anc } = info;
   return (
     <Box gap={'medium'} align={'center'} {...rest}>
       {children}
@@ -25,18 +26,18 @@ const CareInfo = ({ children, info, ...rest }) => {
         </Box>
         <Box>
           <Text size={'medium'} textAlign={'start'}>
-            {info.dateOfBooking
-              ? format(parseISO(info.dateOfBooking), 'dd LLL yyyy')
+            {anc.dateOfBooking
+              ? format(parseISO(anc.dateOfBooking), 'dd LLL yyyy')
               : 'N/A'}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {info.gestationAge}
+            {anc.gestationalAge}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {info.prenatalCareProvider}
+            {anc.careProvider}
           </Text>
           <Text size={'medium'} textAlign={'start'}>
-            {info.totalChecks}
+            {anc.numberAntenatalVisits}
           </Text>
         </Box>
       </Box>

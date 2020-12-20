@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
@@ -24,61 +23,64 @@ type pregnancyRoutes struct {
 	Lab         labs.Labs
 }
 
-type pregnancyResponse struct {
-	Vitals    *pregnancy.Vitals     `json:"vitals"`
-	Diagnoses []pregnancy.Diagnosis `json:"diagnoses"`
-}
-
-func (a *pregnancyRoutes) FindCurrentPregnancy(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		return
+func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
+	handlerName := "GetPregnancy"
+	w.Header().Add("Content-Type", "application/json")
+	type response struct {
+		Pregnancy models.Pregnancy `json:"pregnancy"`
+		Interval  int              `json:"interval"`
+		Patient   models.Patient   `json:"patient"`
 	}
+
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
 		vars := mux.Vars(r)
+		pregId := vars["pregnancyId"]
+		pregnancyId, err := strconv.Atoi(pregId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": pregId,
+			}).WithError(err).Error("invalid pregnancyId")
+			http.Error(w, "invalid pregnancy id", http.StatusBadRequest)
+			return
+		}
 		patientId := vars["patientId"]
-		id, err := strconv.Atoi(patientId)
-		if err != nil {
-			log.WithFields(log.Fields{"patientId": patientId}).WithError(err).Error("patient id is not a number")
-			http.Error(w, "the patient id provided is invalid", http.StatusBadRequest)
+
+		pregs, err := a.Patient.GetPregnancies(patientId)
+		idx := models.PregnancyIndex(pregs, pregnancyId)
+		if idx == -1 {
+			// not available
 			return
 		}
-		preg, err := a.Pregnancies.FindCurrentPregnancy(id)
+		preg := pregs[idx]
+		var interval int
+		if len(pregs) > 1 {
+			// increment the index to get the previous pregnancy
+			prevPreg := pregs[idx+1]
+			interval = preg.Lmp.Year() - prevPreg.Lmp.Year()
+		}
+
+		patient, err := a.Patient.FindByPatientId(patientId)
 		if err != nil {
-			log.WithFields(log.Fields{"patientId": patientId}).
-				WithError(err).
-				Error("error retrieving current pregnancy from database")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, "patient does not exist", http.StatusNoContent)
 			return
 		}
-
-		diagnoses, err := a.Pregnancies.FindDiagnosesDuringPregnancy(id)
-		if err != nil {
-			log.WithFields(log.Fields{"patientId": patientId, "pregnancy": preg}).
-				WithError(err).
-				Error("error fetching diagnoses for a pregnancy")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
+		resp := response{
+			Pregnancy: preg,
+			Interval:  interval,
+			Patient:   *patient,
 		}
 
-		if preg == nil {
-			w.Header().Add("Content-Type", "application/json")
-			r, _ := json.Marshal(nil)
-			fmt.Fprintf(w, string(r))
-		}
-
-		response := pregnancyResponse{
-			Vitals:    preg,
-			Diagnoses: diagnoses,
-		}
-
-		w.Header().Add("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			log.WithFields(log.Fields{"patientId": patientId, "pregnancy": preg, "diagnoses": diagnoses}).
-				WithError(err).
-				Error("error marshalling pregnancy")
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"response": resp,
+			}).WithError(err).Error("failed to encode pregnancy")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

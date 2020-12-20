@@ -5,6 +5,7 @@ import format from 'date-fns/format';
 import AppCard from '../../../AppCard/AppCard';
 
 const VitalsComponent = ({ children, vitals, ...rest }) => {
+  const { obstetricDetails } = vitals;
   return (
     <Box gap={'medium'} align={'center'} {...rest}>
       {children}
@@ -40,30 +41,34 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
         </Box>
         <Box>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.para}
+            {obstetricDetails.para}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.cs}
+            {obstetricDetails.cs}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.abortiveOutcome}
+            {obstetricDetails.pregnancyOutcome == ''
+              ? 'N/A'
+              : obstetricDetails.pregnancyOutcome}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.diagnosisDate
-              ? format(parseISO(vitals.diagnosisDate), 'dd LLL yyyy')
+            {obstetricDetails.diagnosisDate
+              ? format(parseISO(obstetricDetails.diagnosisDate), 'dd LLL yyyy')
               : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.planned ? 'Yes' : 'No'}
+            {obstetricDetails.planned ? 'Yes' : 'No'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.ageAtLmp}
+            {obstetricDetails.ageAtLmp}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {vitals.lmp ? format(parseISO(vitals.lmp), 'dd LLL yyyy') : 'N/A'}
+            {obstetricDetails.lmp
+              ? format(parseISO(obstetricDetails.lmp), 'dd LLL yyyy')
+              : 'N/A'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
-            {format(parseISO(vitals.edd), 'dd LLL yyyy')}
+            {format(parseISO(obstetricDetails.edd), 'dd LLL yyyy')}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {vitals.interval}
@@ -75,7 +80,6 @@ const VitalsComponent = ({ children, vitals, ...rest }) => {
 };
 
 const PregnancyVitals = (props) => {
-  console.dir({ vitals: props.vitals });
   return (
     <AppCard fill={'horizontal'}>
       <CardBody gap={'medium'} pad={'medium'}>

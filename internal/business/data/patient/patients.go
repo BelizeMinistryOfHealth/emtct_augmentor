@@ -6,6 +6,7 @@ import (
 	"google.golang.org/api/iterator"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"moh.gov.bz/mch/emtct/nums"
+	"strconv"
 )
 
 // FindByPatientId searches for a patient who is currently pregnant.
@@ -91,4 +92,17 @@ func (p *Patients) GetPregnancies(patientId string) ([]models.Pregnancy, error) 
 		pregs = append(pregs, pr)
 	}
 	return pregs, nil
+}
+
+func (p *Patients) GetPregnancy(pregnancyId int) (*models.Pregnancy, error) {
+	ref := p.firestore.Client.Collection(p.collections.Pregnancies)
+	snap, err := ref.Doc(strconv.Itoa(pregnancyId)).Get(p.ctx())
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving pregnancy: %w", err)
+	}
+	var preg models.Pregnancy
+	if err := snap.DataTo(&preg); err != nil {
+		return nil, fmt.Errorf("error converting pregnancy: %w", err)
+	}
+	return &preg, nil
 }

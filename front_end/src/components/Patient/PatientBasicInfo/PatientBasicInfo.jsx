@@ -16,10 +16,8 @@ const Identifier = ({ children, basicInfo }) => {
     address,
     education,
     ethnicity,
-    hiv,
     hivDiagnosisDate,
   } = basicInfo;
-  console.dir({ basicInfo });
   return (
     <Box gap='medium' align='center' fill={'horizontal'}>
       {children}
@@ -53,9 +51,6 @@ const Identifier = ({ children, basicInfo }) => {
           </Text>
           <Text size={'small'} textAlign={'start'} weight={'bold'}>
             Ethnicity:
-          </Text>
-          <Text size={'small'} textAlign={'start'} weight={'bold'}>
-            HIV
           </Text>
           <Text size={'small'} textAlign={'start'} weight={'bold'}>
             HIV Diagnosis Date
@@ -93,9 +88,6 @@ const Identifier = ({ children, basicInfo }) => {
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {ethnicity}
-          </Text>
-          <Text size={'small'} textAlign={'start'}>
-            {hiv ? 'Positive' : 'Negative'}
           </Text>
           <Text size={'small'} textAlign={'start'}>
             {hivDiagnosisDate

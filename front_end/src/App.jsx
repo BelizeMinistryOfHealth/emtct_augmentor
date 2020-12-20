@@ -50,7 +50,7 @@ function App() {
                   <Main>
                     <Switch>
                       <Route
-                        path={'/patient/:patientId/current_pregnancy'}
+                        path={'/patient/:patientId/pregnancy/:pregnancyId'}
                         component={CurrentPregnancy}
                       />
                       <Route
