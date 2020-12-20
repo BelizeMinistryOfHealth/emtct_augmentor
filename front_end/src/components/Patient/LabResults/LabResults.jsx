@@ -96,7 +96,7 @@ const LabResultsTable = ({ children, data, ...rest }) => {
 };
 
 const LabResults = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [labData, setLabData] = React.useState({
     results: undefined,
@@ -107,7 +107,11 @@ const LabResults = (props) => {
   React.useEffect(() => {
     const getLabResults = async () => {
       try {
-        const results = await fetchPregnancyLabResults(patientId, httpInstance);
+        const results = await fetchPregnancyLabResults(
+          patientId,
+          pregnancyId,
+          httpInstance
+        );
         setLabData({ results, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -117,7 +121,7 @@ const LabResults = (props) => {
     if (labData.loading) {
       getLabResults();
     }
-  }, [labData, httpInstance, patientId]);
+  }, [labData, httpInstance, patientId, pregnancyId]);
 
   if (labData.loading) {
     return (

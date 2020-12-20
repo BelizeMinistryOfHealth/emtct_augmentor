@@ -50,6 +50,12 @@ function App() {
                   <Main>
                     <Switch>
                       <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/lab_results'
+                        }
+                        component={LabResults}
+                      />
+                      <Route
                         path={'/patient/:patientId/pregnancy/:pregnancyId'}
                         component={CurrentPregnancy}
                       />
@@ -77,10 +83,7 @@ function App() {
                         path={'/patient/:patientId/admissions'}
                         component={HospitalAdmissions}
                       />
-                      <Route
-                        path={'/patient/:patientId/lab_results'}
-                        component={LabResults}
-                      />
+
                       <Route
                         path={'/patient/:patientId/arvs'}
                         component={ArvTreatment}

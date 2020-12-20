@@ -6,7 +6,7 @@ import { useHistory, useParams } from 'react-router-dom';
 const Layout = ({ children }) => {
   const history = useHistory();
   const [active, setActive] = React.useState();
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   return (
     <Box
       align={'start'}
@@ -18,10 +18,9 @@ const Layout = ({ children }) => {
     >
       <Nav background={'neutral-2'}>
         {[
-          { label: 'General Info', link: `/patient/${patientId}` },
           {
-            label: 'Current Pregnancy',
-            link: `/patient/${patientId}/current_pregnancy`,
+            label: 'General Info',
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}`,
           },
           {
             label: 'Infant',
@@ -31,7 +30,10 @@ const Layout = ({ children }) => {
             label: 'Partners',
             link: `/patient/${patientId}/partners/syphilisTreatments`,
           },
-          { label: 'Lab Results', link: `/patient/${patientId}/lab_results` },
+          {
+            label: 'Lab Results',
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/lab_results`,
+          },
           { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
           {
             label: 'Arvs',

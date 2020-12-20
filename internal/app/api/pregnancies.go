@@ -131,12 +131,14 @@ func DiagnosesBetweenDates(diagnoses []models.Diagnosis, start, end time.Time) [
 }
 
 type pregnancyLabResultsResponse struct {
-	LabResults []labs.LabResult `json:"labResults"`
-	Patient    models.Patient   `json:"patient"`
+	LabResults []models.LabResult `json:"labResults"`
+	Patient    models.Patient     `json:"patient"`
 }
 
 func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http.Request) {
 	handlerName := "FindPregnancyLabResults"
+	w.Header().Add("Content-Type", "application/json")
+
 	switch r.Method {
 	case http.MethodOptions:
 		return
@@ -151,17 +153,26 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 			http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
 			return
 		}
-		preg, err := a.Pregnancies.FindCurrentPregnancy(id)
+		pregId := vars["pregnancyId"]
+		pregnancyId, err := strconv.Atoi(pregId)
+		if err != nil {
+			log.WithFields(log.Fields{"patientId": patientId, "pregnancyId": pregId}).WithError(err).
+				Error("pregnancy id is not a valid numeric value")
+			http.Error(w, "pregnancy id is not a valid numeric value", http.StatusBadRequest)
+			return
+		}
+		preg, err := a.Patient.GetPregnancy(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
 				"handler":   handlerName,
 				"method":    method,
-			}).WithError(err).Error("no current pregnancy found")
-			http.Error(w, "did not find any current pregnancy", http.StatusNotFound)
+			}).WithError(err).Error("no pregnancy found")
+			http.Error(w, "did not find any pregnancy with given id", http.StatusNotFound)
 			return
 		}
-		labResults, err := a.Lab.FindLabTestsDuringPregnancy(id, preg.Lmp)
+		endDate := preg.Lmp.Add(time.Hour * 24 * 7 * 54)
+		labResults, err := a.Patient.FindLabTestsInPeriod(patientId, *preg.Lmp, endDate)
 		if err != nil {
 			log.WithFields(log.Fields{"patientId": patientId}).
 				WithError(err).
@@ -181,7 +192,6 @@ func (a *pregnancyRoutes) FindPregnancyLabResults(w http.ResponseWriter, r *http
 			return
 		}
 		response := pregnancyLabResultsResponse{Patient: *patient, LabResults: labResults}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{"labResults": labResults, "patientId": patientId}).
 				WithError(err).

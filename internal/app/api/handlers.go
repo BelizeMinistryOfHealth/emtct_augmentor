@@ -118,7 +118,7 @@ func API(app app.App) *mux.Router {
 	pregRoutes := pregnancyRoutes{Pregnancies: preg, Patient: patients, Lab: lab, Hiv: Hiv}
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}",
 		authMid.Then(pregRoutes.GetPregnancy)).Methods(http.MethodOptions, http.MethodGet)
-	patientRouter.HandleFunc("/{patientId}/currentPregnancy/labResults",
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/labResults",
 		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/obstetricHistory", authMid.Then(pregRoutes.ObstetricHistoryHandler)).
 		Methods(http.MethodOptions, http.MethodGet)

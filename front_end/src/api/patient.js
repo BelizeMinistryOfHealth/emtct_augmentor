@@ -133,9 +133,13 @@ export const fetchArvsTreatment = (patientId, encounterId) => {
   });
 };
 
-export const fetchPregnancyLabResults = async (patientId, httpInstance) => {
+export const fetchPregnancyLabResults = async (
+  patientId,
+  pregnancyId,
+  httpInstance
+) => {
   const labResultsResponse = await httpInstance.get(
-    `/patients/${patientId}/currentPregnancy/labResults`
+    `/patients/${patientId}/pregnancy/${pregnancyId}/labResults`
   );
 
   return labResultsResponse.data;
