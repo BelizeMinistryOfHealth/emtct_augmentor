@@ -106,3 +106,24 @@ func (p *Patients) GetPregnancy(pregnancyId int) (*models.Pregnancy, error) {
 	}
 	return &preg, nil
 }
+
+func (p *Patients) GetDiagnoses(patientId string) ([]models.Diagnosis, error) {
+	ref := p.firestore.Client.Collection(p.collections.Diagnoses)
+	iter := ref.Where("patientId", "==", patientId).OrderBy("date", firestore.Desc).Documents(p.ctx())
+	var ds []models.Diagnosis
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		var d models.Diagnosis
+		if err := doc.DataTo(&d); err != nil {
+			return nil, fmt.Errorf("error converting diagnosis: %w", err)
+		}
+		ds = append(ds, d)
+	}
+	return ds, nil
+}

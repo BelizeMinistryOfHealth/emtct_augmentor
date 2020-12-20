@@ -55,19 +55,14 @@ export const fetchCurrentPregnancy = async (
   }
   pregnancy.anc.gestationalAge = gestationalAge;
 
-  // const prenatalCareInfo = {
-  //   dateOfBooking: vitals.dateOfBooking,
-  //   gestationAge: gestationalAge,
-  //   prenatalCareProvider: vitals.prenatalCareProvider,
-  //   totalChecks: vitals.totalChecks,
-  // };
-
   const pregnancyDiagnoses = pregnancyData.data.diagnoses ?? [];
 
   return {
     pregnancy,
     pregnancyDiagnoses,
     patient: data.patient,
+    diagnosesDuringPregnancy: data.diagnosesDuringPregnancy,
+    diagnosesBeforePregnancy: data.diagnosesBeforePregnancy,
   };
 };
 

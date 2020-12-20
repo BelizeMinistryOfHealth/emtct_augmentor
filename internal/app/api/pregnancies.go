@@ -5,6 +5,7 @@ import (
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -27,9 +28,11 @@ func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
 	handlerName := "GetPregnancy"
 	w.Header().Add("Content-Type", "application/json")
 	type response struct {
-		Pregnancy models.Pregnancy `json:"pregnancy"`
-		Interval  int              `json:"interval"`
-		Patient   models.Patient   `json:"patient"`
+		Pregnancy                models.Pregnancy   `json:"pregnancy"`
+		Interval                 int                `json:"interval"`
+		Patient                  models.Patient     `json:"patient"`
+		DiagnosesBeforePregnancy []models.Diagnosis `json:"diagnosesBeforePregnancy"`
+		DiagnosesDuringPregnancy []models.Diagnosis `json:"diagnosesDuringPregnancy"`
 	}
 
 	switch r.Method {
@@ -69,10 +72,30 @@ func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "patient does not exist", http.StatusNoContent)
 			return
 		}
+		diagnoses, err := a.Patient.GetDiagnoses(patientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"patientId": patientId,
+			}).WithError(err).Error("did not find any diagnoses")
+		}
+
+		endDate := preg.Edd
+		if preg.Edd != nil {
+			l := *preg.Lmp
+			e := l.Add(time.Hour * 24 * 7 * 54)
+			endDate = &e
+		}
+		diagnosesDuringPregnancy := DiagnosesBetweenDates(diagnoses, *preg.Lmp, *endDate)
+		diagnosesBeforePregnancy := DiagnosesBeforeDate(diagnoses, *preg.Lmp)
+
 		resp := response{
-			Pregnancy: preg,
-			Interval:  interval,
-			Patient:   *patient,
+			Pregnancy:                preg,
+			Interval:                 interval,
+			Patient:                  *patient,
+			DiagnosesBeforePregnancy: diagnosesBeforePregnancy,
+			DiagnosesDuringPregnancy: diagnosesDuringPregnancy,
 		}
 
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -85,7 +108,26 @@ func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
 
+func DiagnosesBeforeDate(diagnoses []models.Diagnosis, d time.Time) []models.Diagnosis {
+	var ds []models.Diagnosis
+	for _, i := range diagnoses {
+		if i.Date.Before(d) {
+			ds = append(ds, i)
+		}
+	}
+	return ds
+}
+
+func DiagnosesBetweenDates(diagnoses []models.Diagnosis, start, end time.Time) []models.Diagnosis {
+	var ds []models.Diagnosis
+	for _, i := range diagnoses {
+		if i.Date.After(start) && i.Date.Before(end) {
+			ds = append(ds, i)
+		}
+	}
+	return ds
 }
 
 type pregnancyLabResultsResponse struct {

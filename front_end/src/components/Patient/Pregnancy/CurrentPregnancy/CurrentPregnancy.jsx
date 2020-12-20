@@ -5,13 +5,13 @@ import { fetchCurrentPregnancy } from '../../../../api/patient';
 import { useHttpApi } from '../../../../providers/HttpProvider';
 import Layout from '../../../Layout/Layout';
 import PatientBasicInfo from '../../PatientBasicInfo/PatientBasicInfo';
-import AppTabs from '../../Tabs/Tabs';
+import AppTabs from './Tabs/Tabs';
 import PregnancyVitals from '../PregnancyVitals/PregnancyVitals';
 import PreNatalCare from '../PreNatalCare/PreNatalCare';
 import Spinner from '../../../Spinner';
+import DiagnosisHistory from '../../Diagnoses/Diagnoses';
 
 const BasicInfoComponent = ({ currentPregnancy }) => {
-  console.dir({ currentPregnancy });
   return (
     <Box
       direction={'column'}
@@ -41,22 +41,22 @@ const BasicInfoComponent = ({ currentPregnancy }) => {
   );
 };
 
-// const PregnancyDiagnoses = ({ currentPregnancy }) => {
-//   return (
-//     <Box
-//       justify={'center'}
-//       align={'center'}
-//       fill={'horizontal'}
-//       gap={'large'}
-//       pad={'medium'}
-//     >
-//       <DiagnosisHistory
-//         diagnosisHistory={currentPregnancy.pregnancyDiagnoses}
-//         caption={'Illnesses during Pregnancy'}
-//       />
-//     </Box>
-//   );
-// };
+const PregnancyDiagnoses = ({ diagnoses }) => {
+  return (
+    <Box
+      justify={'center'}
+      align={'center'}
+      fill={'horizontal'}
+      gap={'large'}
+      pad={'medium'}
+    >
+      <DiagnosisHistory
+        diagnosisHistory={diagnoses}
+        caption={'Illnesses during Pregnancy'}
+      />
+    </Box>
+  );
+};
 
 const CurrentPregnancy = (props) => {
   const { location } = props;
@@ -135,6 +135,16 @@ const CurrentPregnancy = (props) => {
         basicInfo={
           <BasicInfoComponent
             currentPregnancy={pregnancyData.currentPregnancy}
+          />
+        }
+        pregnancyDiagnoses={
+          <PregnancyDiagnoses
+            diagnoses={pregnancyData.currentPregnancy.diagnosesDuringPregnancy}
+          />
+        }
+        diagnosesBeforePregnancy={
+          <PregnancyDiagnoses
+            diagnoses={pregnancyData.currentPregnancy.diagnosesBeforePregnancy}
           />
         }
       />
