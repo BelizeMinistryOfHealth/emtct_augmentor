@@ -122,7 +122,7 @@ func API(app app.App) *mux.Router {
 		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/obstetricHistory", authMid.Then(pregRoutes.ObstetricHistoryHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
-	patientRouter.HandleFunc("/{patientId}/arvs", authMid.Then(pregRoutes.ArvsHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/arvs", authMid.Then(pregRoutes.ArvsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/syphilisTreatments", authMid.Then(pregRoutes.PatientSyphilisTreatmentHandler)).
 		Methods(http.MethodOptions, http.MethodGet)

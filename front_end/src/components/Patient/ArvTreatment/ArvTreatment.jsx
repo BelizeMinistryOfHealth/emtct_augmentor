@@ -92,7 +92,7 @@ const BasicInfo = (props) => {
 };
 
 const ArvTreatment = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [arvData, setArvData] = React.useState({
     arvs: [],
@@ -103,7 +103,9 @@ const ArvTreatment = (props) => {
   React.useEffect(() => {
     const getArvs = async () => {
       try {
-        const result = await httpInstance.get(`/patients/${patientId}/arvs`);
+        const result = await httpInstance.get(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/arvs`
+        );
         setArvData({ arvs: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -113,7 +115,7 @@ const ArvTreatment = (props) => {
     if (arvData.loading) {
       getArvs();
     }
-  }, [httpInstance, arvData, patientId]);
+  }, [httpInstance, arvData, patientId, pregnancyId]);
 
   if (arvData.loading) {
     return (

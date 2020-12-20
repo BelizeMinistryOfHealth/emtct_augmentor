@@ -55,6 +55,11 @@ function App() {
                         }
                         component={LabResults}
                       />
+
+                      <Route
+                        path={'/patient/:patientId/pregnancy/:pregnancyId/arvs'}
+                        component={ArvTreatment}
+                      />
                       <Route
                         path={'/patient/:patientId/pregnancy/:pregnancyId'}
                         component={CurrentPregnancy}
@@ -84,10 +89,6 @@ function App() {
                         component={HospitalAdmissions}
                       />
 
-                      <Route
-                        path={'/patient/:patientId/arvs'}
-                        component={ArvTreatment}
-                      />
                       <Route
                         path={'/patient/:patientId/syphilisTreatment'}
                         component={SyphilisTreatment}

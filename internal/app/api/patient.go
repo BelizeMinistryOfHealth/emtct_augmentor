@@ -60,12 +60,13 @@ type arvsResponse struct {
 }
 
 func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	handlerName := "ArvsHandler"
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
-		method := "Get"
+		method := r.Method
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
@@ -84,7 +85,20 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Find the pregnancy and the lmp so we can get the date bounds
-		pregs, err := a.Pregnancies.FindCurrentPregnancy(patientId)
+		pregId := vars["pregnancyId"]
+		pregnancyId, err := strconv.Atoi(pregId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      method,
+				"user":        user,
+				"pregnancyId": pregId,
+				"patientId":   patientId,
+			}).WithError(err).Error("pregnancy id is not a valid number")
+			http.Error(w, "pregnancy id is not a valid number", http.StatusBadRequest)
+			return
+		}
+		pregs, err := a.Patient.GetPregnancy(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": id,
@@ -141,7 +155,6 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 			Arvs:    arvs,
 			Patient: *patientInfo,
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(arvsResponse); err != nil {
 			log.WithFields(log.Fields{"patientId": patientId, "user": user}).
 				WithError(err).

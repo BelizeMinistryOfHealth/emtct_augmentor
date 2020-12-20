@@ -1,6 +1,7 @@
 package patient
 
 import (
+	"cloud.google.com/go/firestore"
 	"fmt"
 	"google.golang.org/api/iterator"
 	"moh.gov.bz/mch/emtct/internal/models"
@@ -17,6 +18,7 @@ func (p *Patients) FindArvsByPatient(patientId string, beginDate, endDate time.T
 		Where("patientId", "==", patientId).
 		Where("prescribedTime", ">=", beginDate).
 		Where("prescribedTime", "<=", endDate).
+		OrderBy("prescribedTime", firestore.Desc).
 		Documents(p.ctx())
 	var rxs []models.Prescription
 	for {
