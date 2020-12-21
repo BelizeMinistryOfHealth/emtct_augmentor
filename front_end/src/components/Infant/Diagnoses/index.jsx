@@ -29,7 +29,7 @@ const diagnosisRow = (data) => {
       </TableCell>
       <TableCell>
         <Text size={'small'} align={'start'}>
-          {data.diagnosis}
+          {data.name}
         </Text>
       </TableCell>
       <TableCell>
@@ -75,7 +75,7 @@ const DiagnosesTable = ({ children, data }) => {
 
 const InfantDiagnoses = () => {
   const { httpInstance } = useHttpApi();
-  const { patientId, infantId } = useParams();
+  const { patientId, infantId, pregnancyId } = useParams();
   const [data, setData] = React.useState({
     result: undefined,
     loading: true,
@@ -85,8 +85,9 @@ const InfantDiagnoses = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('fetching infant diagnoses');
         const result = await httpInstance.get(
-          `/patient/${patientId}/infant/${infantId}/diagnoses`
+          `/patients/${patientId}/infant/${infantId}/diagnoses`
         );
         setData({
           result: result.data,
@@ -152,7 +153,7 @@ const InfantDiagnoses = () => {
         align={'center'}
         fill
       >
-        <InfantTabs data={data.result.infant}>
+        <InfantTabs data={data.result.infant} pregnancyId={pregnancyId}>
           <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
               <Box>
@@ -163,18 +164,15 @@ const InfantDiagnoses = () => {
                   <span>
                     <Text size={'large'}>
                       {' '}
-                      {data.result.infant.infant.firstName}{' '}
-                      {data.result.infant.infant.lastName}
+                      {data.result.infant.firstName}{' '}
+                      {data.result.infant.lastName}
                     </Text>
                   </span>
                   <span>
                     <Text size={'medium'}>
                       {' '}
                       |{' '}
-                      {format(
-                        parseISO(data.result.infant.infant.dob),
-                        'dd LLL yyyy'
-                      )}
+                      {format(parseISO(data.result.infant.dob), 'dd LLL yyyy')}
                     </Text>
                   </span>
                 </span>

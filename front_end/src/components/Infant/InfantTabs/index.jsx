@@ -52,33 +52,33 @@ const TabsItem = ({ content, onClickTab }) => {
 };
 
 const InfantTabs = ({ data, pregnancyId, children }) => {
-  const { mother, infant } = data;
+  const { mother } = data;
   const history = useHistory();
   const onClickTab = (nextIndex) => {
     switch (nextIndex) {
       case 0:
         history.push(
-          `/patient/${mother.patientId}/pregnancy/${pregnancyId}/infant/${infant.patientId}`
+          `/patient/${mother.patientId}/pregnancy/${pregnancyId}/infant/${data.id}`
         );
         break;
       case 1:
         history.push(
-          `/patient/${mother.patientId}/infant/${infant.patientId}/hivScreenings`
+          `/patient/${mother.patientId}/infant/${data.id}/hivScreenings`
         );
         break;
       case 2:
         history.push(
-          `/patient/${mother.patientId}/infant/${infant.patientId}/diagnoses`
+          `/patient/${mother.patientId}/pregnancy/${pregnancyId}/infant/${data.id}/diagnoses`
         );
         break;
       case 3:
         history.push(
-          `/patient/${mother.patientId}/infant/${infant.patientId}/syphilisTreatment`
+          `/patient/${mother.patientId}/infant/${data.id}/syphilisTreatment`
         );
         break;
       case 4:
         history.push(
-          `/patient/${mother.patientId}/infant/${infant.patientId}/syphilisScreenings`
+          `/patient/${mother.patientId}/infant/${data.id}/syphilisScreenings`
         );
         break;
     }

@@ -365,3 +365,55 @@ func (a *pregnancyRoutes) InfantByIdHandlers(w http.ResponseWriter, r *http.Requ
 		}
 	}
 }
+
+func (a *pregnancyRoutes) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
+	type infantDiagnosesResponse struct {
+		Diagnoses []models.Diagnosis `json:"diagnoses"`
+		Infant    *models.Infant     `json:"infant"`
+	}
+	defer r.Body.Close()
+	w.Header().Add("Content-Type", "application/json")
+	handlerName := "InfantDiagnosesHandler"
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		infantId := vars["infantId"]
+		diagnoses, err := a.Patient.GetDiagnoses(infantId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"infantId": infantId,
+				"method":   r.Method,
+			}).WithError(err).Error("failed to fetch infant's diagnoses")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		infant, err := a.Patient.GetInfant(infantId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+			}).WithError(err).Error("failed to retrieve infant")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		resp := infantDiagnosesResponse{
+			Diagnoses: diagnoses,
+			Infant:    infant,
+		}
+		if err := json.NewEncoder(w).Encode(&resp); err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+				"response": resp,
+			}).WithError(err).Error("failed to encode infant diagnoses response")
+			http.Error(w, "failed to encode infant diagnoses", http.StatusInternalServerError)
+			return
+		}
+	}
+
+}

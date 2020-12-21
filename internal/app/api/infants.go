@@ -35,11 +35,6 @@ func (i InfantRoutes) InfantHandlers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type infantDiagnosesResponse struct {
-	Diagnoses []infant.Diagnoses `json:"diagnoses"`
-	Infant    infant.Infant      `json:"infant"`
-}
-
 func (i InfantRoutes) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Request) {
 	switch method := r.Method; method {
 	case http.MethodOptions:
