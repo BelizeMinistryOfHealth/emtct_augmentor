@@ -124,14 +124,15 @@ func LabResultIndex(vs []LabResult, testRequestItemId int) *LabResult {
 }
 
 type Prescription struct {
-	ID             int       `json:"id"`
-	PatientId      string    `json:"patientId"`
-	TotalDoses     int       `json:"totalDoses"`
-	Pharmaceutical string    `json:"pharmaceutical"`
-	Frequency      string    `json:"frequency"`
-	Strength       string    `json:"strength"`
-	Comments       string    `json:"comments"`
-	PrescribedTime time.Time `json:"prescribedTime"`
+	ID               int       `json:"id"`
+	PatientId        string    `json:"patientId"`
+	TotalDoses       int       `json:"totalDoses"`
+	Pharmaceutical   string    `json:"pharmaceutical"`
+	Frequency        string    `json:"frequency"`
+	Strength         string    `json:"strength"`
+	Comments         string    `json:"comments"`
+	PrescribedTime   time.Time `json:"prescribedTime"`
+	PharmaceuticalId int       `json:"pharmaceuticalId" firestore:"pharmaceuticalId"`
 }
 
 type Person struct {

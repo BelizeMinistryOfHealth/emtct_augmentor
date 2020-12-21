@@ -13,7 +13,7 @@ func (p *Patients) FindSyphilisTreatment(patientId string, beginDate *time.Time,
 
 func (p *Patients) FindRx(patientId string, rx int, beginDate *time.Time, endDate *time.Time) ([]models.Prescription, error) {
 	colRef := p.firestore.Client.Collection(p.collections.Prescriptions)
-	iter := colRef.Where("id", "==", rx).Where("patientId", "==", patientId).Documents(p.ctx())
+	iter := colRef.Where("pharmaceuticalId", "==", rx).Where("patientId", "==", patientId).Documents(p.ctx())
 	var rxs []models.Prescription
 	for {
 		doc, err := iter.Next()
