@@ -1,17 +1,3 @@
-// EMTCT Monitoring API
-//
-// THe API for managing EMTCT cases.
-//
-// Schemes: http,https
-// Version: 0.1.0
-// basePath: /
-// Consumes:
-// - application/json
-//
-// Produces:
-// - application/json
-//
-// swagger:meta
 package main
 
 import (

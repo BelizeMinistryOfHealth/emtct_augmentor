@@ -1,0 +1,6 @@
+# app.yaml
+runtime: go114
+
+env_variables:
+  PROJECT_ID: "emtct-739a6"
+
