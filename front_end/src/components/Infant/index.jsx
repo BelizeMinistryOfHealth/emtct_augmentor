@@ -34,13 +34,13 @@ const BasicInfo = ({ data }) => {
         <BasicInfoHeaders />
         <Box pad={'large'} gap={'large'}>
           <Text size={'large'} textAlign={'start'}>
-            {data.infant.firstName} {data.infant.lastName}
+            {data.firstName} {data.lastName}
           </Text>
           <Text size={'large'} textAlign={'start'}>
-            {data.infant.patientId}
+            {data.id}
           </Text>
           <Text size={'large'} textAlign={'start'}>
-            {format(parseISO(data.infant.dob), 'dd LLL yyyy')}
+            {format(parseISO(data.dob), 'dd LLL yyyy')}
           </Text>
           <Text size={'large'} textAlign={'start'}>
             {data.mother.firstName} {data.mother.lastName}
@@ -67,7 +67,7 @@ const InfantInfo = ({ data }) => {
 };
 
 const Infant = () => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [infantData, setInfantData] = React.useState({
     data: undefined,
@@ -78,7 +78,7 @@ const Infant = () => {
   React.useEffect(() => {
     const getInfant = () => {
       httpInstance
-        .get(`/infants/${patientId}`)
+        .get(`/patients/${patientId}/pregnancy/${pregnancyId}/infant`)
         .then((result) => {
           // eslint-disable-next-line no-undef
           console.dir({ result });
@@ -110,7 +110,7 @@ const Infant = () => {
     if (infantData.loading) {
       getInfant();
     }
-  }, [infantData, httpInstance, patientId]);
+  }, [infantData, httpInstance, patientId, pregnancyId]);
 
   if (infantData.loading) {
     return (
@@ -179,7 +179,7 @@ const Infant = () => {
         alignSelf={'start'}
         fill={'horizontal'}
       >
-        <InfantTabs data={infantData.data}>
+        <InfantTabs data={infantData.data} pregnancyId={pregnancyId}>
           <InfantInfo data={infantData.data} />
         </InfantTabs>
       </Box>

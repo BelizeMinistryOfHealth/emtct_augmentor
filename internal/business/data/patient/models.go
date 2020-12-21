@@ -14,6 +14,7 @@ type DbCollections struct {
 	Pregnancies   string
 	Diagnoses     string
 	LabTests      string
+	Infants       string
 }
 
 type Patients struct {
@@ -31,6 +32,7 @@ func New(acsisDb, emtctDb *sql.DB, firestore *db.FirestoreClient) Patients {
 		Pregnancies:   "pregnancies",
 		Diagnoses:     "diagnoses",
 		LabTests:      "labTests",
+		Infants:       "infants",
 	}
 	return Patients{acsis: acsisDb, emtctDb: emtctDb, collections: collections, firestore: firestore}
 }

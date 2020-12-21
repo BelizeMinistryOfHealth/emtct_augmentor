@@ -51,13 +51,15 @@ const TabsItem = ({ content, onClickTab }) => {
   );
 };
 
-const InfantTabs = ({ data, children }) => {
+const InfantTabs = ({ data, pregnancyId, children }) => {
   const { mother, infant } = data;
   const history = useHistory();
   const onClickTab = (nextIndex) => {
     switch (nextIndex) {
       case 0:
-        history.push(`/patient/${mother.patientId}/infant/${infant.patientId}`);
+        history.push(
+          `/patient/${mother.patientId}/pregnancy/${pregnancyId}/infant/${infant.patientId}`
+        );
         break;
       case 1:
         history.push(

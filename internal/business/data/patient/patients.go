@@ -7,6 +7,7 @@ import (
 	"moh.gov.bz/mch/emtct/internal/models"
 	"moh.gov.bz/mch/emtct/nums"
 	"strconv"
+	"time"
 )
 
 // FindByPatientId searches for a patient who is currently pregnant.
@@ -126,4 +127,40 @@ func (p *Patients) GetDiagnoses(patientId string) ([]models.Diagnosis, error) {
 		ds = append(ds, d)
 	}
 	return ds, nil
+}
+
+func (p *Patients) GetInfantForPregnancy(patientId int, lmp time.Time) (*models.Infant, error) {
+	ref := p.firestore.Client.Collection(p.collections.Infants)
+	iter := ref.Where("mother.patientId", "==", patientId).
+		Where("dob", ">", lmp).
+		Where("dob", "<", lmp.Add(time.Hour*25*365)).
+		Limit(1).
+		Documents(p.ctx())
+	var preg models.Infant
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve infant for pregnancy: %w", err)
+		}
+		if err := doc.DataTo(&preg); err != nil {
+			return nil, fmt.Errorf("failed to transform infant: %w", err)
+		}
+	}
+	return &preg, nil
+}
+
+func (p *Patients) GetInfant(infantId string) (*models.Infant, error) {
+	ref := p.firestore.Client.Collection(p.collections.Infants)
+	snap, err := ref.Doc(infantId).Get(p.ctx())
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve infant: %w", err)
+	}
+	var inf models.Infant
+	if err := snap.DataTo(&inf); err != nil {
+		return nil, fmt.Errorf("")
+	}
+	return &inf, nil
 }

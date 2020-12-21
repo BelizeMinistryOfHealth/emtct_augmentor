@@ -256,3 +256,112 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 
 	}
 }
+
+func (a *pregnancyRoutes) InfantHandlers(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Content-Type", "application/json")
+	handlerName := "InfantHandlers"
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		motherId := vars["motherId"]
+		patientId, err := strconv.Atoi(motherId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"patientId": motherId,
+			}).WithError(err).Error("motherId must be a valid number")
+			http.Error(w, "mother id must be a valid number", http.StatusBadRequest)
+			return
+		}
+		pregnancyId := vars["pregnancyId"]
+		pregId, err := strconv.Atoi(pregnancyId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"motherId":    motherId,
+				"pregnancyId": pregnancyId,
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
+			return
+		}
+		//Get Pregnancy so we can filter infants who are born about 9 months after LMP
+		preg, err := a.Patient.GetPregnancy(pregId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": pregnancyId,
+				"motherId":    motherId,
+			}).WithError(err).Error("error retrieving pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		lmp := preg.Lmp
+		if lmp == nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"pregnancy": preg,
+			}).Error("can not retrieve patient if lmp is missing")
+			http.Error(w, "can not retrieve patiet if pregnancy is missing an lmp", http.StatusInternalServerError)
+			return
+		}
+		infant, err := a.Patient.GetInfantForPregnancy(patientId, *lmp)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"pregnancy": preg,
+			}).WithError(err).Error("failed to retrieve infant for pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(infant); err != nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"pregnancy": preg,
+				"infant":    infant,
+			}).WithError(err).Error("failed to json encode infant")
+			http.Error(w, "failed to json encode infant", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (a *pregnancyRoutes) InfantByIdHandlers(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Content-Type", "application/json")
+	handlerName := "InfantByIdHandlers"
+	switch method := r.Method; method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		infantId := vars["infantId"]
+		infant, err := a.Patient.GetInfant(infantId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+			}).WithError(err).Error("failed to retrieve infant for pregnancy")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(infant); err != nil {
+			log.WithFields(log.Fields{
+				"handler": handlerName,
+				"method":  r.Method,
+				"infant":  infant,
+			}).WithError(err).Error("failed to json encode infant")
+			http.Error(w, "failed to json encode infant", http.StatusInternalServerError)
+			return
+		}
+	}
+}

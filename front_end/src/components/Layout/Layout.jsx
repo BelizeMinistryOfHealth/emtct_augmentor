@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
           },
           {
             label: 'Infant',
-            link: `/patient/${patientId}/infant`,
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/infant`,
           },
           {
             label: 'Partners',

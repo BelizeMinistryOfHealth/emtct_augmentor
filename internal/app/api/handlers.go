@@ -51,8 +51,6 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodGet, http.MethodOptions)
 	infantRouter.HandleFunc("/{infantId}/syphilisScreenings", authMid.Then(infantRoutes.InfantSyphilisScreeninngHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
-	infantRouter.HandleFunc("/{patientId}", authMid.Then(infantRoutes.InfantHandlers)).
-		Methods(http.MethodOptions, http.MethodGet)
 
 	// HomeVisits
 	visits := homeVisits.New(app.EmtctDb.DB)
@@ -125,6 +123,10 @@ func API(app app.App) *mux.Router {
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/arvs", authMid.Then(pregRoutes.ArvsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/syphilisTreatments", authMid.Then(pregRoutes.PatientSyphilisTreatmentHandler)).
+		Methods(http.MethodOptions, http.MethodGet)
+	patientRouter.HandleFunc("/{motherId}/pregnancy/{pregnancyId}/infant", authMid.Then(pregRoutes.InfantHandlers)).
+		Methods(http.MethodOptions, http.MethodGet)
+	patientRouter.HandleFunc("/{motherId}/pregnancy/{pregnancyId}/infant/{infantId}", authMid.Then(pregRoutes.InfantByIdHandlers)).
 		Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{motherId}/infant/{infantId}/hivScreenings", authMid.Then(infantRoutes.HivScreeningHandler)).
 		Methods(http.MethodOptions, http.MethodPost, http.MethodPut, http.MethodGet)
