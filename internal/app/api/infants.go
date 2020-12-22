@@ -15,7 +15,6 @@ import (
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
 	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
-	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
 )
 
 type InfantRoutes struct {
@@ -65,11 +64,6 @@ type newHivScreeningRequest struct {
 type hivScreeningsResponse struct {
 	HivScreenings []infant.HivScreening `json:"hivScreening"`
 	Infant        infant.Infant         `json:"patient"`
-}
-
-type infantTreatmentResponse struct {
-	Prescriptions []prescription.Prescription `json:"prescription"`
-	Infant        infant.Infant               `json:"infant"`
 }
 
 func (i InfantRoutes) CreateHivScreening(user string, r newHivScreeningRequest, timely bool, dueDate time.Time) (*infant.HivScreening, error) {
@@ -255,62 +249,6 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-	}
-}
-
-func (i InfantRoutes) InfantSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
-	switch method := r.Method; method {
-	case http.MethodOptions:
-		return
-	case http.MethodGet:
-		vars := mux.Vars(r)
-		id := vars["infantId"]
-		token := r.Context().Value("user").(app.JwtToken)
-		user := token.Email
-		infantId, err := strconv.Atoi(id)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"infantId": id,
-				"user":     user,
-			}).WithError(err).Error("patient id is not a valid number")
-			http.Error(w, "patient id is not a valid number", http.StatusBadRequest)
-			return
-		}
-		treatments, err := i.Infant.FindInfantSyphilisTreatment(infantId)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"patientId": infantId,
-				"user":      user,
-			}).WithError(err).Error("error retrieving syphilis treatment")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		infant, err := i.Infant.FindInfant(infantId)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"patientId": infantId,
-				"user":      user,
-				"handler":   "SyphilisTreatmentHandler",
-			}).WithError(err).Error("error retrieving patient information")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		response := infantTreatmentResponse{
-			Prescriptions: treatments,
-			Infant:        *infant,
-		}
-		w.Header().Add("Content-Type", "application/json")
-
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			log.WithFields(log.Fields{
-				"response":  response,
-				"user":      user,
-				"patientId": infantId,
-				"handler":   "SyphilisTreatmentHandler",
-			}).WithError(err).Error("error marshaling syphilis treatment response")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
 	}
 }
 

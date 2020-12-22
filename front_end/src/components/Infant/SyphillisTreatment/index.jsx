@@ -10,7 +10,7 @@ import Spinner from '../../Spinner';
 import InfantTabs from '../InfantTabs';
 
 const InfantSyphillisTreatment = (props) => {
-  const { patientId, infantId } = useParams();
+  const { patientId, infantId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [treatmentData, setTreatmentData] = React.useState({
     data: undefined,
@@ -22,7 +22,7 @@ const InfantSyphillisTreatment = (props) => {
     const getTreatment = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/infant/${infantId}/syphilisTreatments`
+          `/patients/${patientId}/infant/${infantId}/syphilisTreatments`
         );
         setTreatmentData({
           data: result.data,
@@ -85,13 +85,13 @@ const InfantSyphillisTreatment = (props) => {
         align={'center'}
         fill
       >
-        <InfantTabs data={treatmentData.data.infant}>
+        <InfantTabs data={treatmentData.data.infant} pregnancyId={pregnancyId}>
           <AppCard fill={'horizontal'}>
             <AppCardHeader
               gap={'medium'}
               pad={'medium'}
               title={'Syphilis Treatments'}
-              patient={treatmentData.data.infant.infant}
+              patient={treatmentData.data.infant}
             />
             <CardBody gap={'medium'} pad={'medium'}>
               <Prescriptions data={treatmentData.data} />

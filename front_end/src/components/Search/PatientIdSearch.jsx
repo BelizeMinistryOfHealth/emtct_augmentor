@@ -24,7 +24,7 @@ const PatientIdSearch = (props) => {
               name={'patientId'}
               type={'name'}
               onChange={(change) => {
-                const pId = parseInt(change.target.value);
+                const pId = parseInt(change.target.value.trim());
                 if (!isNaN(pId)) {
                   setPatientId(pId);
                 }

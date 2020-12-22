@@ -415,5 +415,59 @@ func (a *pregnancyRoutes) InfantDiagnosesHandler(w http.ResponseWriter, r *http.
 			return
 		}
 	}
+}
+
+func (a *pregnancyRoutes) InfantSyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Content-Type", "application/json")
+	handlerName := "InfantSyphilisTreatmentHandler"
+
+	type infantTreatmentResponse struct {
+		Prescriptions []models.Prescription `json:"prescriptions"`
+		Infant        models.Infant         `json:"infant"`
+	}
+
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodGet:
+		vars := mux.Vars(r)
+		infantId := vars["infantId"]
+		infant, err := a.Patient.GetInfant(infantId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+			}).WithError(err).Error("")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		endDate := infant.Dob.Add(time.Hour * 24 * 7 * 54)
+		prescriptions, err := a.Patient.FindSyphilisTreatment(infantId, infant.Dob, &endDate)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+			}).WithError(err).Error("failed to retrieve syphilis treatments")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		resp := infantTreatmentResponse{
+			Prescriptions: prescriptions,
+			Infant:        *infant,
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			log.WithFields(log.Fields{
+				"handler":  handlerName,
+				"method":   r.Method,
+				"infantId": infantId,
+				"response": resp,
+			}).WithError(err).Error("failed to encode response")
+			http.Error(w, "failed to encode response", http.StatusInternalServerError)
+			return
+		}
+	}
 
 }
