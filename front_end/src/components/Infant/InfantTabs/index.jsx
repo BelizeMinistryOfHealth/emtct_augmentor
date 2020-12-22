@@ -63,7 +63,7 @@ const InfantTabs = ({ data, pregnancyId, children }) => {
         break;
       case 1:
         history.push(
-          `/patient/${mother.patientId}/infant/${data.id}/hivScreenings`
+          `/patient/${mother.patientId}/pregnancy/${pregnancyId}/infant/${data.id}/hivScreenings`
         );
         break;
       case 2:

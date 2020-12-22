@@ -78,12 +78,23 @@ function App() {
                         }
                         component={InfantSyphillisTreatment}
                       />
-
                       <Route
                         path={
                           '/patient/:patientId/pregnancy/:pregnancyId/infant/:infantId/syphilisScreenings'
                         }
                         component={InfantSyphilisScreenings}
+                      />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/infant/:infantId/hivScreenings/new'
+                        }
+                        component={HivScreeningCreateForm}
+                      />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/infant/:infantId/hivScreenings'
+                        }
+                        component={InfantHivScreenings}
                       />
 
                       <Route
@@ -121,19 +132,6 @@ function App() {
                       <Route
                         path={'/patient/:patientId/admissions'}
                         component={HospitalAdmissions}
-                      />
-
-                      <Route
-                        path={
-                          '/patient/:patientId/infant/:infantId/hivScreenings/new'
-                        }
-                        component={HivScreeningCreateForm}
-                      />
-                      <Route
-                        path={
-                          '/patient/:patientId/infant/:infantId/hivScreenings'
-                        }
-                        component={InfantHivScreenings}
                       />
 
                       <Route

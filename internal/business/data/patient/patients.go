@@ -160,7 +160,7 @@ func (p *Patients) GetInfant(infantId string) (*models.Infant, error) {
 	}
 	var inf models.Infant
 	if err := snap.DataTo(&inf); err != nil {
-		return nil, fmt.Errorf("")
+		return nil, fmt.Errorf("failed to convert infant data: %w", err)
 	}
 	return &inf, nil
 }

@@ -53,7 +53,7 @@ func VerifyToken(firestoreClient *db.FirestoreClient) Middleware {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// OPTIONS request might not include the Authorization header.
 			// We don't need to verify a token for OPTIONS.
-			if r.Method == "OPTIONS" {
+			if r.Method == http.MethodOptions {
 				f(w, r)
 				return
 			}
@@ -77,6 +77,14 @@ func VerifyToken(firestoreClient *db.FirestoreClient) Middleware {
 				return
 			}
 			identities := verifiedToken.Firebase.Identities
+			//var emails []string
+			//type idens struct {
+			//	email []string
+			//}
+			//var iss []string
+			//iss := identities.(idens)
+			//fmt.Printf("iss: %v", iss)
+			//emails := identities["email"].([]string)
 			email := identities["email"]
 			ctx := context.WithValue(r.Context(), "user", app.JwtToken{Email: fmt.Sprintf("%+v", email)})
 			r = r.WithContext(ctx)

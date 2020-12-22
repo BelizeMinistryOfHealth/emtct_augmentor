@@ -1,18 +1,31 @@
 package infant
 
 import (
+	"context"
 	"database/sql"
+	"moh.gov.bz/mch/emtct/internal/db"
 	"time"
 
 	"moh.gov.bz/mch/emtct/internal/business/data/person"
 )
 
-type Infants struct {
-	Acsis *sql.DB
+type DbCollections struct {
+	HivScreening string
 }
 
-func New(db *sql.DB) Infants {
-	return Infants{Acsis: db}
+type Infants struct {
+	Acsis       *sql.DB
+	firestore   *db.FirestoreClient
+	collections DbCollections
+}
+
+func New(db *sql.DB, firestore *db.FirestoreClient) Infants {
+	colls := DbCollections{HivScreening: "hivScreenings"}
+	return Infants{Acsis: db, firestore: firestore, collections: colls}
+}
+
+func (i *Infants) ctx() context.Context {
+	return i.firestore.Ctx
 }
 
 type Diagnoses struct {
@@ -30,23 +43,23 @@ type Infant struct {
 }
 
 type HivScreening struct {
-	Id                     string     `json:"id"`
-	PatientId              int        `json:"patientId"`
-	MotherId               int        `json:"motherId"`
-	TestName               string     `json:"testName"`
-	ScreeningDate          time.Time  `json:"screeningDate"`
-	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty"`
-	SampleCode             string     `json:"sampleCode"`
-	DateSampleShipped      *time.Time `json:"dateSampleShipped"`
-	Destination            string     `json:"destination"`
-	DateResultReceived     *time.Time `json:"dateResultReceived,omitEmpty"`
-	DateSampleTaken        *time.Time `json:"dateSampleTaken,omitEmpty"`
-	DueDate                *time.Time `json:"dueDate,omitEmpty"`
-	Result                 string     `json:"result"`
-	DateResultShared       *time.Time `json:"dateResultShared,omitEmpty"`
-	Timely                 bool       `json:"timely"`
-	CreatedAt              time.Time  `json:"createdAt"`
-	UpdatedAt              *time.Time `json:"updatedAt"`
-	CreatedBy              string     `json:"createdBy"`
-	UpdatedBy              *string    `json:"updatedBy"`
+	Id                     string     `json:"id" firestore:"id"`
+	PatientId              string     `json:"patientId" firestore:"patientId"`
+	MotherId               string     `json:"motherId" firestore:"motherId"`
+	TestName               string     `json:"testName" firestore:"testName"`
+	ScreeningDate          time.Time  `json:"screeningDate" firestore:"screeningDate"`
+	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty" firestore:"dateSampleReceivedAtHq"`
+	SampleCode             string     `json:"sampleCode" firestore:"sampleCode"`
+	DateSampleShipped      *time.Time `json:"dateSampleShipped" firestore:"dateSampleShipped"`
+	Destination            string     `json:"destination" firestore:"destination"`
+	DateResultReceived     *time.Time `json:"dateResultReceived,omitEmpty" firestore:"dateResultReceived"`
+	DateSampleTaken        *time.Time `json:"dateSampleTaken,omitEmpty" firestore:"dateSampleTaken"`
+	DueDate                *time.Time `json:"dueDate,omitEmpty" firestore:"dueDate"`
+	Result                 string     `json:"result" firestore:"result"`
+	DateResultShared       *time.Time `json:"dateResultShared,omitEmpty" firestore:"dateResultShared"`
+	Timely                 bool       `json:"timely" firestore:"timely"`
+	CreatedAt              time.Time  `json:"createdAt" firestore:"createdAt"`
+	UpdatedAt              *time.Time `json:"updatedAt" firestore:"updatedAt"`
+	CreatedBy              string     `json:"createdBy" firestore:"createdBy"`
+	UpdatedBy              *string    `json:"updatedBy" firestore:"updatedBy"`
 }

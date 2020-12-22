@@ -38,11 +38,12 @@ func API(app app.App) *mux.Router {
 	lab := labs.New(app.AcsisDb)
 
 	// Infants
-	inf := infant.New(app.AcsisDb.DB)
+	inf := infant.New(app.AcsisDb.DB, app.Firestore)
 	infantRoutes := InfantRoutes{
-		Infant:      infant.Infants{Acsis: inf.Acsis},
+		Infant:      inf,
 		Pregnancies: pregnancies,
 		Labs:        lab,
+		Patient:     patients,
 	}
 
 	// HomeVisits

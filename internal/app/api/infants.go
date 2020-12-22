@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"moh.gov.bz/mch/emtct/internal/business/data/patient"
+	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,6 +21,7 @@ import (
 
 type InfantRoutes struct {
 	Infant      infant.Infants
+	Patient     patient.Patients
 	Pregnancies pregnancy.Pregnancies
 	Labs        labs.Labs
 }
@@ -47,8 +50,8 @@ func (i InfantRoutes) InfantDiagnosesHandler(w http.ResponseWriter, r *http.Requ
 
 // HIV SCREENINGS
 type newHivScreeningRequest struct {
-	PatientId              int        `json:"patientId"`
-	MotherId               int        `json:"motherId"`
+	PatientId              string     `json:"patientId"`
+	MotherId               string     `json:"motherId"`
 	TestName               string     `json:"testName"`
 	ScreeningDate          time.Time  `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitempty"`
@@ -62,8 +65,8 @@ type newHivScreeningRequest struct {
 }
 
 type hivScreeningsResponse struct {
-	HivScreenings []infant.HivScreening `json:"hivScreening"`
-	Infant        infant.Infant         `json:"patient"`
+	HivScreenings []infant.HivScreening `json:"hivScreenings"`
+	Infant        models.Infant         `json:"patient"`
 }
 
 func (i InfantRoutes) CreateHivScreening(user string, r newHivScreeningRequest, timely bool, dueDate time.Time) (*infant.HivScreening, error) {
@@ -91,7 +94,7 @@ func (i InfantRoutes) CreateHivScreening(user string, r newHivScreeningRequest, 
 		Timely:                 timely,
 	}
 
-	err := i.Infant.CreateHivScreening(s)
+	err := i.Infant.SaveHivScreening(s)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +103,17 @@ func (i InfantRoutes) CreateHivScreening(user string, r newHivScreeningRequest, 
 }
 
 func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "HivScreeningHandler"
+	w.Header().Add("Content-Type", "application/json")
+	var user string
 	defer r.Body.Close()
-	token := r.Context().Value("user").(app.JwtToken)
-	user := token.Email
+	// Only try to extract the Jwt Token info if the request is not an OPTIONS request.
+	// The middleware that verifies the token immediately returns, without inspecting the token.
+	// This means that trying to extract the token information in an OPTIONS request will always fail.
+	if r.Method != http.MethodOptions {
+		token := r.Context().Value("user").(app.JwtToken)
+		user = token.Email
+	}
 
 	switch r.Method {
 	case http.MethodOptions:
@@ -114,7 +125,17 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		infant, err := i.Infant.FindInfant(req.PatientId)
+		pId, err := strconv.Atoi(req.PatientId)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler": handlerName,
+				"method":  r.Method,
+				"request": req,
+			}).WithError(err).Error("patient id is not a valid number")
+			http.Error(w, "patient id is not a valid number", http.StatusBadRequest)
+			return
+		}
+		infant, err := i.Infant.FindInfant(pId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
@@ -136,8 +157,6 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
-
 		if err := json.NewEncoder(w).Encode(screening); err != nil {
 			log.WithFields(log.Fields{
 				"screening": screening,
@@ -174,7 +193,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		infant, err := i.Infant.FindInfant(screening.PatientId)
+		infant, err := i.Patient.GetInfant(screening.PatientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
@@ -184,10 +203,12 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, fmt.Sprintf("no birth was found for infant Id: %s", screening.PatientId), http.StatusBadRequest)
 			return
 		}
-		timely := i.Infant.IsHivScreeningTimely(*infant.Infant.Dob, screening.TestName, *screening.DateSampleTaken)
+		timely := i.Infant.IsHivScreeningTimely(*infant.Dob, screening.TestName, *screening.DateSampleTaken)
 		screening.UpdatedBy = &user
 		screening.Timely = timely
-		saved, err := i.Infant.EditHivScreening(screening)
+		screening.CreatedBy = s.CreatedBy
+		screening.CreatedAt = s.CreatedAt
+		err = i.Infant.SaveHivScreening(screening)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"screeningId": screening.Id,
@@ -197,12 +218,10 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(saved); err != nil {
+		if err := json.NewEncoder(w).Encode(screening); err != nil {
 			log.WithFields(log.Fields{
-				"screening":     saved,
-				"user":          user,
-				"editedRequest": saved,
+				"screening": screening,
+				"user":      user,
 			}).WithError(err).Error("failure marshalling the edited hiv screening")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -216,7 +235,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		screenings, err := i.Infant.FindHivScreeningsByPatient(id)
+		screenings, err := i.Infant.FindHivScreeningsByPatient(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
@@ -225,7 +244,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		infant, err := i.Infant.FindInfant(id)
+		infant, err := i.Patient.GetInfant(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{"patientId": id, "screenings": screenings}).WithError(err).
 				Error("error retrieving patient when fetching hiv screenings")
@@ -236,8 +255,6 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			HivScreenings: screenings,
 			Infant:        *infant,
 		}
-
-		w.Header().Add("Content-Type", "application/json")
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{

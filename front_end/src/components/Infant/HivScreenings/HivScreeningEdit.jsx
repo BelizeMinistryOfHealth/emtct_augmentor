@@ -31,6 +31,9 @@ const EditForm = ({ screening, closeEditScreen }) => {
   const [dateSampleTaken, setDateSampleTaken] = React.useState(
     screening.dateSampleTaken
   );
+  const [dateSampleShipped, setDateSampleShipped] = React.useState(
+    screening.dateSampleShipped
+  );
 
   const [screenData, setScreenData] = React.useState();
   const { httpInstance } = useHttpApi();
@@ -52,6 +55,8 @@ const EditForm = ({ screening, closeEditScreen }) => {
       dateResultReceived,
       dateResultShared,
       dateSampleTaken,
+      dateSampleShipped,
+      dueDate: screening.dueDate,
     };
     setScreenData(data);
     setStatus('SUBMIT');
@@ -61,7 +66,7 @@ const EditForm = ({ screening, closeEditScreen }) => {
     const submit = async (body) => {
       try {
         await httpInstance.put(
-          `/patient/${screening.motherId}/infant/${screening.patientId}/hivScreenings/${body.id}`,
+          `/patients/${screening.motherId}/infant/${screening.patientId}/hivScreenings`,
           body
         );
         setStatus('SUCCESS');
@@ -174,6 +179,14 @@ const EditForm = ({ screening, closeEditScreen }) => {
               value={dateResultShared}
               name={'dateResultShared'}
               onChange={(e) => setDateResultShared(e.value)}
+            />
+          </FormField>
+          <FormField label={'Date Sample Shipped'} name={'dateSampleShipped'}>
+            <DateInput
+              format={'yyyy-mm-dd'}
+              name={'dateSampleShipped'}
+              value={dateSampleShipped}
+              onChange={(e) => setDateSampleShipped(e.value)}
             />
           </FormField>
           <Box flex={false} align={'center'}>

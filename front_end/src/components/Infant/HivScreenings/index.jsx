@@ -56,7 +56,7 @@ const screeningRow = (data, onClickEdit) => {
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>
-          {format(parseISO(data.dueDate), 'dd LLL yyyy')}
+          {data.dueDate ? format(parseISO(data.dueDate), 'dd LLL yyyy') : 'N/A'}
         </Text>
       </TableCell>
       <TableCell align={'start'}>
@@ -168,6 +168,7 @@ const HivScreeningTable = ({ children, screenings, onClickEdit }) => {
 
 const Screenings = ({
   data,
+  pregnancyId,
   onCloseEditForm,
   onClickEdit,
   editingScreening,
@@ -187,7 +188,7 @@ const Screenings = ({
             <span>
               {data && patient && (
                 <Text size={'large'} textAlign={'end'} weight={'normal'}>
-                  Infant: {patient.infant.firstName} {patient.infant.lastName}
+                  Infant: {patient.firstName} {patient.lastName}
                 </Text>
               )}
             </span>
@@ -205,7 +206,7 @@ const Screenings = ({
               label={'Add'}
               onClick={() =>
                 history.push(
-                  `/patient/${patient.mother.patientId}/infant/${patient.infant.patientId}/hivScreenings/new`
+                  `/patient/${patient.mother.patientId}/pregnancy/${pregnancyId}/infant/${patient.id}/hivScreenings/new`
                 )
               }
             />
@@ -253,7 +254,7 @@ const Screenings = ({
 };
 
 const HivScreening = (props) => {
-  const { patientId, infantId } = useParams();
+  const { patientId, infantId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [data, setData] = React.useState({
     screenings: undefined,
@@ -273,7 +274,7 @@ const HivScreening = (props) => {
     const fetchScreenings = async () => {
       try {
         const result = await httpInstance.get(
-          `/patient/${patientId}/infant/${infantId}/hivScreenings`
+          `/patients/${patientId}/infant/${infantId}/hivScreenings`
         );
         setData({ screenings: result.data, loading: false, error: undefined });
       } catch (e) {
@@ -300,9 +301,10 @@ const HivScreening = (props) => {
   return (
     <Layout location={props.location} {...props}>
       <ErrorBoundary>
-        <InfantTabs data={data.screenings.patient}>
+        <InfantTabs data={data.screenings.patient} pregnancyId={pregnancyId}>
           <Screenings
             data={data.screenings}
+            pregnancyId={pregnancyId}
             onCloseEditForm={closeEditScreen}
             onClickEdit={onClickEdit}
             editingScreening={editingScreening}

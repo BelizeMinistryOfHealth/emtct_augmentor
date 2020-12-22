@@ -25,7 +25,7 @@ const HivScreeningCreateForm = () => {
     error: undefined,
   });
   const [errorMessage, setErrorMessage] = React.useState(undefined);
-  const { patientId, infantId } = useParams();
+  const { patientId, infantId, pregnancyId } = useParams();
   const history = useHistory();
   const { httpInstance } = useHttpApi();
 
@@ -34,10 +34,11 @@ const HivScreeningCreateForm = () => {
     setStatus('SUBMIT');
   };
 
+  // Fetch mother information
   React.useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const result = await httpInstance.get(`/patient/${patientId}`);
+        const result = await httpInstance.get(`/patients/${patientId}`);
         setPatientData({ data: result.data, loading: false, error: undefined });
       } catch (e) {
         console.error(e);
@@ -52,10 +53,10 @@ const HivScreeningCreateForm = () => {
   React.useEffect(() => {
     const post = (screening) => {
       httpInstance
-        .post(`/patient/${patientId}/infant/${infantId}/hivScreenings`, {
+        .post(`/patients/${patientId}/infant/${infantId}/hivScreenings`, {
           ...screening,
-          motherId: parseInt(patientId),
-          patientId: parseInt(infantId),
+          motherId: patientId,
+          patientId: infantId,
         })
         .then(() => {
           setStatus('SUCCESS');
@@ -99,7 +100,9 @@ const HivScreeningCreateForm = () => {
   }
 
   if (status === 'SUCCESS') {
-    history.push(`/patient/${patientId}/infant/${infantId}/hivScreenings`);
+    history.push(
+      `/patient/${patientId}/pregnancy/${pregnancyId}/infant/${infantId}/hivScreenings`
+    );
   }
 
   return (
@@ -115,7 +118,7 @@ const HivScreeningCreateForm = () => {
           icon={<FormPreviousLink size={'large'} />}
           onClick={() =>
             history.push(
-              `/patient/${patientId}/infant/${infantId}/hivScreenings`
+              `/patient/${patientId}/pregnancy/${pregnancyId}/infant/${infantId}/hivScreenings`
             )
           }
         />
