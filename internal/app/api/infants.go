@@ -206,6 +206,8 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 		timely := i.Infant.IsHivScreeningTimely(*infant.Dob, screening.TestName, *screening.DateSampleTaken)
 		screening.UpdatedBy = &user
 		screening.Timely = timely
+		// Never allow the user to modify the due date because this is a computed value
+		screening.DueDate = s.DueDate
 		screening.CreatedBy = s.CreatedBy
 		screening.CreatedAt = s.CreatedAt
 		err = i.Infant.SaveHivScreening(screening)
