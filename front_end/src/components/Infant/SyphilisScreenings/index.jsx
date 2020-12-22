@@ -95,7 +95,7 @@ const ScreeningsTable = ({ children, data }) => {
 };
 
 const InfantSyphilisScreenings = () => {
-  const { patientId, infantId } = useParams();
+  const { patientId, infantId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [screeningsData, setScreeningsData] = React.useState({
     data: undefined,
@@ -106,7 +106,7 @@ const InfantSyphilisScreenings = () => {
   React.useEffect(() => {
     const getScreenings = () => {
       httpInstance
-        .get(`/patient/${patientId}/infant/${infantId}/syphilisScreenings`)
+        .get(`/patients/${patientId}/infant/${infantId}/syphilisScreenings`)
         .then((r) => {
           setScreeningsData({
             data: r.data,
@@ -175,7 +175,7 @@ const InfantSyphilisScreenings = () => {
         align={'center'}
         fill
       >
-        <InfantTabs data={screeningsData.data.infant}>
+        <InfantTabs data={screeningsData.data.infant} pregnancyId={pregnancyId}>
           <AppCard justify={'center'} gap={'medium'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
               <Box>
@@ -186,8 +186,8 @@ const InfantSyphilisScreenings = () => {
                   <span>
                     <Text size={'large'}>
                       {' '}
-                      {screeningsData.data.infant.infant.firstName}{' '}
-                      {screeningsData.data.infant.infant.lastName}
+                      {screeningsData.data.infant.firstName}{' '}
+                      {screeningsData.data.infant.lastName}
                     </Text>
                   </span>
                   <span>
@@ -195,7 +195,7 @@ const InfantSyphilisScreenings = () => {
                       {' '}
                       |{' '}
                       {format(
-                        parseISO(screeningsData.data.infant.infant.dob),
+                        parseISO(screeningsData.data.infant.dob),
                         'dd LLL yyyy'
                       )}
                     </Text>

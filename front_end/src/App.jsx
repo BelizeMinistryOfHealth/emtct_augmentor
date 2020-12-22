@@ -78,6 +78,14 @@ function App() {
                         }
                         component={InfantSyphillisTreatment}
                       />
+
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/infant/:infantId/syphilisScreenings'
+                        }
+                        component={InfantSyphilisScreenings}
+                      />
+
                       <Route
                         path={
                           '/patient/:patientId/pregnancy/:pregnancyId/infant'
@@ -128,12 +136,6 @@ function App() {
                         component={InfantHivScreenings}
                       />
 
-                      <Route
-                        path={
-                          '/patient/:patientId/infant/:infantId/syphilisScreenings'
-                        }
-                        component={InfantSyphilisScreenings}
-                      />
                       <Route
                         path={
                           '/patient/:patientId/partners/syphilisTreatments/new'
