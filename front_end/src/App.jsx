@@ -103,20 +103,24 @@ function App() {
                         }
                         component={Infant}
                       />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/home_visits/new'
+                        }
+                        component={HomeVisitCreateForm}
+                      />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/home_visits'
+                        }
+                        component={HomeVisitList}
+                      />
 
                       <Route
                         path={'/patient/:patientId/pregnancy/:pregnancyId'}
                         component={CurrentPregnancy}
                       />
 
-                      <Route
-                        path={'/patient/:patientId/home_visits/new'}
-                        component={HomeVisitCreateForm}
-                      />
-                      <Route
-                        path={'/patient/:patientId/home_visits'}
-                        component={HomeVisitList}
-                      />
                       <Route
                         path={'/patient/:patientId/contraceptives/new'}
                         component={ContraceptivesCreateForm}

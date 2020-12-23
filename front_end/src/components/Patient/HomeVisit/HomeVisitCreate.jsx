@@ -21,7 +21,7 @@ const HomeVisitCreateForm = () => {
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
   const [, setHomeVisit] = React.useState();
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const [patientData, setPatientData] = React.useState({
     data: undefined,
     loading: true,
@@ -63,11 +63,13 @@ const HomeVisitCreateForm = () => {
         comments,
         patientId: parseInt(patientId),
         dateOfVisit,
-        mchEncounterId: patientData.data.antenatalEncounter.id,
       };
 
       httpInstance
-        .post('/homeVisits', body)
+        .post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/homeVisits`,
+          body
+        )
         .then((response) => {
           setHomeVisit(response.data);
           setStatus('SUCCESS');
@@ -89,13 +91,14 @@ const HomeVisitCreateForm = () => {
     reason,
     comments,
     patientId,
+    pregnancyId,
     dateOfVisit,
     errorMessage,
     patientData,
   ]);
 
   if (status === 'SUCCESS') {
-    history.push(`/patient/${patientId}/home_visits`);
+    history.push(`/patient/${patientId}/pregnancy/${pregnancyId}/home_visits`);
   }
 
   return (
@@ -109,7 +112,11 @@ const HomeVisitCreateForm = () => {
       >
         <Button
           icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/home_visits`)}
+          onClick={() =>
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/home_visits`
+            )
+          }
         />
         <Box
           flex={false}

@@ -66,15 +66,6 @@ export const fetchCurrentPregnancy = async (
   };
 };
 
-export const fetchHomeVisits = async (patientId, httpInstance) => {
-  const result = await httpInstance.get(`/patients/${patientId}/homeVisits`);
-  if (!result.data) {
-    return [];
-  }
-
-  return result.data;
-};
-
 export const useEditHomeVisit = async (homeVisit) => {
   const { httpInstance } = useHttpApi();
   const [loading, setLoading] = React.useState(true);

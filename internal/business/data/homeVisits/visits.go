@@ -1,106 +1,71 @@
 package homeVisits
 
 import (
-	"database/sql"
 	"fmt"
-	"time"
+	"google.golang.org/api/iterator"
 )
 
-func (h *HomeVisits) Create(v HomeVisit) error {
-	stmt := `
-	INSERT INTO home_visit 
-	    (id, patient_id, reason, comments, date_of_visit, created_at, created_by, mch_encounter_id) 
-	    VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err := h.Exec(stmt, v.Id, v.PatientId, v.Reason, v.Comments, v.DateOfVisit, v.CreatedAt, v.CreatedBy, v.MchEncounterId)
+func (h *HomeVisits) Save(v HomeVisit) error {
+	ref := h.db.Client.Collection(h.collection)
+	_, err := ref.Doc(v.Id).Set(h.ctx(), v)
 	if err != nil {
-		return fmt.Errorf("error creating a home visit: %+v", err)
+		return fmt.Errorf("failed to create home visit: %w", err)
 	}
 	return nil
 }
 
-func (h *HomeVisits) Edit(v HomeVisit) (*HomeVisit, error) {
-	stmt := `
-	UPDATE home_visit 
-	SET reason=$1, comments=$2, date_of_visit=$3, updated_by=$4, updated_at=$5
-	WHERE id=$6`
-	updateddAt := time.Now()
-	_, err := h.Exec(stmt,
-		v.Reason,
-		v.Comments,
-		v.DateOfVisit,
-		v.UpdatedBy,
-		updateddAt,
-		v.Id)
+func (h *HomeVisits) FindById(id string) (*HomeVisit, error) {
+	ref := h.db.Client.Collection(h.collection)
+	snap, err := ref.Doc(id).Get(h.ctx())
 	if err != nil {
-		return nil, fmt.Errorf("error updating homve visit in database: %+v", err)
+		return nil, fmt.Errorf("failed to retrieve home visit: %w", err)
 	}
-	v.UpdatedAt = &updateddAt
+	var v HomeVisit
+	err = snap.DataTo(&v)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert home visit data: %w", err)
+	}
 	return &v, nil
 }
 
-func (h *HomeVisits) FindById(id string) (*HomeVisit, error) {
-	stmt := `
-	SELECT id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by, mch_encounter_id 
-	FROM home_visit WHERE id=$1`
-	var homeVisit HomeVisit
-	row := h.QueryRow(stmt, id)
-	err := row.Scan(
-		&homeVisit.Id,
-		&homeVisit.PatientId,
-		&homeVisit.Reason,
-		&homeVisit.Comments,
-		&homeVisit.DateOfVisit,
-		&homeVisit.CreatedAt,
-		&homeVisit.UpdatedBy,
-		&homeVisit.CreatedBy,
-		&homeVisit.UpdatedBy,
-		&homeVisit.MchEncounterId,
-	)
-
-	switch err {
-	case sql.ErrNoRows:
-		return nil, nil
-	case nil:
-		return &homeVisit, nil
-	default:
-		return nil, fmt.Errorf("error scanning home visit row: %+v", err)
+func (h *HomeVisits) FindByPatientId(patientId int) ([]HomeVisit, error) {
+	ref := h.db.Client.Collection(h.collection)
+	iter := ref.Where("patientId", "==", patientId).Documents(h.ctx())
+	var visits []HomeVisit
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch patient's home visits: %w", err)
+		}
+		var v HomeVisit
+		if err := doc.DataTo(&v); err != nil {
+			return nil, fmt.Errorf("failed to transform home visit data: %w", err)
+		}
+		visits = append(visits, v)
 	}
+	return visits, nil
 }
 
-func (h *HomeVisits) FindByPatientId(patientId int) ([]HomeVisit, error) {
-	stmt := `
-	SELECT 
-	       id, patient_id, reason, comments, date_of_visit, created_at, updated_at, created_by, updated_by, mch_encounter_id 
-	FROM 
-	     home_visit 
-	WHERE patient_id=$1`
-	rows, err := h.Query(stmt, patientId)
-	defer rows.Close()
-
-	if err != nil {
-		return nil, fmt.Errorf("error executing query for retrieving home visits: %+v", err)
-	}
-
-	var homeVisits []HomeVisit
-	for rows.Next() {
-		var homeVisit HomeVisit
-		err := rows.Scan(
-			&homeVisit.Id,
-			&homeVisit.PatientId,
-			&homeVisit.Reason,
-			&homeVisit.Comments,
-			&homeVisit.DateOfVisit,
-			&homeVisit.CreatedAt,
-			&homeVisit.UpdatedAt,
-			&homeVisit.CreatedBy,
-			&homeVisit.UpdatedBy,
-			&homeVisit.MchEncounterId,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error scanning a home visit row: %+v", err)
+func (h *HomeVisits) FindByPregnancyId(pregnancyId int) ([]HomeVisit, error) {
+	ref := h.db.Client.Collection(h.collection)
+	iter := ref.Where("pregnancyId", "==", pregnancyId).Documents(h.ctx())
+	var visits []HomeVisit
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
 		}
-
-		homeVisits = append(homeVisits, homeVisit)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch patient's home visits: %w", err)
+		}
+		var v HomeVisit
+		if err := doc.DataTo(&v); err != nil {
+			return nil, fmt.Errorf("failed to transform home visit data: %w", err)
+		}
+		visits = append(visits, v)
 	}
-	return homeVisits, nil
+	return visits, nil
 }

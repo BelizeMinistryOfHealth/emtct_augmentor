@@ -20,7 +20,6 @@ import { parseISO } from 'date-fns';
 import format from 'date-fns/format';
 import { Edit } from 'grommet-icons';
 import EditForm from './HomeVisitEdit';
-import { fetchHomeVisits } from '../../../api/patient';
 import { useHttpApi } from '../../../providers/HttpProvider';
 import { useHistory, useParams } from 'react-router-dom';
 import AppCard from '../../AppCard/AppCard';
@@ -98,7 +97,7 @@ const HomeVisitsTable = ({ children, homeVisits, onClickEdit }) => {
 };
 
 const HomeVisitList = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [editingHomeVisit, setEditingHomeVisit] = React.useState(undefined);
   const [data, setData] = React.useState({
@@ -116,9 +115,11 @@ const HomeVisitList = (props) => {
     const fetchVisits = async () => {
       try {
         setData({ homeVisitsData: undefined, loading: true, error: undefined });
-        const homeVisits = await fetchHomeVisits(patientId, httpInstance);
+        const homeVisits = await httpInstance.get(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/homeVisits`
+        );
         setData({
-          homeVisitsData: homeVisits,
+          homeVisitsData: homeVisits.data,
           loading: false,
           error: undefined,
         });
@@ -135,7 +136,7 @@ const HomeVisitList = (props) => {
     if (refreshHomeVisits) {
       fetchVisits();
     }
-  }, [httpInstance, patientId, refreshHomeVisits]);
+  }, [httpInstance, patientId, pregnancyId, refreshHomeVisits]);
 
   const closeEditForm = () => {
     setEditingHomeVisit(undefined);
@@ -175,7 +176,9 @@ const HomeVisitList = (props) => {
                   icon={<Add />}
                   label={'Add'}
                   onClick={() =>
-                    history.push(`/patient/${patientId}/home_visits/new`)
+                    history.push(
+                      `/patient/${patientId}/pregnancy/${pregnancyId}/home_visits/new`
+                    )
                   }
                 />
               </Box>

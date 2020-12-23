@@ -1,6 +1,7 @@
 import { Box, Button, DateInput, FormField, TextArea, Text } from 'grommet';
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import { useParams } from 'react-router-dom';
 
 const EditForm = ({ visit, closeForm }) => {
   const [reason, setReason] = React.useState(visit.reason);
@@ -11,6 +12,8 @@ const EditForm = ({ visit, closeForm }) => {
   const [error, setError] = React.useState(undefined);
   const [homeVisit, setHomeVisit] = React.useState(undefined);
   const [editStatus, setEditStatus] = React.useState(undefined);
+
+  const { patientId, pregnancyId } = useParams();
 
   const onChangeReason = (value) => {
     setReason(value);
@@ -25,7 +28,10 @@ const EditForm = ({ visit, closeForm }) => {
   React.useEffect(() => {
     const edit = async () => {
       try {
-        await httpInstance.put(`/homeVisits`, homeVisit);
+        await httpInstance.put(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/homeVisits`,
+          homeVisit
+        );
         setSubmitting(false);
         setEditStatus('Successfully edited');
         closeForm();
@@ -39,7 +45,15 @@ const EditForm = ({ visit, closeForm }) => {
     if (homeVisit && submitting) {
       edit();
     }
-  }, [httpInstance, submitting, homeVisit, closeForm, editStatus]);
+  }, [
+    httpInstance,
+    submitting,
+    homeVisit,
+    closeForm,
+    editStatus,
+    patientId,
+    pregnancyId,
+  ]);
 
   const onSubmit = (e) => {
     e.preventDefault();

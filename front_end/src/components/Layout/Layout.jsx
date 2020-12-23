@@ -34,7 +34,10 @@ const Layout = ({ children }) => {
             label: 'Lab Results',
             link: `/patient/${patientId}/pregnancy/${pregnancyId}/lab_results`,
           },
-          { label: 'Home Visits', link: `/patient/${patientId}/home_visits` },
+          {
+            label: 'Home Visits',
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/home_visits`,
+          },
           {
             label: 'Arvs',
             link: `/patient/${patientId}/pregnancy/${pregnancyId}/arvs`,

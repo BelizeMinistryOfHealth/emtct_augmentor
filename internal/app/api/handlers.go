@@ -47,18 +47,21 @@ func API(app app.App) *mux.Router {
 	}
 
 	// HomeVisits
-	visits := homeVisits.New(app.EmtctDb.DB)
+	visits := homeVisits.New(app.Firestore)
 	homeVisitRoutes := HomeVisitRoutes{
 		HomeVisits: visits,
 		Patients:   patients,
 	}
-	homeVisitsRouter := r.PathPrefix("/api/homeVisits").Subrouter()
-	homeVisitsRouter.HandleFunc("/{homeVisitId}", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
+
+	//Returns a home visit that matches the specific homeVisitId
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/homeVisits/{homeVisitId}", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
-	homeVisitsRouter.HandleFunc("", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
+	//Mutation Routes
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/homeVisits", authMid.Then(homeVisitRoutes.HomeVisitsHandler)).
 		Methods(http.MethodOptions, http.MethodPost, http.MethodPut)
-	patientRouter.HandleFunc("/{id}/homeVisits", authMid.Then(homeVisitRoutes.FindByPatientHandler)).
-		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+	//Returns a list of home visits for the pregnancy id
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/homeVisits", authMid.Then(homeVisitRoutes.FindByPregnancyHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
 
 	// Admissions
 	hospitalAdmissions := admissions.New(app.EmtctDb.DB)
