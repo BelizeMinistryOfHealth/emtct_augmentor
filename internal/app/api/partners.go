@@ -31,6 +31,7 @@ type newSyphilisTreatmentRequest struct {
 
 func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "SyphilisTreatmentHandler"
+	w.Header().Add("Content-type", "application/json")
 	defer r.Body.Close()
 	vars := mux.Vars(r)
 	switch r.Method {
@@ -40,21 +41,23 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
 		id := vars["patientId"]
-		patientId, err := strconv.Atoi(id)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"patientId": id,
-			}).WithError(err).Error("patient id must be a number")
-			http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
 			return
 		}
-		treatments, err := p.Partners.FindPartnerSyphilisTreatments(patientId)
+		treatments, err := p.Partners.FindByPregnancyId(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"patientId": patientId,
-				"handler":   handlerName,
+				"user":        user,
+				"pregnancyId": pregnancyId,
+				"handler":     handlerName,
+				"method":      r.Method,
 			}).WithError(err).Error("error while finding partner's syphilis treatment")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -63,8 +66,9 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
-				"patientId": patientId,
+				"patientId": id,
 				"handler":   handlerName,
+				"method":    r.Method,
 			}).WithError(err).Error("error querying patient's basic info")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -73,24 +77,26 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			"patient":    patient,
 			"treatments": treatments,
 		}
-		w.Header().Add("Content-type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{
 				"user":     user,
 				"response": response,
 				"handler":  handlerName,
+				"method":   r.Method,
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPost:
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
 		id := vars["patientId"]
-		patientId, err := strconv.Atoi(id)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"handler":   handlerName,
-				"patientId": id,
+				"user":        user,
+				"handler":     handlerName,
+				"patientId":   id,
+				"pregnancyId": vars["pregnancyId"],
+				"method":      r.Method,
 			}).WithError(err).Error("patient id must be a valid number")
 			http.Error(w, "patient id must be a valid number", http.StatusBadRequest)
 			return
@@ -98,41 +104,43 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 		var treatmentReq newSyphilisTreatmentRequest
 		if err := json.NewDecoder(r.Body).Decode(&treatmentReq); err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"patientId": patientId,
-				"body":      r.Body,
-				"handler":   handlerName,
+				"user":    user,
+				"body":    r.Body,
+				"handler": handlerName,
+				"method":  r.Method,
 			}).WithError(err).Error("error decoding request")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 		location, _ := time.LoadLocation("Local")
 		treatment := prescription.SyphilisTreatment{
-			Id:         uuid.New().String(),
-			PatientId:  treatmentReq.PatientId,
-			Medication: treatmentReq.Medication,
-			Dosage:     treatmentReq.Dosage,
-			Comments:   treatmentReq.Comments,
-			Date:       treatmentReq.Date.In(location),
-			CreatedBy:  user,
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			PatientId:   treatmentReq.PatientId,
+			PregnancyId: pregnancyId,
+			Medication:  treatmentReq.Medication,
+			Dosage:      treatmentReq.Dosage,
+			Comments:    treatmentReq.Comments,
+			Date:        treatmentReq.Date.In(location),
+			CreatedBy:   user,
+			CreatedAt:   time.Now(),
 		}
-		if err := p.Partners.AddPartnerSyphilisTreatment(treatment); err != nil {
+		if err := p.Partners.Create(treatment); err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
 				"request":   treatmentReq,
 				"treatment": treatment,
 				"handler":   handlerName,
+				"method":    r.Method,
 			}).WithError(err).Error("error adding a partner's syphilis treatment")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(treatment); err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
 				"treatment": treatment,
 				"handler":   handlerName,
+				"method":    r.Method,
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPut:
@@ -153,7 +161,7 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 		treatment.UpdatedAt = &today
 		location, _ := time.LoadLocation("Local")
 		treatment.Date = treatment.Date.In(location)
-		if err := p.Partners.UpdatePartnerSyphilisTreatment(treatment); err != nil {
+		if err := p.Partners.Update(treatment); err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
 				"treatment": treatment,

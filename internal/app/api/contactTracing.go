@@ -30,6 +30,7 @@ type contactTracingRequest struct {
 
 func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *http.Request) {
 	handlerName := "ContactTracingHandler"
+	w.Header().Add("Content-Type", "application/json")
 	defer r.Body.Close()
 
 	switch r.Method {
@@ -38,42 +39,56 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 	case http.MethodPost:
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
+		vars := mux.Vars(r)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
+			return
+		}
 		var request contactTracingRequest
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
 				"body":    r.Body,
 				"handler": handlerName,
+				"method":  r.Method,
 			}).WithError(err).Error("error decoding json payload")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 		location, _ := time.LoadLocation("Local")
 		contactTracing := contactTracing.ContactTracing{
-			Id:         uuid.New().String(),
-			PatientId:  request.PatientId,
-			Test:       request.Test,
-			TestResult: request.TestResult,
-			Comments:   request.Comments,
-			Date:       request.Date.In(location),
-			CreatedBy:  user,
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			PatientId:   request.PatientId,
+			PregnancyId: pregnancyId,
+			Test:        request.Test,
+			TestResult:  request.TestResult,
+			Comments:    request.Comments,
+			Date:        request.Date.In(location),
+			CreatedBy:   user,
+			CreatedAt:   time.Now(),
 		}
 		if err := a.ContactTracings.Create(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,
 				"contactTracing": contactTracing,
 				"handler":        handlerName,
+				"method":         r.Method,
 			}).WithError(err).Error("error when inserting contact tracing")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,
 				"contactTracing": contactTracing,
 				"handler":        handlerName,
+				"method":         r.Method,
 			}).WithError(err).Error("error encoding contact tracing response")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -83,22 +98,24 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 		user := token.Email
 		vars := mux.Vars(r)
 		id := vars["patientId"]
-		patientId, err := strconv.Atoi(id)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"patientId": id,
-				"handler":   handlerName,
-			}).WithError(err).Error("patient id must be a valid number")
-			http.Error(w, "patient id must be a valid number", http.StatusInternalServerError)
+				"handler":     handlerName,
+				"method":      r.Method,
+				"user":        user,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
 			return
 		}
-		contacts, err := a.ContactTracings.FindByPatientId(patientId)
+		contacts, err := a.ContactTracings.FindByPregnancyId(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"user":      user,
-				"patientId": patientId,
-				"handler":   handlerName,
+				"user":        user,
+				"pregnancyId": pregnancyId,
+				"handler":     handlerName,
+				"method":      r.Method,
 			}).WithError(err).Error("error retrieving patient's contact tracings")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -107,8 +124,9 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
-				"patientId": patientId,
+				"patientId": id,
 				"handler":   handlerName,
+				"method":    r.Method,
 			}).WithError(err).Error("error retrieving patient's basic information")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -117,7 +135,6 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			"patient":        patient,
 			"contactTracing": contacts,
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{
 				"user":     user,
@@ -145,7 +162,7 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 		contactTracing.UpdatedAt = &today
 		location, _ := time.LoadLocation("Local")
 		contactTracing.Date = contactTracing.Date.In(location)
-		if err := a.ContactTracings.Edit(contactTracing); err != nil {
+		if err := a.ContactTracings.Update(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,
 				"contactTracing": contactTracing,
@@ -154,7 +171,6 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(contactTracing); err != nil {
 			log.WithFields(log.Fields{
 				"user":           user,

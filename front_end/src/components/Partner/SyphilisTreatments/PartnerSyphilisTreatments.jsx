@@ -90,7 +90,7 @@ const TreatmentsTable = ({ children, data, onClickEdit }) => {
 };
 
 const PartnerSyphilisTreatments = () => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [treatments, setTreatments] = React.useState({
     data: undefined,
@@ -108,7 +108,9 @@ const PartnerSyphilisTreatments = () => {
   React.useEffect(() => {
     const getTreatments = () => {
       httpInstance
-        .get(`/partners/${patientId}/syphilisTreatments`)
+        .get(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/syphilisTreatments`
+        )
         .then((r) => {
           setTreatments({ data: r.data, loading: false, error: undefined });
         })
@@ -120,7 +122,7 @@ const PartnerSyphilisTreatments = () => {
     if (treatments.loading) {
       getTreatments();
     }
-  }, [patientId, treatments, httpInstance]);
+  }, [patientId, pregnancyId, treatments, httpInstance]);
 
   if (treatments.loading) {
     return (
@@ -169,7 +171,7 @@ const PartnerSyphilisTreatments = () => {
         align={'center'}
         fill
       >
-        <PartnerTabs data={treatments.data}>
+        <PartnerTabs data={treatments.data} pregnancyId={pregnancyId}>
           <AppCard overflow={'scroll'} pad={'small'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
               <Box direction={'row'} align={'start'} fill={'horizontal'}>
@@ -195,7 +197,7 @@ const PartnerSyphilisTreatments = () => {
                     label={'add'}
                     onClick={() =>
                       history.push(
-                        `/patient/${patientId}/partners/syphilisTreatments/new`
+                        `/patient/${patientId}/pregnancy/${pregnancyId}/partners/syphilisTreatments/new`
                       )
                     }
                   />

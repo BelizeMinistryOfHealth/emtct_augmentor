@@ -49,18 +49,20 @@ const TabsItem = ({ content, onClickTab }) => {
   );
 };
 
-const PartnerTabs = ({ data, children }) => {
+const PartnerTabs = ({ data, pregnancyId, children }) => {
   const { patient } = data;
   const history = useHistory();
   const onClickTab = (nextIndex) => {
     switch (nextIndex) {
       case 0:
         history.push(
-          `/patient/${patient.patientId}/partners/syphilisTreatments`
+          `/patient/${patient.patientId}/pregnancy/${pregnancyId}/partners/syphilisTreatments`
         );
         break;
       case 1:
-        history.push(`/patient/${patient.patientId}/partners/contactTracing`);
+        history.push(
+          `/patient/${patient.patientId}/pregnancy/${pregnancyId}/partners/contactTracing`
+        );
         break;
     }
   };

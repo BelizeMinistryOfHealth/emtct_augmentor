@@ -90,7 +90,7 @@ const ContactTracingTable = ({ children, data, onClickEdit }) => {
 };
 
 const ContactTracing = () => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [tracings, setTracings] = React.useState({
     data: undefined,
@@ -109,7 +109,7 @@ const ContactTracing = () => {
   React.useEffect(() => {
     const getTracings = () => {
       httpInstance
-        .get(`/partners/${patientId}/contactTracing`)
+        .get(`/patients/${patientId}/pregnancy/${pregnancyId}/contactTracing`)
         .then((resp) => {
           setTracings({
             data: resp.data,
@@ -125,7 +125,7 @@ const ContactTracing = () => {
     if (tracings.loading) {
       getTracings();
     }
-  }, [httpInstance, patientId, tracings]);
+  }, [httpInstance, patientId, pregnancyId, tracings]);
 
   if (tracings.loading) {
     return (
@@ -174,7 +174,7 @@ const ContactTracing = () => {
         align={'center'}
         fill
       >
-        <PartnerTabs data={tracings.data}>
+        <PartnerTabs data={tracings.data} pregnancyId={pregnancyId}>
           <AppCard overflow={'scroll'} pad={'small'} fill={'horizontal'}>
             <CardHeader justify={'start'} pad={'medium'}>
               <Box direction={'row'} align={'start'} fill={'horizontal'}>
@@ -200,7 +200,7 @@ const ContactTracing = () => {
                     label={'Add'}
                     onClick={() =>
                       history.push(
-                        `/patient/${patientId}/partners/contactTracing/new`
+                        `/patient/${patientId}/pregnancy/${pregnancyId}/partners/contactTracing/new`
                       )
                     }
                   />

@@ -86,23 +86,22 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodGet)
 
 	// Partners Router
-	partnersRouter := r.PathPrefix("/api/partners").Subrouter()
 	partnerRoutes := partnersRoutes{
 		Patient:  patients,
-		Partners: partners.New(app.EmtctDb),
+		Partners: partners.New(app.Firestore),
 	}
 
 	// Contact Tracing
-	tracing := contactTracing.New(app.EmtctDb.DB)
+	tracing := contactTracing.New(app.Firestore)
 	tracingRoutes := ContactTracingRoutes{
 		ContactTracings: tracing,
 		Patient:         patients,
 	}
-	partnersRouter.HandleFunc("/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodPost, http.MethodPut)
-	partnersRouter.HandleFunc("/{patientId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/contactTracing", authMid.Then(tracingRoutes.ContactTracingHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
-	partnersRouter.HandleFunc("/{patientId}/syphilisTreatments", authMid.Then(partnerRoutes.SyphilisTreatmentHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/syphilisTreatments", authMid.Then(partnerRoutes.SyphilisTreatmentHandler)).
 		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
 
 	// Pregnancies

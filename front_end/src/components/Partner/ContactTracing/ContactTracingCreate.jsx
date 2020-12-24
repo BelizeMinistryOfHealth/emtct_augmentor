@@ -24,7 +24,7 @@ const CcontactTracingCreate = () => {
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
   const [contactTracing, setContactTracing] = React.useState();
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const history = useHistory();
 
@@ -63,7 +63,10 @@ const CcontactTracingCreate = () => {
   React.useEffect(() => {
     const post = () => {
       httpInstance
-        .post(`/partners/contactTracing`, contactTracing)
+        .post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/contactTracing`,
+          contactTracing
+        )
         .then(() => {
           setStatus('SUCCESS');
         })
@@ -75,10 +78,14 @@ const CcontactTracingCreate = () => {
     if (status === 'SUBMIT') {
       post();
     }
-  });
+  }, [patientId, pregnancyId, httpInstance, contactTracing, status]);
 
   if (status === 'SUCCESS') {
-    return <Redirect to={`/patient/${patientId}/partners/contactTracing`} />;
+    return (
+      <Redirect
+        to={`/patient/${patientId}/pregnancy/${pregnancyId}/partners/contactTracing`}
+      />
+    );
   }
 
   if (patientData.loading) {
@@ -94,7 +101,9 @@ const CcontactTracingCreate = () => {
           <Button
             icon={<FormPreviousLink size={'large'} />}
             onClick={() =>
-              history.push(`/patient/${patientId}/partners/contactTracing`)
+              history.push(
+                `/patient/${patientId}/pregnancy/${pregnancyId}/partners/contactTracing`
+              )
             }
           />
         </Box>
@@ -123,7 +132,9 @@ const CcontactTracingCreate = () => {
         <Button
           icon={<FormPreviousLink size={'large'} />}
           onClick={() =>
-            history.push(`/patient/${patientId}/partners/contactTracing`)
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/partners/contactTracing`
+            )
           }
         />
         <Box

@@ -1,88 +1,68 @@
 package contactTracing
 
 import (
-	"database/sql"
+	"cloud.google.com/go/firestore"
 	"fmt"
+	"google.golang.org/api/iterator"
 )
 
 func (d *ContactTracings) Create(c ContactTracing) error {
-	stmt := `
-	INSERT INTO 
-	    contact_tracing (id, patient_id, test, test_result, comments, date, created_by, created_at)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-`
-	_, err := d.Exec(stmt,
-		c.Id,
-		c.PatientId,
-		c.Test,
-		c.TestResult,
-		c.Comments,
-		c.Date,
-		c.CreatedBy,
-		c.CreatedAt,
-	)
+	ref := d.db.Client.Collection(d.collection)
+	_, err := ref.Doc(c.ID).Set(d.ctx(), c)
 	if err != nil {
-		return fmt.Errorf("error inserting contact tracing to the database: %+v", err)
+		return fmt.Errorf("failed to create contact tracing for patient: %w", err)
 	}
 	return nil
 }
 
-func (d *ContactTracings) FindByPatientId(patientId int) ([]ContactTracing, error) {
-	stmt := `
-	SELECT 
-	       id, patient_id, test, test_result, comments, date, created_by, created_at, updated_by, updated_at
-	FROM contact_tracing
-	WHERE patient_id=$1;
-`
-	rows, err := d.Query(stmt, patientId)
-	defer rows.Close()
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving contact tracing from database: %+v", err)
-	}
-	var contacts []ContactTracing
-	for rows.Next() {
-		var c ContactTracing
-		var updatedBy sql.NullString
-		err := rows.Scan(
-			&c.Id,
-			&c.PatientId,
-			&c.Test,
-			&c.TestResult,
-			&c.Comments,
-			&c.Date,
-			&c.CreatedBy,
-			&c.CreatedAt,
-			&updatedBy,
-			&c.UpdatedAt)
+func (d *ContactTracings) FindByPregnancyId(pregnancyId int) ([]ContactTracing, error) {
+	ref := d.db.Client.Collection(d.collection)
+	iter := ref.Where("pregnancyId", "==", pregnancyId).Documents(d.ctx())
+	var ts []ContactTracing
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
 		if err != nil {
-			return nil, fmt.Errorf("error scanning contact tracing record: %+v", err)
+			return nil, fmt.Errorf("failed to retrieve pregnancy's contact tracing: %w", err)
 		}
-		if updatedBy.Valid {
-			c.UpdatedBy = updatedBy.String
+		var t ContactTracing
+		if err := doc.DataTo(&t); err != nil {
+			return nil, fmt.Errorf("failed to transform contact tracing data: %w", err)
 		}
-		contacts = append(contacts, c)
+		ts = append(ts, t)
 	}
-	return contacts, nil
+	return ts, nil
 }
 
-func (d *ContactTracings) Edit(c ContactTracing) error {
-	stmt := `
-	UPDATE 
-	    contact_tracing SET test=$1, test_result=$2, comments=$3, date=$4, updated_by=$5, updated_at=$6
-	WHERE id = $7
-`
-
-	_, err := d.Exec(stmt,
-		c.Test,
-		c.TestResult,
-		c.Comments,
-		c.Date,
-		c.UpdatedBy,
-		c.UpdatedAt,
-		c.Id,
-	)
-	if err != nil {
-		return fmt.Errorf("error updating contact tracing in database: %+v", err)
-	}
-	return nil
+func (d *ContactTracings) Update(c ContactTracing) error {
+	ref := d.db.Client.Collection(d.collection).Doc(c.ID)
+	_, err := ref.Update(d.ctx(), []firestore.Update{
+		{
+			Path:  "test",
+			Value: c.Test,
+		},
+		{
+			Path:  "testResult",
+			Value: c.TestResult,
+		},
+		{
+			Path:  "comments",
+			Value: c.Comments,
+		},
+		{
+			Path:  "date",
+			Value: c.Date,
+		},
+		{
+			Path:  "updatedBy",
+			Value: c.UpdatedBy,
+		},
+		{
+			Path:  "updatedAt",
+			Value: c.UpdatedAt,
+		},
+	})
+	return err
 }

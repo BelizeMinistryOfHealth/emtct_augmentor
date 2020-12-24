@@ -139,29 +139,34 @@ function App() {
                         }
                         component={ContraceptivesUsed}
                       />
-
-                      <Route
-                        path={'/patient/:patientId/pregnancy/:pregnancyId'}
-                        component={CurrentPregnancy}
-                      />
-
                       <Route
                         path={
-                          '/patient/:patientId/partners/syphilisTreatments/new'
+                          '/patient/:patientId/pregnancy/:pregnancyId/partners/syphilisTreatments/new'
                         }
                         component={PartnerSyphilisTreatmentCreate}
                       />
                       <Route
-                        path={'/patient/:patientId/partners/syphilisTreatments'}
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/partners/syphilisTreatments'
+                        }
                         component={PartnerSyphilisTreatments}
                       />
                       <Route
-                        path={'/patient/:patientId/partners/contactTracing/new'}
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/partners/contactTracing/new'
+                        }
                         component={CcontactTracingCreate}
                       />
                       <Route
-                        path={'/patient/:patientId/partners/contactTracing'}
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/partners/contactTracing'
+                        }
                         component={ContactTracing}
+                      />
+
+                      <Route
+                        path={'/patient/:patientId/pregnancy/:pregnancyId'}
+                        component={CurrentPregnancy}
                       />
 
                       <Route

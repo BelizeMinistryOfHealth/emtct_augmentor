@@ -25,7 +25,7 @@ const PartnerSyphilisTreatmentCreate = () => {
   const [status, setStatus] = React.useState('START');
   const [treatment, setTreatment] = React.useState();
   const { httpInstance } = useHttpApi();
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const history = useHistory();
 
   const onSubmit = (e) => {
@@ -62,7 +62,10 @@ const PartnerSyphilisTreatmentCreate = () => {
   React.useEffect(() => {
     const post = () => {
       httpInstance
-        .post(`/partners/${patientId}/syphilisTreatments`, treatment)
+        .post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/syphilisTreatments`,
+          treatment
+        )
         .then(() => {
           setStatus('SUCCESS');
         })
@@ -74,7 +77,7 @@ const PartnerSyphilisTreatmentCreate = () => {
     if (status === 'SUBMIT') {
       post();
     }
-  }, [treatment, patientId, status, httpInstance]);
+  }, [treatment, patientId, pregnancyId, status, httpInstance]);
 
   if (patientData.loading) {
     return (
@@ -108,7 +111,9 @@ const PartnerSyphilisTreatmentCreate = () => {
 
   if (status === 'SUCCESS') {
     return (
-      <Redirect to={`/patient/${patientId}/partners/syphilisTreatments`} />
+      <Redirect
+        to={`/patient/${patientId}/pregnancy/${pregnancyId}/partners/syphilisTreatments`}
+      />
     );
   }
 
@@ -124,7 +129,9 @@ const PartnerSyphilisTreatmentCreate = () => {
         <Button
           icon={<FormPreviousLink size={'large'} />}
           onClick={() =>
-            history.push(`/patient/${patientId}/partners/syphilisTreatments`)
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/partners/syphilisTreatments`
+            )
           }
         />
         <Box
