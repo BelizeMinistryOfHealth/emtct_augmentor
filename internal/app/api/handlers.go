@@ -64,15 +64,14 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodGet, http.MethodOptions)
 
 	// Admissions
-	hospitalAdmissions := admissions.New(app.EmtctDb.DB)
+	hospitalAdmissions := admissions.New(app.Firestore)
 	admissionRoutes := AdmissionRoutes{
 		Admissions: hospitalAdmissions,
 		Patients:   patients,
 	}
-	admissionRouter := r.PathPrefix("/api/hospitalAdmissions").Subrouter()
-	admissionRouter.HandleFunc("", authMid.Then(admissionRoutes.AdmissionsHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/hospitalAdmissions", authMid.Then(admissionRoutes.AdmissionsHandler)).
 		Methods(http.MethodPost, http.MethodPut, http.MethodOptions)
-	patientRouter.HandleFunc("/{patientId}/hospitalAdmissions", authMid.Then(admissionRoutes.AdmissionsByPatientHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/hospitalAdmissions", authMid.Then(admissionRoutes.AdmissionsByPregnancyHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
 	// Contraceptives

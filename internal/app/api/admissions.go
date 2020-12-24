@@ -26,22 +26,26 @@ type admissionsResponse struct {
 	Patient            models.Patient                 `json:"patient"`
 }
 
-func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *http.Request) {
+func (a *AdmissionRoutes) AdmissionsByPregnancyHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "HospitalAdmissionsByPatientHandler"
+	w.Header().Add("Content-Type", "application/json")
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
 		vars := mux.Vars(r)
 		patientId := vars["patientId"]
-		id, err := strconv.Atoi(patientId)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
 		if err != nil {
 			log.WithFields(log.Fields{
-				"patientId": patientId,
-			}).Error("patientId provided is not a valid number")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id is not a valid number")
+			http.Error(w, "pregnancy id is not a valid number", http.StatusBadRequest)
 			return
 		}
-		admissions, err := a.Admissions.FindByPatientId(id)
+		admissions, err := a.Admissions.FindByPregnancyId(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
@@ -52,9 +56,9 @@ func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *h
 		patient, err := a.Patients.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"patientId":  id,
+				"patientId":  patientId,
 				"admissions": admissions,
-				"handler":    "HospitalAdmissionsByPatientHandler",
+				"handler":    handlerName,
 			}).WithError(err).Error("error retrieving patient information")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -63,7 +67,6 @@ func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *h
 			HospitalAdmissions: admissions,
 			Patient:            *patient,
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{
 				"patientId":  patientId,
@@ -78,14 +81,15 @@ func (a *AdmissionRoutes) AdmissionsByPatientHandler(w http.ResponseWriter, r *h
 }
 
 type newAdmissionRequest struct {
-	PatientId      int       `json:"patientId"`
-	DateAdmitted   time.Time `json:"dateAdmitted"`
-	Facility       string    `json:"facility"`
-	Reason         string    `json:"reason"`
-	MchEncounterId int       `json:"mchEncounterId"`
+	PatientId    int       `json:"patientId"`
+	DateAdmitted time.Time `json:"dateAdmitted"`
+	Facility     string    `json:"facility"`
+	Reason       string    `json:"reason"`
 }
 
 func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	handlerName := "AdmissionsHandler"
 	defer r.Body.Close()
 	switch r.Method {
 	case http.MethodOptions:
@@ -93,6 +97,17 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 	case http.MethodPost:
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
+		vars := mux.Vars(r)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
+			return
+		}
 		var req newAdmissionRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithFields(log.Fields{
@@ -103,18 +118,18 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 		}
 
 		admission := admissions.HospitalAdmission{
-			Id:             uuid.New().String(),
-			PatientId:      req.PatientId,
-			MchEncounterId: req.MchEncounterId,
-			DateAdmitted:   req.DateAdmitted,
-			Facility:       req.Facility,
-			Reason:         req.Reason,
-			CreatedAt:      time.Now(),
-			UpdatedAt:      nil,
-			CreatedBy:      user,
-			UpdatedBy:      nil,
+			ID:           uuid.New().String(),
+			PatientId:    req.PatientId,
+			PregnancyId:  pregnancyId,
+			DateAdmitted: req.DateAdmitted,
+			Facility:     req.Facility,
+			Reason:       req.Reason,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    nil,
+			CreatedBy:    user,
+			UpdatedBy:    nil,
 		}
-		err := a.Admissions.Create(admission)
+		err = a.Admissions.Save(admission)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
@@ -123,7 +138,6 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(admission); err != nil {
 			log.WithFields(log.Fields{
 				"user":      user,
@@ -135,7 +149,26 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 	case http.MethodPut:
 		token := r.Context().Value("user").(app.JwtToken)
 		user := token.Email
-
+		vars := mux.Vars(r)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id is not a valid number")
+			http.Error(w, "pregnancy id is not a valid number", http.StatusBadRequest)
+			return
+		}
+		patientId, err := strconv.Atoi(vars["patientId"])
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"patientId": vars["patientId"],
+			}).WithError(err).Error("patient is not a valid number", http.StatusBadRequest)
+			return
+		}
 		var req admissions.HospitalAdmission
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithFields(log.Fields{
@@ -148,7 +181,9 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 		now := time.Now()
 		req.UpdatedBy = &user
 		req.UpdatedAt = &now
-		err := a.Admissions.Edit(req)
+		req.PregnancyId = pregnancyId
+		req.PatientId = patientId
+		err = a.Admissions.Update(req)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,
@@ -157,7 +192,6 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(req); err != nil {
 			log.WithFields(log.Fields{
 				"user":        user,

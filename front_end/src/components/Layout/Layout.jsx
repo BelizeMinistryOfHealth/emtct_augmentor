@@ -28,7 +28,7 @@ const Layout = ({ children }) => {
           },
           {
             label: 'Partners',
-            link: `/patient/${patientId}/partners/syphilisTreatments`,
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/partners/syphilisTreatments`,
           },
           {
             label: 'Lab Results',
@@ -48,11 +48,11 @@ const Layout = ({ children }) => {
           },
           {
             label: 'Hospital/Clinic Admissions',
-            link: `/patient/${patientId}/admissions`,
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/admissions`,
           },
           {
             label: 'Contraceptives',
-            link: `/patient/${patientId}/contraceptives`,
+            link: `/patient/${patientId}/pregnancy/${pregnancyId}/contraceptives`,
           },
         ].map((d) => {
           return (

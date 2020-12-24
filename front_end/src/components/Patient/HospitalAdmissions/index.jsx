@@ -85,7 +85,7 @@ const AdmissionsTable = ({ children, caption, admissions, onClickEdit }) => {
 };
 
 const HospitalAdmissions = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [editingAdmission, setEditingAdmission] = React.useState(undefined);
 
@@ -104,7 +104,7 @@ const HospitalAdmissions = (props) => {
       try {
         setData({ admissions: [], loading: true, error: undefined });
         const result = await httpInstance.get(
-          `/patients/${patientId}/hospitalAdmissions`
+          `/patients/${patientId}/pregnancy/${pregnancyId}/hospitalAdmissions`
         );
         setData({
           admissionsData: result.data,
@@ -124,7 +124,7 @@ const HospitalAdmissions = (props) => {
     if (refreshAdmissions) {
       fetchAdmissions();
     }
-  }, [httpInstance, patientId, refreshAdmissions]);
+  }, [httpInstance, patientId, pregnancyId, refreshAdmissions]);
 
   const closeEditForm = () => {
     setEditingAdmission(undefined);
@@ -171,7 +171,9 @@ const HospitalAdmissions = (props) => {
                   icon={<Add />}
                   label={'Add'}
                   onClick={() =>
-                    history.push(`/patient/${patientId}/admissions/new`)
+                    history.push(
+                      `/patient/${patientId}/pregnancy/${pregnancyId}/admissions/new`
+                    )
                   }
                 />
               </Box>

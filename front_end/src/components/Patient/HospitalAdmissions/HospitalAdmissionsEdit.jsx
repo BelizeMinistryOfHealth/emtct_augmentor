@@ -9,6 +9,7 @@ import {
 } from 'grommet';
 import React from 'react';
 import { useHttpApi } from '../../../providers/HttpProvider';
+import { useParams } from 'react-router-dom';
 
 const EditForm = ({ admission, closeForm }) => {
   const [facility, setFacility] = React.useState(admission.facility);
@@ -20,6 +21,7 @@ const EditForm = ({ admission, closeForm }) => {
   const { httpInstance } = useHttpApi();
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
+  const { patientId, pregnancyId } = useParams();
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -37,7 +39,10 @@ const EditForm = ({ admission, closeForm }) => {
   React.useEffect(() => {
     const submit = async (body) => {
       try {
-        await httpInstance.put(`/hospitalAdmissions`, body);
+        await httpInstance.put(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/hospitalAdmissions`,
+          body
+        );
         setStatus('SUCCESS');
       } catch (e) {
         console.error(e);
@@ -51,7 +56,7 @@ const EditForm = ({ admission, closeForm }) => {
     if (status === 'SUCCESS') {
       closeForm();
     }
-  }, [httpInstance, status, admissionData, closeForm]);
+  }, [httpInstance, status, admissionData, closeForm, patientId, pregnancyId]);
 
   return (
     <Box>

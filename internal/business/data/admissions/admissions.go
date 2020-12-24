@@ -1,96 +1,98 @@
 package admissions
 
 import (
-	"database/sql"
+	"cloud.google.com/go/firestore"
 	"fmt"
+	"google.golang.org/api/iterator"
 )
 
 func (a *Admissions) FindByPatientId(patientId int) ([]HospitalAdmission, error) {
-	stmt := `
-	SELECT 
-	       id, patient_id, date_admitted, facility, reason, created_at, created_by, updated_at, updated_by, mch_encounter_id 
-	FROM 
-	     hospital_admission 
-	WHERE 
-	      patient_id=$1`
+	ref := a.db.Client.Collection(a.collection)
+	iter := ref.Where("patientId", "==", patientId).Documents(a.ctx())
 	var admissions []HospitalAdmission
-	rows, err := a.Query(stmt, patientId)
-	defer rows.Close()
-	if err != nil {
-		return admissions, fmt.Errorf("error when executing query to retrieve hospital admissions for a patient: %+v", err)
-	}
-
-	for rows.Next() {
-		var h HospitalAdmission
-		err := rows.Scan(
-			&h.Id,
-			&h.PatientId,
-			&h.DateAdmitted,
-			&h.Facility,
-			&h.Reason,
-			&h.CreatedAt,
-			&h.CreatedBy,
-			&h.UpdatedAt,
-			&h.UpdatedBy,
-			&h.MchEncounterId)
-		if err != nil {
-			return admissions, fmt.Errorf("error scanning hotpsital admissions result from the database: %+v", err)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
 		}
-		admissions = append(admissions, h)
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve patient's admissions: %w", err)
+		}
+		var ad HospitalAdmission
+		if err := doc.DataTo(&ad); err != nil {
+			return nil, fmt.Errorf("failed to transform admission: %w", err)
+		}
+		admissions = append(admissions, ad)
 	}
 	return admissions, nil
 }
 
 func (a *Admissions) FindById(id string) (*HospitalAdmission, error) {
-	stmt := `
-	SELECT id, patient_id, date_admitted, facility, reason, created_at, created_by, updated_at, updated_by, mch_encounter_id
-	FROM hospital_admission 
-	WHERE id=$1`
-	var admission HospitalAdmission
-	row := a.QueryRow(stmt, id)
-	err := row.Scan(
-		&admission.Id,
-		&admission.PatientId,
-		&admission.DateAdmitted,
-		&admission.Facility,
-		&admission.Reason,
-		&admission.CreatedAt,
-		&admission.CreatedBy,
-		&admission.UpdatedAt,
-		&admission.UpdatedBy,
-		&admission.MchEncounterId)
-	switch err {
-	case sql.ErrNoRows:
-		return nil, nil
-	case nil:
-		return &admission, nil
-	default:
-		return nil, fmt.Errorf("error retrieving hospital admission from database: %+v", err)
+	ref := a.db.Client.Collection(a.collection)
+	snap, err := ref.Doc(id).Get(a.ctx())
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve admission: %w", err)
 	}
+	var h HospitalAdmission
+	if err := snap.DataTo(&h); err != nil {
+		return nil, fmt.Errorf("failed to transform admission: %w", err)
+	}
+	return &h, nil
 }
 
-func (a *Admissions) Create(h HospitalAdmission) error {
-	stmt := `
-	INSERT INTO hospital_admission 
-	    (id, patient_id, date_admitted, facility, reason, created_at, created_by, mch_encounter_id) 
-	Values
-	       ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err := a.Exec(stmt, h.Id, h.PatientId, h.DateAdmitted, h.Facility, h.Reason, h.CreatedAt, h.CreatedBy, h.MchEncounterId)
+func (a *Admissions) Save(h HospitalAdmission) error {
+	ref := a.db.Client.Collection(a.collection)
+	_, err := ref.Doc(h.ID).Set(a.ctx(), h)
 	if err != nil {
-		return fmt.Errorf("error inserting a new hospital admission into the database: %+v", err)
+		return fmt.Errorf("failed to create admission: %w", err)
 	}
 	return nil
 }
 
-func (a *Admissions) Edit(h HospitalAdmission) error {
-	stmt := `
-	UPDATE hospital_admission 
-	SET date_admitted=$1, facility=$2, reason=$3, updated_at=$4, updated_by=$5 
-	WHERE id=$6;
-`
-	_, err := a.Exec(stmt, h.DateAdmitted, h.Facility, h.Reason, h.UpdatedAt, h.UpdatedBy, h.Id)
-	if err != nil {
-		return fmt.Errorf("error updating a hospital admission in the database: %w", err)
+func (a *Admissions) Update(h HospitalAdmission) error {
+	ref := a.db.Client.Collection(a.collection).Doc(h.ID)
+	_, err := ref.Update(a.ctx(), []firestore.Update{
+		{
+			Path:  "facility",
+			Value: h.Facility,
+		},
+		{
+			Path:  "reason",
+			Value: h.Reason,
+		},
+		{
+			Path:  "dateAdmitted",
+			Value: h.DateAdmitted,
+		},
+		{
+			Path:  "updatedBy",
+			Value: h.UpdatedBy,
+		},
+		{
+			Path:  "updatedAt",
+			Value: h.UpdatedAt,
+		},
+	})
+	return err
+}
+
+func (a *Admissions) FindByPregnancyId(id int) ([]HospitalAdmission, error) {
+	ref := a.db.Client.Collection(a.collection)
+	iter := ref.Where("pregnancyId", "==", id).Documents(a.ctx())
+	var admissions []HospitalAdmission
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve pregnancy's admissions: %w", err)
+		}
+		var h HospitalAdmission
+		if err := doc.DataTo(&h); err != nil {
+			return nil, fmt.Errorf("failed to transform admission: %w", err)
+		}
+		admissions = append(admissions, h)
 	}
-	return nil
+	return admissions, nil
 }

@@ -24,7 +24,7 @@ const HospitalAdmissionCreateForm = () => {
     error: undefined,
   });
 
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const history = useHistory();
   const { httpInstance } = useHttpApi();
 
@@ -51,10 +51,10 @@ const HospitalAdmissionCreateForm = () => {
   React.useEffect(() => {
     const post = async (admission) => {
       try {
-        await httpInstance.post(`/hospitalAdmissions`, {
-          ...admission,
-          mchEncounterId: patientData.data.antenatalEncounter.id,
-        });
+        await httpInstance.post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/hospitalAdmissions`,
+          admission
+        );
         setStatus('SUCCESS');
       } catch (e) {
         console.error(e);
@@ -64,7 +64,7 @@ const HospitalAdmissionCreateForm = () => {
     if (status === 'SUBMIT') {
       post(admission);
     }
-  }, [httpInstance, admission, status, patientData]);
+  }, [httpInstance, admission, status, patientData, patientId, pregnancyId]);
 
   if (status === 'SUCCESS') {
     return (
@@ -77,7 +77,11 @@ const HospitalAdmissionCreateForm = () => {
       >
         <Button
           icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/admissions`)}
+          onClick={() =>
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/admissions`
+            )
+          }
         />
         <Box
           flex={false}
@@ -108,7 +112,11 @@ const HospitalAdmissionCreateForm = () => {
       >
         <Button
           icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/admissions`)}
+          onClick={() =>
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/admissions`
+            )
+          }
         />
         <Box
           direction={'column'}
