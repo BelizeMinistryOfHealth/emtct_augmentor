@@ -1,27 +1,33 @@
 package contraceptives
 
 import (
-	"database/sql"
+	"context"
+	"moh.gov.bz/mch/emtct/internal/db"
 	"time"
 )
 
 type Contraceptives struct {
-	*sql.DB
+	db         *db.FirestoreClient
+	collection string
 }
 
-func New(db *sql.DB) Contraceptives {
-	return Contraceptives{db}
+func New(db *db.FirestoreClient) Contraceptives {
+	return Contraceptives{db: db, collection: "contraceptives"}
+}
+
+func (c *Contraceptives) ctx() context.Context {
+	return c.db.Ctx
 }
 
 type ContraceptiveUsed struct {
-	Id             string     `json:"id"`
-	PatientId      int        `json:"patientId"`
-	MchEncounterId int        `json:"mchEncounterId"`
-	Contraceptive  string     `json:"contraceptive"`
-	Comments       string     `json:"comments"`
-	DateUsed       time.Time  `json:"dateUsed"`
-	CreatedAt      time.Time  `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt"`
-	CreatedBy      string     `json:"createdBy"`
-	UpdatedBy      *string    `json:"updatedBy"`
+	ID            string     `json:"id" firestore:"id"`
+	PatientId     int        `json:"patientId" firestore:"patientId"`
+	PregnancyId   int        `json:"pregnancyId" firestore:"pregnancyId"`
+	Contraceptive string     `json:"contraceptive" firestore:"contraceptive"`
+	Comments      string     `json:"comments" firestore:"comments"`
+	DateUsed      time.Time  `json:"dateUsed" firestore:"dateUsed"`
+	CreatedAt     time.Time  `json:"createdAt" firestore:"createdAt"`
+	UpdatedAt     *time.Time `json:"updatedAt" firestore:"updatedAt"`
+	CreatedBy     string     `json:"createdBy" firestore:"createdBy"`
+	UpdatedBy     *string    `json:"updatedBy" firestore:"updatedBy"`
 }

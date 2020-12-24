@@ -127,19 +127,22 @@ function App() {
                         }
                         component={HospitalAdmissions}
                       />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/contraceptives/new'
+                        }
+                        component={ContraceptivesCreateForm}
+                      />
+                      <Route
+                        path={
+                          '/patient/:patientId/pregnancy/:pregnancyId/contraceptives'
+                        }
+                        component={ContraceptivesUsed}
+                      />
 
                       <Route
                         path={'/patient/:patientId/pregnancy/:pregnancyId'}
                         component={CurrentPregnancy}
-                      />
-
-                      <Route
-                        path={'/patient/:patientId/contraceptives/new'}
-                        component={ContraceptivesCreateForm}
-                      />
-                      <Route
-                        path={'/patient/:patientId/contraceptives'}
-                        component={ContraceptivesUsed}
                       />
 
                       <Route

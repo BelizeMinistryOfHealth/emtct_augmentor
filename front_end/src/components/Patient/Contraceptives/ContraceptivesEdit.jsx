@@ -9,6 +9,7 @@ import {
   TextInput,
 } from 'grommet';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
 
 const EditForm = ({ contraceptive, onCloseForm }) => {
@@ -19,6 +20,7 @@ const EditForm = ({ contraceptive, onCloseForm }) => {
   const { httpInstance } = useHttpApi();
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
   const [status, setStatus] = React.useState('START');
+  const { pregnancyId, patientId } = useParams();
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -36,7 +38,10 @@ const EditForm = ({ contraceptive, onCloseForm }) => {
   React.useEffect(() => {
     const submit = async (body) => {
       try {
-        await httpInstance.put(`/contraceptivesUsed`, body);
+        await httpInstance.put(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/contraceptivesUsed`,
+          body
+        );
         setStatus('SUCCESS');
         onCloseForm();
       } catch (e) {
@@ -47,7 +52,14 @@ const EditForm = ({ contraceptive, onCloseForm }) => {
     if (status === 'SUBMIT' && contraceptiveData) {
       submit(contraceptiveData);
     }
-  }, [contraceptiveData, status, httpInstance, onCloseForm]);
+  }, [
+    contraceptiveData,
+    status,
+    httpInstance,
+    onCloseForm,
+    pregnancyId,
+    patientId,
+  ]);
 
   return (
     <Box>

@@ -22,11 +22,9 @@ type ContraceptivesRoutes struct {
 }
 
 type newContraceptivesRequest struct {
-	PatientId      int       `json:"patientId"`
-	MchEncounterId int       `json:"mchEncounterId"`
-	Contraceptive  string    `json:"contraceptive"`
-	Comments       string    `json:"comments"`
-	DateUsed       time.Time `json:"dateUsed"`
+	Contraceptive string    `json:"contraceptive"`
+	Comments      string    `json:"comments"`
+	DateUsed      time.Time `json:"dateUsed"`
 }
 
 type contraceptivesResponse struct {
@@ -35,24 +33,25 @@ type contraceptivesResponse struct {
 }
 
 func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
+	handlerName := "ContraceptivesByPatientHandler"
+	w.Header().Add("Content-Type", "application/json")
 	switch r.Method {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
 		vars := mux.Vars(r)
 		patientId := vars["patientId"]
-		id, err := strconv.Atoi(patientId)
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
 		if err != nil {
 			log.WithFields(log.Fields{
-				"patientId": patientId,
-			}).Error("patientId provided is not a valid number")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id must be a valid number")
+			http.Error(w, "pregnancy id must be a valid number", http.StatusBadRequest)
 			return
 		}
-		contraceptives, err := a.Contraceptives.FindByPatientId(id)
+		contraceptives, err := a.Contraceptives.FindByPregnancyId(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
@@ -63,7 +62,7 @@ func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWri
 		patient, err := a.Patients.FindByPatientId(patientId)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"patientId":      id,
+				"patientId":      patientId,
 				"contraceptives": contraceptives,
 				"handler":        "ContraceptivesByPatientHandler",
 			}).WithError(err).Error("error retrieving patient's information")
@@ -74,7 +73,6 @@ func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWri
 			Contraceptives: contraceptives,
 			Patient:        *patient,
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.WithFields(log.Fields{
 				"patientId":      patientId,
@@ -88,7 +86,9 @@ func (a *ContraceptivesRoutes) ContraceptivesByPatientHandler(w http.ResponseWri
 }
 
 func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	defer r.Body.Close()
+	handlerName := "ContraceptivesHandler"
 	switch r.Method {
 	case http.MethodOptions:
 		return
@@ -101,22 +101,44 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-
-		contraceptive := contraceptives.ContraceptiveUsed{
-			Id:             uuid.New().String(),
-			PatientId:      req.PatientId,
-			MchEncounterId: req.MchEncounterId,
-			Contraceptive:  req.Contraceptive,
-			Comments:       req.Comments,
-			DateUsed:       req.DateUsed,
-			CreatedAt:      time.Now(),
-			UpdatedAt:      nil,
-			CreatedBy:      user,
-			UpdatedBy:      nil,
-		}
-		err := a.Contraceptives.Create(contraceptive)
+		vars := mux.Vars(r)
+		patientId, err := strconv.Atoi(vars["patientId"])
 		if err != nil {
 			log.WithFields(log.Fields{
+				"handler":   handlerName,
+				"method":    r.Method,
+				"patientId": vars["patientId"],
+			}).WithError(err).Error("patient id is not a valid number")
+			http.Error(w, "patient is must be a valid number", http.StatusBadRequest)
+			return
+		}
+		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
+		if err != nil {
+			log.WithFields(log.Fields{
+				"handler":     handlerName,
+				"method":      r.Method,
+				"pregnancyId": vars["pregnancyId"],
+			}).WithError(err).Error("pregnancy id is not a valid number")
+			http.Error(w, "pregnancy id is not valid number", http.StatusBadRequest)
+			return
+		}
+
+		contraceptive := contraceptives.ContraceptiveUsed{
+			ID:            uuid.New().String(),
+			PatientId:     patientId,
+			PregnancyId:   pregnancyId,
+			Contraceptive: req.Contraceptive,
+			Comments:      req.Comments,
+			DateUsed:      req.DateUsed,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     nil,
+			CreatedBy:     user,
+			UpdatedBy:     nil,
+		}
+		if err := a.Contraceptives.Create(contraceptive); err != nil {
+			log.WithFields(log.Fields{
+				"handler":       handlerName,
+				"method":        r.Method,
 				"user":          user,
 				"request":       req,
 				"contraceptive": contraceptive,
@@ -124,9 +146,10 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(contraceptive); err != nil {
 			log.WithFields(log.Fields{
+				"handler":       handlerName,
+				"method":        r.Method,
 				"user":          user,
 				"contraceptive": contraceptive,
 			}).WithError(err).Error("failed to marshal new contraceptive created")
@@ -144,18 +167,20 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 		}
 		updated := time.Now()
 		contraceptive := contraceptives.ContraceptiveUsed{
-			Id:             req.Id,
-			PatientId:      req.PatientId,
-			MchEncounterId: req.MchEncounterId,
-			Contraceptive:  req.Contraceptive,
-			Comments:       req.Comments,
-			DateUsed:       req.DateUsed,
-			UpdatedAt:      &updated,
-			UpdatedBy:      &user,
+			ID:            req.ID,
+			PatientId:     req.PatientId,
+			PregnancyId:   req.PregnancyId,
+			Contraceptive: req.Contraceptive,
+			Comments:      req.Comments,
+			DateUsed:      req.DateUsed,
+			UpdatedAt:     &updated,
+			UpdatedBy:     &user,
 		}
 
-		if err := a.Contraceptives.Edit(contraceptive); err != nil {
+		if err := a.Contraceptives.Update(contraceptive); err != nil {
 			log.WithFields(log.Fields{
+				"handler":       handlerName,
+				"method":        r.Method,
 				"user":          user,
 				"request":       req,
 				"contraceptive": contraceptive,
@@ -164,9 +189,10 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 			return
 		}
 
-		w.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(contraceptive); err != nil {
 			log.WithFields(log.Fields{
+				"handler":       handlerName,
+				"method":        r.Method,
 				"user":          user,
 				"contraceptive": contraceptive,
 			}).WithError(err).Error("failed to marshal new contraceptive created")

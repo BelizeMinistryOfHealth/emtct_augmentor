@@ -75,15 +75,14 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodGet)
 
 	// Contraceptives
-	contraceptive := contraceptives.New(app.EmtctDb.DB)
+	contraceptive := contraceptives.New(app.Firestore)
 	contraceptiveRoutes := ContraceptivesRoutes{
 		Contraceptives: contraceptive,
 		Patients:       patients,
 	}
-	contraceptiveRouter := r.PathPrefix("/api/contraceptivesUsed").Subrouter()
-	contraceptiveRouter.HandleFunc("", authMid.Then(contraceptiveRoutes.ContraceptivesHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/contraceptivesUsed", authMid.Then(contraceptiveRoutes.ContraceptivesHandler)).
 		Methods(http.MethodPost, http.MethodPut, http.MethodOptions)
-	patientRouter.HandleFunc("/{patientId}/contraceptivesUsed", authMid.Then(contraceptiveRoutes.ContraceptivesByPatientHandler)).
+	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/contraceptivesUsed", authMid.Then(contraceptiveRoutes.ContraceptivesByPatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
 	// Partners Router

@@ -13,7 +13,6 @@ import (
 // FindByPatientId searches for a patient who is currently pregnant.
 // A patient is considered pregnant if she has a record in the acsis_hc_pregnancies
 func (p *Patients) FindByPatientId(id string) (*models.Patient, error) {
-
 	ref := p.firestore.Client.Collection(p.collections.Patient)
 	snap, err := ref.Doc(id).Get(p.ctx())
 	if err != nil {

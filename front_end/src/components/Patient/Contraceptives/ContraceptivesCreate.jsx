@@ -24,7 +24,7 @@ const ContraceptivesCreateForm = () => {
     loading: true,
     error: undefined,
   });
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const history = useHistory();
   const { httpInstance } = useHttpApi();
 
@@ -51,10 +51,10 @@ const ContraceptivesCreateForm = () => {
   React.useEffect(() => {
     const post = async (contraceptive) => {
       try {
-        await httpInstance.post(`/contraceptivesUsed`, {
-          ...contraceptive,
-          mchEncounterId: patientData.data.antenatalEncounter.id,
-        });
+        await httpInstance.post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/contraceptivesUsed`,
+          contraceptive
+        );
         setStatus('SUCCESS');
       } catch (e) {
         console.error(e);
@@ -64,7 +64,14 @@ const ContraceptivesCreateForm = () => {
     if (status === 'SUBMIT') {
       post(contraceptive);
     }
-  }, [contraceptive, httpInstance, status, patientData]);
+  }, [
+    contraceptive,
+    httpInstance,
+    status,
+    pregnancyId,
+    patientId,
+    patientData,
+  ]);
 
   if (status === 'SUCCESS') {
     return (
@@ -78,7 +85,11 @@ const ContraceptivesCreateForm = () => {
         >
           <Button
             icon={<FormPreviousLink size={'large'} />}
-            onClick={() => history.push(`/patient/${patientId}/contraceptives`)}
+            onClick={() =>
+              history.push(
+                `/patient/${patientId}/pregnancy/${pregnancyId}/contraceptives`
+              )
+            }
           ></Button>
           <Box
             flex={false}
@@ -106,7 +117,11 @@ const ContraceptivesCreateForm = () => {
       >
         <Button
           icon={<FormPreviousLink size={'large'} />}
-          onClick={() => history.push(`/patient/${patientId}/contraceptives`)}
+          onClick={() =>
+            history.push(
+              `/patient/${patientId}/pregnancy/${pregnancyId}/contraceptives`
+            )
+          }
         ></Button>
         <Box
           direction={'column'}

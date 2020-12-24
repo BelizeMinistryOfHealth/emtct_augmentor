@@ -82,7 +82,7 @@ const ContraceptivesTable = ({
 };
 
 const ContraceptivesUsed = (props) => {
-  const { patientId } = useParams();
+  const { patientId, pregnancyId } = useParams();
   const { httpInstance } = useHttpApi();
   const [data, setData] = React.useState({
     result: undefined,
@@ -105,7 +105,7 @@ const ContraceptivesUsed = (props) => {
     const fetchContraceptives = async () => {
       try {
         const result = await httpInstance.get(
-          `/patients/${patientId}/contraceptivesUsed`
+          `/patients/${patientId}/pregnancy/${pregnancyId}/contraceptivesUsed`
         );
         setData({ result: result.data, loading: false, error: undefined });
       } catch (e) {
@@ -119,7 +119,7 @@ const ContraceptivesUsed = (props) => {
     if (data.loading) {
       fetchContraceptives();
     }
-  }, [httpInstance, patientId, data]);
+  }, [httpInstance, patientId, pregnancyId, data]);
   if (data.loading) {
     return <>Loading....</>;
   }
@@ -156,7 +156,9 @@ const ContraceptivesUsed = (props) => {
                   icon={<Add />}
                   label={'Add'}
                   onClick={() =>
-                    history.push(`/patient/${patientId}/contraceptives/new`)
+                    history.push(
+                      `/patient/${patientId}/pregnancy/${pregnancyId}/contraceptives/new`
+                    )
                   }
                 />
               </Box>
