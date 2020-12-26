@@ -56,7 +56,7 @@ func (d *Infants) FindHivScreeningById(id string) (*HivScreening, error) {
 // PCR 2: sample must be taken no later than 6 weeks after birth
 // PCR 3: sample must be taken no later than 90 days after birth
 // ELISA: sample must be taken no longer than 18 months after birth
-func (d *Infants) IsHivScreeningTimely(birthDate time.Time, testName string, dateSampleTaken time.Time) bool {
+func IsHivScreeningTimely(birthDate time.Time, testName string, dateSampleTaken time.Time) bool {
 	diff := dateSampleTaken.Sub(birthDate).Hours() / 24
 	switch testName {
 	case "PCR 1":
@@ -77,7 +77,7 @@ func (d *Infants) IsHivScreeningTimely(birthDate time.Time, testName string, dat
 // PCR 2: sample must be taken no later than 6 weeks after birth
 // PCR 3: sample must be taken no later than 90 days after birth
 // ELISA: sample must be taken no longer than 18 months after birth
-func (d *Infants) HivScreeningDueDate(testName string, birthDate time.Time) time.Time {
+func HivScreeningDueDate(testName string, birthDate time.Time) time.Time {
 	switch testName {
 	case "PCR 1":
 		return birthDate.AddDate(0, 0, 3)

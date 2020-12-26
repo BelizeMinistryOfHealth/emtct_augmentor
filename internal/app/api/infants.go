@@ -103,28 +103,18 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		pId, err := strconv.Atoi(req.PatientId)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"handler": handlerName,
-				"method":  r.Method,
-				"request": req,
-			}).WithError(err).Error("patient id is not a valid number")
-			http.Error(w, "patient id is not a valid number", http.StatusBadRequest)
-			return
-		}
-		infant, err := i.Infant.FindInfant(pId)
+		inf, err := i.Patient.GetInfant(req.PatientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
 				"request": req,
-				"handler": "CreateHivScreeningHandler",
+				"handler": handlerName,
 			}).WithError(err).Error("")
 			http.Error(w, fmt.Sprintf("no birth was found for this infant id: %d", req.PatientId), http.StatusBadRequest)
 			return
 		}
-		timely := i.Infant.IsHivScreeningTimely(*infant.Infant.Dob, req.TestName, req.DateSampleTaken)
-		dueDate := i.Infant.HivScreeningDueDate(req.TestName, *infant.Infant.Dob)
+		timely := infant.IsHivScreeningTimely(*inf.Dob, req.TestName, req.DateSampleTaken)
+		dueDate := infant.HivScreeningDueDate(req.TestName, *inf.Dob)
 		screening, err := i.CreateHivScreening(user, req, timely, dueDate)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -171,7 +161,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		infant, err := i.Patient.GetInfant(screening.PatientId)
+		inf, err := i.Patient.GetInfant(screening.PatientId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"user":    user,
@@ -181,7 +171,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 			http.Error(w, fmt.Sprintf("no birth was found for infant Id: %s", screening.PatientId), http.StatusBadRequest)
 			return
 		}
-		timely := i.Infant.IsHivScreeningTimely(*infant.Dob, screening.TestName, *screening.DateSampleTaken)
+		timely := infant.IsHivScreeningTimely(*inf.Dob, screening.TestName, *screening.DateSampleTaken)
 		screening.UpdatedBy = &user
 		screening.Timely = timely
 		// Never allow the user to modify the due date because this is a computed value
