@@ -3,8 +3,6 @@ package app
 import "moh.gov.bz/mch/emtct/internal/db"
 
 type App struct {
-	EmtctDb   *db.EmtctDb
-	AcsisDb   *db.AcsisDb
 	Firestore *db.FirestoreClient
 	Auth      Auth
 }

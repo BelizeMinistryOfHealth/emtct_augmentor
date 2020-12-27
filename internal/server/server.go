@@ -18,12 +18,6 @@ import (
 )
 
 func RegisterHandlers(ctx context.Context, cnf config.AppConf) *mux.Router {
-	acsisStore, err := db.NewAcsisConnection(&cnf.AcsisDb)
-	if err != nil {
-		log.Errorf("could not establish connection to the database: %+v", err)
-		os.Exit(1)
-	}
-	emtctStore, err := db.NewConnection(&cnf.EmtctDb)
 	firestoreDb, err := db.NewFirestore(ctx, cnf.ProjectId)
 	if err != nil {
 		log.WithError(err).Error("firestore connection failed")
@@ -31,14 +25,9 @@ func RegisterHandlers(ctx context.Context, cnf config.AppConf) *mux.Router {
 	}
 
 	app := app.App{
-		AcsisDb:   acsisStore,
-		EmtctDb:   emtctStore,
+
 		Firestore: firestoreDb,
-		Auth: app.Auth{
-			JwkUrl: cnf.Auth.JwkUrl,
-			Iss:    cnf.Auth.Issuer,
-			Aud:    cnf.Auth.Audience,
-		}}
+	}
 	router := api.API(app)
 	log.Infof("Initiated App: %+v", app)
 	//apiRouter := r.PathPrefix("/api").Subrouter()

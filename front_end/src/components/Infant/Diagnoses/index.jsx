@@ -95,7 +95,7 @@ const InfantDiagnoses = () => {
           error: undefined,
         });
       } catch (e) {
-        console.error(e);
+        console.error('error fetching infant diagnoses', e);
         setData({
           ...data,
           loading: false,
