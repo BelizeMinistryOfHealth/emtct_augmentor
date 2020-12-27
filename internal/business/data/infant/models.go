@@ -2,7 +2,6 @@ package infant
 
 import (
 	"context"
-	"database/sql"
 	"moh.gov.bz/mch/emtct/internal/db"
 	"time"
 
@@ -14,14 +13,13 @@ type DbCollections struct {
 }
 
 type Infants struct {
-	Acsis       *sql.DB
 	firestore   *db.FirestoreClient
 	collections DbCollections
 }
 
-func New(db *sql.DB, firestore *db.FirestoreClient) Infants {
+func New(firestore *db.FirestoreClient) Infants {
 	colls := DbCollections{HivScreening: "hivScreenings"}
-	return Infants{Acsis: db, firestore: firestore, collections: colls}
+	return Infants{firestore: firestore, collections: colls}
 }
 
 func (i *Infants) ctx() context.Context {
