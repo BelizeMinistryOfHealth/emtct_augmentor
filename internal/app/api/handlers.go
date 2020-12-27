@@ -16,7 +16,6 @@ import (
 	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/partners"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
-	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
 
 func API(app app.App) *mux.Router {
@@ -33,17 +32,14 @@ func API(app app.App) *mux.Router {
 	patients := patient.New(app.Firestore)
 	patientRouter := r.PathPrefix("/api/patients").Subrouter()
 
-	// Pregnancies
-	pregnancies := pregnancy.New(app.EmtctDb, app.AcsisDb)
 	lab := labs.New(app.AcsisDb)
 
 	// Infants
 	inf := infant.New(app.AcsisDb.DB, app.Firestore)
 	infantRoutes := InfantRoutes{
-		Infant:      inf,
-		Pregnancies: pregnancies,
-		Labs:        lab,
-		Patient:     patients,
+		Infant:  inf,
+		Labs:    lab,
+		Patient: patients,
 	}
 
 	// HomeVisits
@@ -105,15 +101,13 @@ func API(app app.App) *mux.Router {
 		Methods(http.MethodOptions, http.MethodGet, http.MethodPost, http.MethodPut)
 
 	// Pregnancies
-	preg := pregnancy.New(app.EmtctDb, app.AcsisDb)
 	Hiv := hiv.New(app.AcsisDb)
-	pregRoutes := pregnancyRoutes{Pregnancies: preg, Patient: patients, Lab: lab, Hiv: Hiv}
+	pregRoutes := pregnancyRoutes{Patient: patients, Lab: lab, Hiv: Hiv}
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}",
 		authMid.Then(pregRoutes.GetPregnancy)).Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/labResults",
 		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
-	patientRouter.HandleFunc("/{patientId}/obstetricHistory", authMid.Then(pregRoutes.ObstetricHistoryHandler)).
-		Methods(http.MethodOptions, http.MethodGet)
+
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/arvs", authMid.Then(pregRoutes.ArvsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/syphilisTreatments", authMid.Then(pregRoutes.PatientSyphilisTreatmentHandler)).
