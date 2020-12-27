@@ -2,7 +2,6 @@ package patient
 
 import (
 	"context"
-	"database/sql"
 	"moh.gov.bz/mch/emtct/internal/db"
 	"time"
 )
@@ -18,13 +17,11 @@ type DbCollections struct {
 }
 
 type Patients struct {
-	acsis       *sql.DB
-	emtctDb     *sql.DB
 	firestore   *db.FirestoreClient
 	collections DbCollections
 }
 
-func New(acsisDb, emtctDb *sql.DB, firestore *db.FirestoreClient) Patients {
+func New(firestore *db.FirestoreClient) Patients {
 	collections := DbCollections{
 		Patient:       "patients",
 		Arvs:          "arvs",
@@ -34,7 +31,7 @@ func New(acsisDb, emtctDb *sql.DB, firestore *db.FirestoreClient) Patients {
 		LabTests:      "labTests",
 		Infants:       "infants",
 	}
-	return Patients{acsis: acsisDb, emtctDb: emtctDb, collections: collections, firestore: firestore}
+	return Patients{collections: collections, firestore: firestore}
 }
 
 func (p *Patients) ctx() context.Context {

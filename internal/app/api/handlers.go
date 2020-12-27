@@ -30,7 +30,7 @@ func API(app app.App) *mux.Router {
 	authMid := NewChain(EnableCors(), VerifyToken(app.Firestore))
 
 	// Patients
-	patients := patient.New(app.AcsisDb.DB, app.EmtctDb.DB, app.Firestore)
+	patients := patient.New(app.Firestore)
 	patientRouter := r.PathPrefix("/api/patients").Subrouter()
 
 	// Pregnancies
