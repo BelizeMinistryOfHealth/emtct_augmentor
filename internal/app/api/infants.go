@@ -15,13 +15,11 @@ import (
 
 	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
-	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 )
 
 type InfantRoutes struct {
 	Infant  infant.Infants
 	Patient patient.Patients
-	Labs    labs.Labs
 }
 
 // HIV SCREENINGS

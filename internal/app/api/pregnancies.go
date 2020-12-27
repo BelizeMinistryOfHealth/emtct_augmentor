@@ -10,16 +10,12 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/business/data/hiv"
-	"moh.gov.bz/mch/emtct/internal/business/data/labs"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/pregnancy"
 )
 
 type pregnancyRoutes struct {
 	Patient patient.Patients
-	Hiv     hiv.HIV
-	Lab     labs.Labs
 }
 
 func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
