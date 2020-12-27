@@ -37,6 +37,29 @@ func (d *Infants) FindHivScreeningsByPatient(patientId string) ([]HivScreening, 
 	return screenings, nil
 }
 
+func (d *Infants) FindHivScreeningsByPregnancy(pregnancyId int) ([]HivScreening, error) {
+
+	ref := d.firestore.Client.Collection(d.collections.HivScreening)
+	iter := ref.Where("pregnancyId", "==", pregnancyId).Documents(d.ctx())
+	var screenings []HivScreening
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		var s HivScreening
+		if err := doc.DataTo(&s); err != nil {
+			return nil, fmt.Errorf("failed to convert hiv screening: %w", err)
+		}
+		screenings = append(screenings, s)
+	}
+
+	return screenings, nil
+}
+
 func (d *Infants) FindHivScreeningById(id string) (*HivScreening, error) {
 	ref := d.firestore.Client.Collection(d.collections.HivScreening)
 	snap, err := ref.Doc(id).Get(d.ctx())

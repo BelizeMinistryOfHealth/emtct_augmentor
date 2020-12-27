@@ -44,6 +44,7 @@ type HivScreening struct {
 	Id                     string     `json:"id" firestore:"id"`
 	PatientId              string     `json:"patientId" firestore:"patientId"`
 	MotherId               string     `json:"motherId" firestore:"motherId"`
+	PregnancyId            int        `json:"pregnancyId" firestore:"pregnancyId"`
 	TestName               string     `json:"testName" firestore:"testName"`
 	ScreeningDate          time.Time  `json:"screeningDate" firestore:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitEmpty" firestore:"dateSampleReceivedAtHq"`

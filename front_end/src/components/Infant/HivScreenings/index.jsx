@@ -274,7 +274,7 @@ const HivScreening = (props) => {
     const fetchScreenings = async () => {
       try {
         const result = await httpInstance.get(
-          `/patients/${patientId}/infant/${infantId}/hivScreenings`
+          `/patients/${patientId}/pregnancy/${pregnancyId}/infant/${infantId}/hivScreenings`
         );
         setData({ screenings: result.data, loading: false, error: undefined });
       } catch (e) {
@@ -288,7 +288,7 @@ const HivScreening = (props) => {
     if (data.loading) {
       fetchScreenings();
     }
-  }, [httpInstance, patientId, data, infantId]);
+  }, [httpInstance, patientId, data, pregnancyId, infantId]);
 
   if (data.loading) {
     return <>Loading....</>;

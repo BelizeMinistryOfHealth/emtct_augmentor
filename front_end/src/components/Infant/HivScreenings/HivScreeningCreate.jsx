@@ -53,11 +53,14 @@ const HivScreeningCreateForm = () => {
   React.useEffect(() => {
     const post = (screening) => {
       httpInstance
-        .post(`/patients/${patientId}/infant/${infantId}/hivScreenings`, {
-          ...screening,
-          motherId: patientId,
-          patientId: infantId,
-        })
+        .post(
+          `/patients/${patientId}/pregnancy/${pregnancyId}/infant/${infantId}/hivScreenings`,
+          {
+            ...screening,
+            motherId: patientId,
+            patientId: infantId,
+          }
+        )
         .then(() => {
           setStatus('SUCCESS');
           setErrorMessage(undefined);
@@ -83,6 +86,7 @@ const HivScreeningCreateForm = () => {
     errorMessage,
     infantId,
     patientId,
+    pregnancyId,
   ]);
 
   if (status === 'SUBMIT') {

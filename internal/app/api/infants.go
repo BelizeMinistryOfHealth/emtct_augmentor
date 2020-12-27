@@ -43,12 +43,13 @@ type hivScreeningsResponse struct {
 	Infant        models.Infant         `json:"patient"`
 }
 
-func (i InfantRoutes) CreateHivScreening(user string, r newHivScreeningRequest, timely bool, dueDate time.Time) (*infant.HivScreening, error) {
+func (i InfantRoutes) CreateHivScreening(user string, pregnancyId int, r newHivScreeningRequest, timely bool, dueDate time.Time) (*infant.HivScreening, error) {
 	id := uuid.New().String()
 
 	s := infant.HivScreening{
 		Id:                     id,
 		PatientId:              r.PatientId,
+		PregnancyId:            pregnancyId,
 		TestName:               r.TestName,
 		ScreeningDate:          r.ScreeningDate,
 		DateSampleReceivedAtHq: r.DateSampleReceivedAtHq,
@@ -93,6 +94,8 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
+		vars := mux.Vars(r)
+		pregnancyId, _ := strconv.Atoi(vars["pregnancyId"])
 		var req newHivScreeningRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.WithError(err).Error("error parsing request body for creating an hiv screening")
@@ -111,7 +114,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 		}
 		timely := infant.IsHivScreeningTimely(*inf.Dob, req.TestName, req.DateSampleTaken)
 		dueDate := infant.HivScreeningDueDate(req.TestName, *inf.Dob)
-		screening, err := i.CreateHivScreening(user, req, timely, dueDate)
+		screening, err := i.CreateHivScreening(user, pregnancyId, req, timely, dueDate)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"hivScreeningRequest": req,
@@ -174,6 +177,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 		screening.DueDate = s.DueDate
 		screening.CreatedBy = s.CreatedBy
 		screening.CreatedAt = s.CreatedAt
+		screening.PregnancyId = s.PregnancyId
 		err = i.Infant.SaveHivScreening(screening)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -195,13 +199,8 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 	case http.MethodGet:
 		vars := mux.Vars(r)
 		patientId := vars["infantId"]
-		id, err := strconv.Atoi(patientId)
-		if err != nil {
-			log.WithError(err).Error("infant id must be a number")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		screenings, err := i.Infant.FindHivScreeningsByPatient(patientId)
+		pregnancyId, _ := strconv.Atoi(vars["pregnancyId"])
+		screenings, err := i.Infant.FindHivScreeningsByPregnancy(pregnancyId)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"patientId": patientId,
@@ -212,7 +211,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 		}
 		infant, err := i.Patient.GetInfant(patientId)
 		if err != nil {
-			log.WithFields(log.Fields{"patientId": id, "screenings": screenings}).WithError(err).
+			log.WithFields(log.Fields{"pregnancyId": pregnancyId, "screenings": screenings}).WithError(err).
 				Error("error retrieving patient when fetching hiv screenings")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

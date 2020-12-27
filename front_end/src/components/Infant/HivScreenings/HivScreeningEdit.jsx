@@ -66,7 +66,7 @@ const EditForm = ({ screening, closeEditScreen }) => {
     const submit = async (body) => {
       try {
         await httpInstance.put(
-          `/patients/${screening.motherId}/infant/${screening.patientId}/hivScreenings`,
+          `/patients/${screening.motherId}/pregnancy/${screening.pregnancyId}/infant/${screening.patientId}/hivScreenings`,
           body
         );
         setStatus('SUCCESS');
