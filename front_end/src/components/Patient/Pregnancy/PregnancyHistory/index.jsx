@@ -19,7 +19,11 @@ const row = (data, onClick) => {
   return (
     <TableRow key={data.id}>
       <TableCell align={'start'}>
-        <Text>{format(parseISO(data.lmp), 'dd LLL yyyy')}</Text>
+        <Text>
+          {data.lmp !== null
+            ? format(parseISO(data.lmp), 'dd LLL yyyy')
+            : 'N/A'}
+        </Text>
       </TableCell>
       <TableCell>
         <Text>
@@ -55,8 +59,13 @@ const PregnancyHistory = (props) => {
   const { pregnancies } = props;
   const history = useHistory();
 
-  const onClick = (d) =>
+  const onClick = (d) => {
+    if (!d.lmp) {
+      alert('Please add an LMP in the BHIS.');
+      return;
+    }
     history.push(`/patient/${d.patientId}/pregnancy/${d.id}`);
+  };
 
   if (pregnancies.length === 0) {
     return <>No Pregnancies</>;
