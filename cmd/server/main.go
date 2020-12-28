@@ -21,5 +21,6 @@ func main() {
 	if err != nil {
 		fmt.Print("could not parse the configuration file")
 	}
+	cnf.Port = 8080
 	server.NewServer(*cnf)
 }

@@ -5,6 +5,7 @@ import log "github.com/sirupsen/logrus"
 
 type AppConf struct {
 	ProjectId string
+	Port      int
 }
 
 type Firebase struct {

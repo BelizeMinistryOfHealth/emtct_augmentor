@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -38,7 +39,7 @@ func NewServer(cnf config.AppConf) {
 	firestoreContext := context.Background()
 	r := RegisterHandlers(firestoreContext, cnf)
 	srv := &http.Server{
-		Addr: "0.0.0.0:8080",
+		Addr: fmt.Sprintf("0.0.0.0:%d", cnf.Port),
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 60,
 		ReadTimeout:  time.Second * 15,
