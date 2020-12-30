@@ -61,12 +61,16 @@ const screeningRow = (data, onClickEdit) => {
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>
-          {format(parseISO(data.screeningDate), 'dd LLL yyyy')}
+          {data.screeningDate
+            ? format(parseISO(data.screeningDate), 'dd LLL yyyy')
+            : 'N/A'}
         </Text>
       </TableCell>
       <TableCell align={'start'}>
         <Text size={'small'}>
-          {format(parseISO(data.dateSampleTaken), 'dd LLL yyyy')}
+          {data.dateSampleTaken
+            ? format(parseISO(data.dateSampleTaken), 'dd LLL yyyy')
+            : 'N/A'}
         </Text>
       </TableCell>
       <TableCell align={'start'}>

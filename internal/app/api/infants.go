@@ -27,7 +27,7 @@ type newHivScreeningRequest struct {
 	PatientId              string     `json:"patientId"`
 	MotherId               string     `json:"motherId"`
 	TestName               string     `json:"testName"`
-	ScreeningDate          time.Time  `json:"screeningDate"`
+	ScreeningDate          *time.Time `json:"screeningDate"`
 	DateSampleReceivedAtHq *time.Time `json:"dateSampleReceivedAtHq,omitempty"`
 	SampleCode             string     `json:"sampleCode"`
 	DateSampleShipped      *time.Time `json:"dateSampleShipped"`
