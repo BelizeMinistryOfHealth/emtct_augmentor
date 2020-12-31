@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
@@ -9,8 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-
-	"moh.gov.bz/mch/emtct/internal/app"
 )
 
 type patientResponse struct {
@@ -67,7 +66,7 @@ func (a *pregnancyRoutes) ArvsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	case http.MethodGet:
 		method := r.Method
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
 		id := vars["patientId"]
@@ -180,7 +179,7 @@ func (a *pregnancyRoutes) PatientSyphilisTreatmentHandler(w http.ResponseWriter,
 		method := "GET"
 		vars := mux.Vars(r)
 		id := vars["patientId"]
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		patientId, err := strconv.Atoi(id)
 		if err != nil {

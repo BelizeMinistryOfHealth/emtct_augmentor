@@ -3,6 +3,9 @@
 package api
 
 import (
+	firebase "firebase.google.com/go/v4"
+	"fmt"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -16,15 +19,20 @@ import (
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
 
-func API(app app.App) *mux.Router {
+func API(app app.App) (*mux.Router, error) {
 	r := mux.NewRouter()
 
 	// Instantiate an aut0 client with a Cache with a key capacity of
 	// 60 tokens and a ttl of 24 hours.
 	//auth0Client := auth0.NewAuth0(60, 518400)
-
+	userStore, err := auth.NewStore(app.Firestore, &firebase.Config{
+		ProjectID: app.ProjectID,
+	}, app.FirestoreApiKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize user store in API: %w", err)
+	}
 	// Middleware that verifies JWT token and also enables CORS.
-	authMid := NewChain(EnableCors(), VerifyToken(app.Firestore))
+	authMid := NewChain(EnableCors(), VerifyToken(userStore))
 
 	// Patients
 	patients := patient.New(app.Firestore)
@@ -123,5 +131,5 @@ func API(app app.App) *mux.Router {
 	patientRouter.HandleFunc("/{id}", authMid.Then(pregRoutes.RetrievePatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
-	return r
+	return r, nil
 }

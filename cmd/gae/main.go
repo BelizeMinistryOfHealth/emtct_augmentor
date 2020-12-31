@@ -11,7 +11,8 @@ import (
 
 func main() {
 	cnf := config.AppConf{
-		ProjectId: os.Getenv("PROJECT_ID"),
+		ProjectId:       os.Getenv("PROJECT_ID"),
+		FirestoreApiKey: os.Getenv("FIREBASE_API_KEY"),
 	}
 	log.WithFields(log.Fields{
 		"conf": cnf,

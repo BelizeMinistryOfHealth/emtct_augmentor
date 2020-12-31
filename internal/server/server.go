@@ -18,7 +18,7 @@ import (
 	"moh.gov.bz/mch/emtct/internal/db"
 )
 
-func RegisterHandlers(ctx context.Context, cnf config.AppConf) *mux.Router {
+func RegisterHandlers(ctx context.Context, cnf config.AppConf) (*mux.Router, error) {
 	firestoreDb, err := db.NewFirestore(ctx, cnf.ProjectId)
 	if err != nil {
 		log.WithError(err).Error("firestore connection failed")
@@ -26,18 +26,28 @@ func RegisterHandlers(ctx context.Context, cnf config.AppConf) *mux.Router {
 	}
 
 	app := app.App{
-
-		Firestore: firestoreDb,
+		ProjectID:       cnf.ProjectId,
+		Firestore:       firestoreDb,
+		FirestoreApiKey: cnf.FirestoreApiKey,
 	}
-	router := api.API(app)
+	router, err := api.API(app)
+	if err != nil {
+		return nil, fmt.Errorf("failed to register handlers: %w", err)
+	}
 	log.Infof("Initiated App: %+v", app)
 
-	return router
+	return router, nil
 }
 
 func NewServer(cnf config.AppConf) {
 	firestoreContext := context.Background()
-	r := RegisterHandlers(firestoreContext, cnf)
+	r, err := RegisterHandlers(firestoreContext, cnf)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"appConf": cnf,
+		}).WithError(err).Error("failed to register handlers")
+		os.Exit(-1)
+	}
 	srv := &http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%d", cnf.Port),
 		// Good practice to set timeouts to avoid Slowloris attacks.

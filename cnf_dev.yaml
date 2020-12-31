@@ -12,4 +12,6 @@ auth:
   jwkUrl: 'https://emtct-dev.us.auth0.com/.well-known/jwks.json'
   issuer: 'https://emtct-dev.us.auth0.com/'
   audience: k46hfbBUDsOaPgNU9IlUd7hoWJ5Ku0EB
-
+firebase:
+  projectId: "emtct-739a6"
+  apiKey: "AIzaSyAf6GXGv2KV25Zu2c_-OtU2j37WvIB6ujE"

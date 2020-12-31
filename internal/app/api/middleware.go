@@ -2,14 +2,11 @@ package api
 
 import (
 	"context"
-	"fmt"
-	"moh.gov.bz/mch/emtct/internal/db"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"net/http"
 	"strings"
 
 	"github.com/uris77/auth0"
-
-	"moh.gov.bz/mch/emtct/internal/app"
 )
 
 // EnableCors enables CORS
@@ -41,14 +38,14 @@ func VerifyAuthToken(jwkUrl, aud, iss string, auth0Client auth0.Auth0) Middlewar
 				return
 			}
 			email, _ := jwtToken.Get("email")
-			ctx := context.WithValue(r.Context(), "user", app.JwtToken{Email: email.(string)})
+			ctx := context.WithValue(r.Context(), "user", auth.JwtToken{Email: email.(string)})
 			r = r.WithContext(ctx)
 			f(w, r)
 		}
 	}
 }
 
-func VerifyToken(firestoreClient *db.FirestoreClient) Middleware {
+func VerifyToken(userStore auth.UserStore) Middleware {
 	return func(f http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			// OPTIONS request might not include the Authorization header.
@@ -71,14 +68,12 @@ func VerifyToken(firestoreClient *db.FirestoreClient) Middleware {
 				return
 			}
 			token := bearerParts[1]
-			verifiedToken, err := firestoreClient.AuthClient.VerifyIDToken(r.Context(), token)
+			jwtToken, err := userStore.VerifyToken(token)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			identities := verifiedToken.Firebase.Identities
-			email := identities["email"]
-			ctx := context.WithValue(r.Context(), "user", app.JwtToken{Email: fmt.Sprintf("%+v", email)})
+			ctx := context.WithValue(r.Context(), "user", jwtToken)
 			r = r.WithContext(ctx)
 			f(w, r)
 		}

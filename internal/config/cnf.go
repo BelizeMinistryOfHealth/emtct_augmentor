@@ -4,12 +4,14 @@ import "github.com/spf13/viper"
 import log "github.com/sirupsen/logrus"
 
 type AppConf struct {
-	ProjectId string
-	Port      int
+	ProjectId       string
+	Port            int
+	FirestoreApiKey string
 }
 
 type Firebase struct {
 	ProjectId string
+	ApiKey    string
 }
 
 // ReadConf reads a yaml file and unmarshalls its content.
@@ -33,7 +35,8 @@ func ReadConf(fileName string) (*AppConf, error) {
 	}
 
 	appConf := AppConf{
-		ProjectId: firebase.ProjectId,
+		ProjectId:       firebase.ProjectId,
+		FirestoreApiKey: firebase.ApiKey,
 	}
 
 	return &appConf, nil

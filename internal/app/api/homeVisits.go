@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/homeVisits"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
@@ -114,7 +114,7 @@ func (h HomeVisitRoutes) HomeVisitsHandler(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		var req homeVisitRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -146,7 +146,7 @@ func (h HomeVisitRoutes) HomeVisitsHandler(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	case http.MethodPost:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		var req newHomeVisitRequest
 		vars := mux.Vars(r)

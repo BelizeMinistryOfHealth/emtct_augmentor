@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/admissions"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
@@ -95,7 +95,7 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
 		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
@@ -147,7 +147,7 @@ func (a *AdmissionRoutes) AdmissionsHandler(w http.ResponseWriter, r *http.Reque
 			return
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
 		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])

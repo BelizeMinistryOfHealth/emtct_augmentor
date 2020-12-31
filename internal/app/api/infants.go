@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/infant"
 )
 
@@ -86,7 +86,7 @@ func (i InfantRoutes) HivScreeningHandler(w http.ResponseWriter, r *http.Request
 	// The middleware that verifies the token immediately returns, without inspecting the token.
 	// This means that trying to extract the token information in an OPTIONS request will always fail.
 	if r.Method != http.MethodOptions {
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user = token.Email
 	}
 

@@ -3,4 +3,5 @@ runtime: go114
 
 env_variables:
   PROJECT_ID: "emtct-739a6"
+  FIREBASE_API_KEY: "AIzaSyAf6GXGv2KV25Zu2c_-OtU2j37WvIB6ujE"
 

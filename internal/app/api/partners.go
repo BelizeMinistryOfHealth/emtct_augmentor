@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/partners"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 	"moh.gov.bz/mch/emtct/internal/business/data/prescription"
@@ -38,7 +38,7 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		id := vars["patientId"]
 		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
@@ -86,7 +86,7 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPost:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		id := vars["patientId"]
 		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
@@ -144,7 +144,7 @@ func (p *partnersRoutes) SyphilisTreatmentHandler(w http.ResponseWriter, r *http
 			}).WithError(err).Error("error encoding response")
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		var treatment prescription.SyphilisTreatment
 		if err := json.NewDecoder(r.Body).Decode(&treatment); err != nil {

@@ -14,6 +14,12 @@ import (
 	"net/http"
 )
 
+type linkType string
+
+const (
+	passwordReset linkType = "PASSWORD_RESET"
+)
+
 type User struct {
 	ID          string   `json:"id" firestore:"id"`
 	FirstName   string   `json:"firstName" firestore:"firstName"`
@@ -99,7 +105,7 @@ func (s *UserStore) CreateUser(user User) error {
 func (s *UserStore) SendPasswordResetEmail(email string) error {
 	url := fmt.Sprintf("https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=%s", s.apiKey)
 	reqBody, _ := json.Marshal(map[string]string{
-		"requestType": "PASSWORD_RESET",
+		"requestType": string(passwordReset),
 		"email":       email,
 	})
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
@@ -193,4 +199,32 @@ func (s *UserStore) UpdateUser(user User) error {
 		}
 	}
 	return nil
+}
+
+func (s *UserStore) VerifyToken(t string) (JwtToken, error) {
+	token, err := s.authClient.VerifyIDToken(s.ctx(), t)
+	if err != nil {
+		return JwtToken{}, AuthError{
+			Reason: "failed to verify ID Token",
+			Inner:  err,
+		}
+	}
+
+	claims := token.Claims
+	email := claims["email"]
+	perms := claims["permissions"]
+	var permissions []string
+	for _, p := range perms.([]interface{}) {
+		permissions = append(permissions, p.(string))
+	}
+	log.WithFields(log.Fields{"permissions": permissions}).Info("extracted permissions")
+	return JwtToken{
+		Email:       email.(string),
+		Permissions: permissions,
+	}, nil
+}
+
+type JwtToken struct {
+	Email       string
+	Permissions []string
 }

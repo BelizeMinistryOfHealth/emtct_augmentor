@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"moh.gov.bz/mch/emtct/internal/models"
 	"net/http"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/contraceptives"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
@@ -93,7 +93,7 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		var req newContraceptivesRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -157,7 +157,7 @@ func (a *ContraceptivesRoutes) ContraceptivesHandler(w http.ResponseWriter, r *h
 			return
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		var req contraceptives.ContraceptiveUsed
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"moh.gov.bz/mch/emtct/internal/auth"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
-	"moh.gov.bz/mch/emtct/internal/app"
 	"moh.gov.bz/mch/emtct/internal/business/data/contactTracing"
 	"moh.gov.bz/mch/emtct/internal/business/data/patient"
 )
@@ -37,7 +37,7 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 	case http.MethodOptions:
 		return
 	case http.MethodPost:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
 		pregnancyId, err := strconv.Atoi(vars["pregnancyId"])
@@ -94,7 +94,7 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			return
 		}
 	case http.MethodGet:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		vars := mux.Vars(r)
 		id := vars["patientId"]
@@ -145,7 +145,7 @@ func (a *ContactTracingRoutes) ContactTracingHandler(w http.ResponseWriter, r *h
 			return
 		}
 	case http.MethodPut:
-		token := r.Context().Value("user").(app.JwtToken)
+		token := r.Context().Value("user").(auth.JwtToken)
 		user := token.Email
 		today := time.Now()
 		var contactTracing contactTracing.ContactTracing
