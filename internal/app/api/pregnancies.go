@@ -57,7 +57,7 @@ func (a *pregnancyRoutes) GetPregnancy(w http.ResponseWriter, r *http.Request) {
 		var interval int
 		if len(pregs) > 1 {
 			// increment the index to get the previous pregnancy
-			prevPreg := pregs[idx+1]
+			prevPreg := pregs[idx]
 			interval = preg.Lmp.Year() - prevPreg.Lmp.Year()
 		}
 

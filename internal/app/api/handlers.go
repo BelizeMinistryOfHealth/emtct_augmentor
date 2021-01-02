@@ -131,5 +131,11 @@ func API(app app.App) (*mux.Router, error) {
 	patientRouter.HandleFunc("/{id}", authMid.Then(pregRoutes.RetrievePatientHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
 
+	// User Routes
+	userRouter := r.PathPrefix("/api/admin/users").Subrouter()
+	userRoutes := userRoutes{userStore: userStore}
+	userRouter.HandleFunc("", authMid.Then(userRoutes.UserHandlers)).
+		Methods(http.MethodOptions, http.MethodGet, http.MethodPut)
+
 	return r, nil
 }

@@ -28,6 +28,16 @@ type User struct {
 	Permissions []string `json:"permissions" firestore:"permissions"`
 }
 
+func IsAdmin(permissions []string) bool {
+	isAdmin := false
+	for _, p := range permissions {
+		if p == "admin:write" {
+			isAdmin = true
+		}
+	}
+	return isAdmin
+}
+
 type UserStore struct {
 	db          *db.FirestoreClient
 	collection  string
@@ -201,6 +211,32 @@ func (s *UserStore) UpdateUser(user User) error {
 	return nil
 }
 
+func (s *UserStore) ListUsers() ([]User, error) {
+	iter := s.db.Client.Collection(s.collection).Documents(s.ctx())
+	var users []User
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, UserError{
+				Reason: "failed iterating over user collection",
+				Inner:  err,
+			}
+		}
+		var u User
+		if err := doc.DataTo(&u); err != nil {
+			return nil, UserError{
+				Reason: "failed to transform user data",
+				Inner:  err,
+			}
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}
+
 func (s *UserStore) VerifyToken(t string) (JwtToken, error) {
 	token, err := s.authClient.VerifyIDToken(s.ctx(), t)
 	if err != nil {
@@ -214,10 +250,12 @@ func (s *UserStore) VerifyToken(t string) (JwtToken, error) {
 	email := claims["email"]
 	perms := claims["permissions"]
 	var permissions []string
-	for _, p := range perms.([]interface{}) {
-		permissions = append(permissions, p.(string))
+	if perms != nil {
+		for _, p := range perms.([]interface{}) {
+			permissions = append(permissions, p.(string))
+		}
 	}
-	log.WithFields(log.Fields{"permissions": permissions}).Info("extracted permissions")
+
 	return JwtToken{
 		Email:       email.(string),
 		Permissions: permissions,

@@ -34,7 +34,7 @@ func RegisterHandlers(ctx context.Context, cnf config.AppConf) (*mux.Router, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to register handlers: %w", err)
 	}
-	log.Infof("Initiated App: %+v", app)
+	log.Infof("Initiated App")
 
 	return router, nil
 }

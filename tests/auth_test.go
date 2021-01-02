@@ -34,10 +34,10 @@ func Test_Auth_CreateUser(t *testing.T) {
 		t.Fatalf("failed to create user store: %v", err)
 	}
 	user := auth.User{
-		FirstName:   "Uris",
+		FirstName:   "Roberto",
 		LastName:    "Guerra",
-		Email:       "uris77@gmail.com",
-		Permissions: []string{"app:read", "app:write"},
+		Email:       "roberto.guerra@openstep.net",
+		Permissions: []string{"app:read", "app:write", "admin:read", "admin:write"},
 	}
 	err = userStore.CreateUser(user)
 	if err != nil {

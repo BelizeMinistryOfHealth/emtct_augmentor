@@ -28,24 +28,32 @@ import CcontactTracingCreate from './components/Partner/ContactTracing/ContactTr
 import { FirebaseAuthConsumer } from '@react-firebase/auth';
 import Login from './components/Auth/Login';
 import Overview from './components/Patient/Overview';
+import jwt_decode from 'jwt-decode';
+import UserList from './components/Users/UserList';
 
 const { REACT_APP_API_URL } = process.env;
 
 function App() {
   const [idToken, setIdToken] = React.useState();
+  let permissions = [];
   return (
     <FirebaseAuthConsumer>
       {(obj) => {
         const { isSignedIn, user } = obj;
         if (isSignedIn) {
           user.getIdToken().then(setIdToken);
+          if (idToken) {
+            const decodedToken = jwt_decode(idToken);
+            permissions = decodedToken.permissions;
+          }
+
           if (!idToken) {
             return <>Loading</>;
           }
           return (
             <Grommet theme={grommet}>
               <BrowserRouter>
-                <Navbar />
+                <Navbar permissions={permissions} />
                 <HttpApiProvider idToken={idToken} baseUrl={REACT_APP_API_URL}>
                   <Main>
                     <Switch>
@@ -173,6 +181,7 @@ function App() {
                         path={'/patient/:patientId'}
                         component={Overview}
                       />
+                      <Route path={'/admin/users'} component={UserList} />
                       <Route path={'/'} component={Search} />
                     </Switch>
                   </Main>
