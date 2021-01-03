@@ -135,7 +135,9 @@ func API(app app.App) (*mux.Router, error) {
 	userRouter := r.PathPrefix("/api/admin/users").Subrouter()
 	userRoutes := userRoutes{userStore: userStore}
 	userRouter.HandleFunc("", authMid.Then(userRoutes.UserHandlers)).
-		Methods(http.MethodOptions, http.MethodGet, http.MethodPut)
+		Methods(http.MethodOptions, http.MethodGet, http.MethodPut, http.MethodPost)
+	userRouter.HandleFunc("/{id}", authMid.Then(userRoutes.UserDeleteHandler)).
+		Methods(http.MethodOptions, http.MethodDelete)
 
 	return r, nil
 }

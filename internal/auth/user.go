@@ -266,3 +266,20 @@ type JwtToken struct {
 	Email       string
 	Permissions []string
 }
+
+func (s *UserStore) DeleteUserById(id string) error {
+	_, err := s.authClient.DeleteUsers(s.ctx(), []string{id})
+	if err != nil {
+		return AuthError{
+			Reason: "failed deleting auth user",
+			Inner:  err,
+		}
+	}
+	if _, err := s.db.Client.Collection(s.collection).Doc(id).Delete(s.ctx()); err != nil {
+		return AuthError{
+			Reason: "failed deleting user from collection",
+			Inner:  err,
+		}
+	}
+	return nil
+}

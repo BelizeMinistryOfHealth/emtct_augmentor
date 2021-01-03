@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"moh.gov.bz/mch/emtct/internal/auth"
 	"net/http"
@@ -94,5 +96,84 @@ func (u userRoutes) UserHandlers(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to encode user", http.StatusInternalServerError)
 			return
 		}
+	case http.MethodPost:
+		token := r.Context().Value("user").(auth.JwtToken)
+		user := token.Email
+		isAdmin := auth.IsAdmin(token.Permissions)
+		if !isAdmin {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"method":  r.Method,
+				"handler": handlerName,
+			}).Error("non-admin user tried to view list of users")
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		var userToCreate auth.User
+		if err := json.NewDecoder(r.Body).Decode(&userToCreate); err != nil {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"handler": handlerName,
+				"method":  r.Method,
+			}).WithError(err).Error("failed to decode body")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		if err := u.userStore.CreateUser(userToCreate); err != nil {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"handler": handlerName,
+				"method":  r.Method,
+				"request": userToCreate,
+			}).WithError(err).Error("error updating user")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(userToCreate); err != nil {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"handler": handlerName,
+				"method":  r.Method,
+				"request": userToCreate,
+			}).WithError(err).Error("failed to encode user")
+			http.Error(w, "failed to encode user", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func (u userRoutes) UserDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	handlerName := "UserDeleteHandler"
+	defer r.Body.Close()
+	w.Header().Add("Content-Type", "application/json")
+	switch r.Method {
+	case http.MethodOptions:
+		return
+	case http.MethodDelete:
+		token := r.Context().Value("user").(auth.JwtToken)
+		user := token.Email
+		isAdmin := auth.IsAdmin(token.Permissions)
+		if !isAdmin {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"method":  r.Method,
+				"handler": handlerName,
+			}).Error("non-admin user tried to view list of users")
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		vars := mux.Vars(r)
+		id := vars["id"]
+		if err := u.userStore.DeleteUserById(id); err != nil {
+			log.WithFields(log.Fields{
+				"user":    user,
+				"userId":  id,
+				"handler": handlerName,
+				"method":  r.Method,
+			}).WithError(err).Error("failed to delete user")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, "OK")
 	}
 }

@@ -13,79 +13,121 @@ import {
   Text,
   Layer,
 } from 'grommet';
-import { Close, Edit } from 'grommet-icons';
+import { Close, Edit, Trash } from 'grommet-icons';
 import UserEdit from './UserEdit';
+import UserDelete from './UserDelete';
+import UserCreate from './UserCreate';
 
 const UserListData = ({ children }) => {
   const [users, setUsers] = React.useState([]);
+  const [user, setUser] = React.useState();
   const [error, setError] = React.useState();
-  const [loading, setLoading] = React.useState(true);
+  const [status, setStatus] = React.useState('LOADING');
   const { httpInstance } = useHttpApi();
+  const deleteUser = (u) => {
+    setUser(u);
+    setStatus('DELETING');
+  };
+  const createUser = (u) => {
+    setUser(u);
+    setStatus('CREATING');
+  };
   React.useEffect(() => {
     const getUsers = () => {
       httpInstance
         .get('/admin/users')
         .then((result) => {
-          setUsers(result.data);
-          setLoading(false);
+          setStatus('SUCCESS');
           setError(undefined);
+          setUsers(result.data);
         })
         .catch((error) => {
+          setStatus('ERROR');
           setError(error);
           setUsers([]);
-          setLoading(false);
         });
     };
-    if (loading) {
+    const deleteUser = (u) => {
+      httpInstance
+        .delete(`/admin/users/${u.id}`)
+        .then(() => setStatus('LOADING'));
+    };
+
+    const createUser = (u) => {
+      httpInstance
+        .post(`/admin/users`, u)
+        .then(() => {
+          setStatus('LOADING');
+        })
+        .catch((e) => {
+          console.error(e);
+          setStatus('ERROR');
+        });
+    };
+    if (status === 'LOADING') {
       getUsers();
     }
-  }, [httpInstance, users, loading]);
-  return children({ users, loading, error });
+    if (user && status === 'DELETING') {
+      deleteUser(user);
+      // setStatus('LOADING');
+    }
+
+    if (user && status === 'CREATING') {
+      createUser(user);
+    }
+  }, [httpInstance, users, user, status]);
+  return children({ users, status, createUser, deleteUser, error });
 };
 
-const userRow = (data, onClickEdit) => {
+const userRow = (data, onClickEdit, onClickDelete) => {
   return (
     <TableRow key={data.id}>
-      <TableCell size={'medium'}>
+      <TableCell>
         <Text size={'small'}>{data.email}</Text>
       </TableCell>
-      <TableCell size={'small'}>
+      <TableCell>
         <Text size={'small'}>{data.firstName}</Text>
       </TableCell>
-      <TableCell size={'small'}>
+      <TableCell>
         <Text size={'small'}>{data.lastName}</Text>
       </TableCell>
-      <TableCell size={'xxsmall'} onClick={() => onClickEdit(data)}>
+      <TableCell onClick={() => onClickEdit(data)}>
         <Edit />
+      </TableCell>
+      <TableCell onClick={() => onClickDelete(data)}>
+        <Trash color={'red'} />
       </TableCell>
     </TableRow>
   );
 };
 
-const UserTable = ({ users, onClickEdit }) => {
+const UserTable = ({ users, onClickEdit, onClickDelete }) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableCell size={'medium'}>
+          <TableCell size={'1/4'}>
             <Text weight={'bold'} size={'small'}>
               Email
             </Text>
           </TableCell>
-          <TableCell size={'medium'}>
+          <TableCell size={'1/4'}>
             <Text weight={'bold'} size={'small'}>
               First Name
             </Text>
           </TableCell>
-          <TableCell size={'medium'}>
+          <TableCell size={'1/4'}>
             <Text weight={'bold'} size={'small'}>
               Last Name
             </Text>
           </TableCell>
-          <TableCell size={'xxsmall'} />
+          <TableCell />
+          <TableCell />
         </TableRow>
       </TableHeader>
-      <TableBody>{users.map((u) => userRow(u, onClickEdit))}</TableBody>
+      <TableBody>
+        {users.map((u) => userRow(u, onClickEdit, onClickDelete))}
+      </TableBody>
     </Table>
   );
 };
@@ -105,14 +147,29 @@ const Loading = () => {
   );
 };
 
-const UserListComponent = ({ users, loading, error }) => {
+const UserListComponent = ({
+  users,
+  status,
+  createUser,
+  deleteUser,
+  error,
+}) => {
   const [editingUser, setEditingUser] = React.useState();
+  const [deletingUser, setDeletingUser] = React.useState();
+  const [showCreateForm, setShowCreateForm] = React.useState(false);
   const onClickEdit = (user) => setEditingUser(user);
+  const onClickDelete = (u) => setDeletingUser(u);
+  const onDelete = () => {
+    deleteUser(deletingUser);
+    setDeletingUser(undefined);
+  };
   return (
     <>
-      {loading && <Loading />}
-      {!loading && error && <Text>Error!</Text>}
-      {!loading && !error && (
+      {(status === 'LOADING' ||
+        status === 'CREATING' ||
+        status === 'DELETING') && <Loading />}
+      {status === 'ERROR' && error && <Text>Error!</Text>}
+      {status === 'SUCCESS' && !error && (
         <Box
           direction={'column'}
           gap={'xxsmall'}
@@ -137,7 +194,12 @@ const UserListComponent = ({ users, loading, error }) => {
             pad={'xxsmall'}
             margin={{ left: 'small', bottom: 'medium' }}
           >
-            <Button secondary label={'Add User'} type={'button'} />
+            <Button
+              secondary
+              label={'Add User'}
+              type={'button'}
+              onClick={() => setShowCreateForm(true)}
+            />
           </Box>
           <Box
             align={'center'}
@@ -174,7 +236,53 @@ const UserListComponent = ({ users, loading, error }) => {
                 </Box>
               </Layer>
             )}
-            <UserTable users={users} onClickEdit={onClickEdit} />
+            {deletingUser && (
+              <Layer
+                position='center'
+                onClickOutside={() => setDeletingUser(undefined)}
+              >
+                <UserDelete
+                  onClickNo={() => setDeletingUser(undefined)}
+                  onClickYes={onDelete}
+                />
+              </Layer>
+            )}
+            {showCreateForm && (
+              <Layer
+                position={'top'}
+                full={'vertical'}
+                onClickOutside={() => setShowCreateForm(false)}
+                modal
+              >
+                <Box
+                  fill={'vertical'}
+                  overflow={'auto'}
+                  width={'large'}
+                  pad={'medium'}
+                >
+                  <Box flex={false} direction={'row'} justify={'between'}>
+                    <Heading level={2} margin={'none'}>
+                      Create User
+                    </Heading>
+                    <Button
+                      icon={<Close />}
+                      onClick={() => setShowCreateForm(false)}
+                    />
+                  </Box>
+                  <UserCreate
+                    onSave={(u) => {
+                      createUser(u);
+                      setShowCreateForm(false);
+                    }}
+                  />
+                </Box>
+              </Layer>
+            )}
+            <UserTable
+              users={users}
+              onClickEdit={onClickEdit}
+              onClickDelete={onClickDelete}
+            />
           </Box>
         </Box>
       )}

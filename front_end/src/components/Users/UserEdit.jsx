@@ -7,30 +7,34 @@ import { Checkmark } from 'grommet-icons';
 const UserEdit = ({ user }) => {
   const { permissions } = user;
   // Strip the prefix from the permissions. The checkbox values do not account for the prefixes.
-  const appPerms = permissions.reduce((acc, i) => {
-    switch (i) {
-      case 'app:read':
-        acc.push('read');
-        break;
-      case 'app:write':
-        acc.push('write');
-        break;
-    }
-    return acc;
-  }, []);
+  const appPerms = permissions
+    ? permissions.reduce((acc, i) => {
+        switch (i) {
+          case 'app:read':
+            acc.push('read');
+            break;
+          case 'app:write':
+            acc.push('write');
+            break;
+        }
+        return acc;
+      }, [])
+    : [];
 
   // Strip the prefix from the permissions. The checkbox values do not account for the prefixes.
-  const adminPerms = permissions.reduce((acc, i) => {
-    switch (i) {
-      case 'admin:read':
-        acc.push('read');
-        break;
-      case 'admin:write':
-        acc.push('write');
-        break;
-    }
-    return acc;
-  }, []);
+  const adminPerms = permissions
+    ? permissions.reduce((acc, i) => {
+        switch (i) {
+          case 'admin:read':
+            acc.push('read');
+            break;
+          case 'admin:write':
+            acc.push('write');
+            break;
+        }
+        return acc;
+      }, [])
+    : [];
   const [appPermissions, setAppPermissions] = React.useState(appPerms);
   const [adminPermissions, setAdminPermissions] = React.useState(adminPerms);
   // Form status: START -> SUBMIT -> ERROR -> SUCCESS
