@@ -1,7 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useHttpApi } from '../../../providers/HttpProvider';
-import Layout from '../../Layout/Layout';
 import { Box, Heading, Text } from 'grommet';
 import Spinner from '../../Spinner';
 import ErrorBoundary from '../../ErrorBoundary';
@@ -37,7 +36,13 @@ const Overview = () => {
 
   if (loading) {
     return (
-      <Layout>
+      <Box
+        direction={'row'}
+        fill={'horizontal'}
+        gap={'large'}
+        justify={'start'}
+        align={'start'}
+      >
         <Box
           direction={'column'}
           fill={'horizontal'}
@@ -51,7 +56,7 @@ const Overview = () => {
             <Spinner />
           </Heading>
         </Box>
-      </Layout>
+      </Box>
     );
   }
 

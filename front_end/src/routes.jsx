@@ -133,7 +133,7 @@ const Router = () => {
           component={CurrentPregnancy}
         />
 
-        <Route path={'/patient/:patientId'} component={Overview} />
+        <Route exact={true} path={'/patient/:patientId'} component={Overview} />
         <Route path={'/reports/pcrs'} component={InfantPcrs} />
         <Route path={'/reports'} component={ReportHome} />
         <Route exact={true} path={'/admin/users'} component={UserList} />
