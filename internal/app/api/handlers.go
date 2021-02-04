@@ -6,6 +6,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"fmt"
 	"moh.gov.bz/mch/emtct/internal/auth"
+	"moh.gov.bz/mch/emtct/internal/business/data/reports"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -106,9 +107,11 @@ func API(app app.App) (*mux.Router, error) {
 	// Pregnancies
 	pregRoutes := pregnancyRoutes{Patient: patients}
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}",
-		authMid.Then(pregRoutes.GetPregnancy)).Methods(http.MethodOptions, http.MethodGet)
+		authMid.Then(pregRoutes.GetPregnancy)).
+		Methods(http.MethodOptions, http.MethodGet)
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/labResults",
-		authMid.Then(pregRoutes.FindPregnancyLabResults)).Methods(http.MethodOptions, http.MethodGet)
+		authMid.Then(pregRoutes.FindPregnancyLabResults)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	patientRouter.HandleFunc("/{patientId}/pregnancy/{pregnancyId}/arvs", authMid.Then(pregRoutes.ArvsHandler)).
 		Methods(http.MethodOptions, http.MethodGet)
@@ -138,6 +141,13 @@ func API(app app.App) (*mux.Router, error) {
 		Methods(http.MethodOptions, http.MethodGet, http.MethodPut, http.MethodPost)
 	userRouter.HandleFunc("/{id}", authMid.Then(userRoutes.UserDeleteHandler)).
 		Methods(http.MethodOptions, http.MethodDelete)
+
+	// Reports
+	report := reports.New(app.Firestore)
+	reportRoutes := ReportsRoutes{Report: report}
+	reportsRouter := r.PathPrefix("/api/reports").Subrouter()
+	reportsRouter.HandleFunc("/missingPcrs/{year:[0-9]{4}$}", authMid.Then(reportRoutes.MissingPcrReport)).
+		Methods(http.MethodOptions, http.MethodGet)
 
 	return r, nil
 }

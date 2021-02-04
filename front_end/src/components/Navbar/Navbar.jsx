@@ -1,6 +1,8 @@
 import React from 'react';
 import { Anchor, Box, Header } from 'grommet';
 import Logout from '../Auth/Logout';
+import { NavLink } from 'react-router-dom';
+import './Navbar.css';
 
 const Navbar = (props) => {
   const { permissions } = props;
@@ -13,9 +15,9 @@ const Navbar = (props) => {
         </Anchor>
         {isAdmin && (
           <>
-            <Anchor color={'white'} href={'/admin/users'}>
+            <NavLink color={'white'} to={'/admin/users'}>
               | Users
-            </Anchor>
+            </NavLink>
           </>
         )}
       </Box>
