@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import 'firebase/auth';
 import './Signup.css';
 import firebase from 'firebase';
-import { Button, Form, FormField, TextInput } from 'grommet';
+import { Box, Button, Form, FormField, Heading, TextInput } from 'grommet';
 
 const Login = () => {
   // User State
@@ -37,7 +37,6 @@ const Login = () => {
         //   });
         //   firebase.auth().signOut();
         // }
-        console.dir({ result });
       })
       .catch((error) => {
         // Update the error
@@ -49,7 +48,8 @@ const Login = () => {
   };
 
   return (
-    <>
+    <Box gap={'medium'} pad={'medium'} align={'center'}>
+      <Heading>MCH: EMTCT</Heading>
       <h1>Log In</h1>
       <Form onSubmit={handleSubmit}>
         <FormField>
@@ -76,7 +76,7 @@ const Login = () => {
         <Button type='submit' label={'Submit'} />
       </Form>
       {user.error && <h4>{user.error}</h4>}
-    </>
+    </Box>
   );
 };
 export default Login;

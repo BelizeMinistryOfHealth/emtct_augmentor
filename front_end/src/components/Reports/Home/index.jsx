@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Card,
-  CardBody,
-  CardFooter,
-  Grid,
-  Grommet,
-  Heading,
-  Text,
-} from 'grommet';
+import { Box, Card, CardBody, CardFooter, Grid, Grommet, Text } from 'grommet';
 import { Search, Tasks } from 'grommet-icons';
 import { useHistory } from 'react-router-dom';
 
@@ -80,7 +71,6 @@ const ReportHome = () => {
   const history = useHistory();
   return (
     <Grommet theme={theme} full>
-      <Heading level={2}>EMTCT Reports</Heading>
       <Box pad={'large'} margin={{ left: 'large', right: 'large' }}>
         <Grid
           gap={'medium'}
